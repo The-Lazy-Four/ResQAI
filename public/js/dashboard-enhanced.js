@@ -914,6 +914,49 @@ function stopPolling() {
     console.log('✅ [POLLING] All polling cycles stopped');
 }
 
+// ==================== GEOLOCATION ====================
+
+/**
+ * Fetch user's geolocation
+ */
+function fetchUserLocation() {
+    console.log('📍 [GEOLOCATION] Requesting user location...');
+    
+    if (!navigator.geolocation) {
+        console.warn('⚠️ [GEOLOCATION] Geolocation not supported');
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            const location = { latitude, longitude, accuracy, timestamp: new Date().toISOString() };
+            
+            // Store in localStorage
+            localStorage.setItem('userLocation', JSON.stringify(location));
+            
+            // Store globally
+            window.userLocation = location;
+            
+            console.log(`✅ [GEOLOCATION] Location obtained: ${latitude.toFixed(4)}, ${longitude.toFixed(4)} (±${accuracy.toFixed(0)}m)`);
+        },
+        (error) => {
+            console.warn(`⚠️ [GEOLOCATION] Location fetch failed:`, error.message);
+            // Try to load from localStorage as fallback
+            const cached = localStorage.getItem('userLocation');
+            if (cached) {
+                window.userLocation = JSON.parse(cached);
+                console.log('✅ [GEOLOCATION] Loaded cached location');
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes cache
+        }
+    );
+}
+
 // ==================== INITIALIZATION ====================
 
 /**
@@ -921,6 +964,9 @@ function stopPolling() {
  */
 function initializeDashboard() {
     console.log('📊 [DASHBOARD] Initializing enhanced dashboard...');
+    
+    // Fetch user location
+    fetchUserLocation();
 
     // Setup event listeners
     setupSearch();
@@ -971,5 +1017,6 @@ window.closeIncidentModal = closeIncidentModal;
 window.showToast = showToast;
 window.startPolling = startPolling;
 window.stopPolling = stopPolling;
+window.fetchUserLocation = fetchUserLocation;
 
 console.log('📡 [DASHBOARD-ENHANCED] Module loaded - v2.0 Production Ready');
