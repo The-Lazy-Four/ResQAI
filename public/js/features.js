@@ -53,12 +53,12 @@ class OfflineCache {
         try {
             const cache = JSON.parse(localStorage.getItem(this.storageKey));
             if (!cache.timestamp) return true;
-            
+
             const cacheTime = new Date(cache.timestamp);
             const now = new Date();
             const diffMs = now - cacheTime;
             const diffMins = diffMs / (1000 * 60);
-            
+
             return diffMins > 60; // Cache expires after 1 hour
         } catch (e) {
             return true;
@@ -111,7 +111,7 @@ async function calculateSafetyScore() {
                 async (position) => {
                     const { latitude, longitude } = position.coords;
                     currentLocation = { lat: latitude, lng: longitude };
-                    
+
                     try {
                         const response = await fetch(`${API_BASE}/nearby/safety-score`, {
                             method: 'POST',
@@ -160,7 +160,7 @@ function displaySafetyScore(data) {
 
     if (scoreValue) {
         scoreValue.textContent = data.safety_score;
-        
+
         // Update level text with emoji
         if (scoreLevel) {
             scoreLevel.textContent = `${data.emoji} ${data.risk_level} risk today`;
@@ -391,12 +391,12 @@ function closeSafePlaces() {
 function filterSafePlaces(category) {
     console.log('🔍 Filtering safe places by:', category);
     currentSafePlacesFilter = category;
-    
+
     // Update active tab
     const tabs = document.querySelectorAll('.filter-tab');
     tabs.forEach(tab => tab.classList.remove('active'));
     event.target.classList.add('active');
-    
+
     showSafePlaces();
 }
 

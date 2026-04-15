@@ -151,13 +151,18 @@
                             <small>Police</small>
                         </button>
                     </div>
-                    <div style="margin-left: 20px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; display: flex; gap: 10px;">
-                        <button class="emergency-btn" style="background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(138,43,226,0.3)); border: 1px solid rgba(0,212,255,0.5);" onclick="showMorningBrief()">
+                    <div
+                        style="margin-left: 20px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; display: flex; gap: 10px;">
+                        <button class="emergency-btn"
+                            style="background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(138,43,226,0.3)); border: 1px solid rgba(0,212,255,0.5);"
+                            onclick="showMorningBrief()">
                             <i class="fas fa-sun"></i>
                             <strong>Brief</strong>
                             <small>Today</small>
                         </button>
-                        <button class="emergency-btn" style="background: linear-gradient(135deg, rgba(81,207,102,0.3), rgba(75,192,192,0.3)); border: 1px solid rgba(81,207,102,0.5);" onclick="showSafePlaces()">
+                        <button class="emergency-btn"
+                            style="background: linear-gradient(135deg, rgba(81,207,102,0.3), rgba(75,192,192,0.3)); border: 1px solid rgba(81,207,102,0.5);"
+                            onclick="showSafePlaces()">
                             <i class="fas fa-hospital"></i>
                             <strong>Safe</strong>
                             <small>Places</small>
@@ -568,7 +573,7 @@
             <button class="modal-close" onclick="closeMorningBrief()">
                 <i class="fas fa-times"></i>
             </button>
-            
+
             <div class="morning-brief-header">
                 <h2 id="morningBriefTitle">🌅 Today's Safety Brief</h2>
                 <p id="morningBriefTime" class="brief-time"></p>
@@ -602,7 +607,7 @@
             <button class="modal-close" onclick="closeSafePlaces()">
                 <i class="fas fa-times"></i>
             </button>
-            
+
             <div class="safe-places-header">
                 <h2>🏥 Safe Places Nearby</h2>
                 <div class="filter-tabs">

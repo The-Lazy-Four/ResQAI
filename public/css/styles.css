@@ -2908,13 +2908,11 @@ body {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: conic-gradient(
-        from 0deg,
-        var(--success) 0deg,
-        var(--accent) 120deg,
-        var(--danger) 280deg,
-        var(--danger) 360deg
-    );
+    background: conic-gradient(from 0deg,
+            var(--success) 0deg,
+            var(--accent) 120deg,
+            var(--danger) 280deg,
+            var(--danger) 360deg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3053,7 +3051,7 @@ body {
     gap: 0.8rem;
 }
 
-.alerts-list > div {
+.alerts-list>div {
     display: flex;
     gap: 1rem;
     align-items: flex-start;
@@ -3316,6 +3314,7 @@ body {
         transform: translateX(400px);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -3358,6 +3357,7 @@ body {
         transform: translateY(100px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;

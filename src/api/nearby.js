@@ -563,10 +563,10 @@ router.post('/safety-score', async (req, res) => {
         const weatherScore = 85; // 1-100, higher is safer
         const incidentScore = 78; // Based on nearby incidents
         const aiRiskScore = 72; // Based on AI-identified risks
-        
+
         // Weighted average (weather 30%, incidents 40%, AI risks 30%)
         const safetyScore = Math.round(weatherScore * 0.3 + incidentScore * 0.4 + aiRiskScore * 0.3);
-        
+
         let riskLevel = 'Low';
         let emoji = '🟢';
         if (safetyScore >= 80) {
@@ -620,7 +620,7 @@ router.post('/morning-brief', async (req, res) => {
         }
 
         const geoContext = getGeographicContext(latitude, longitude);
-        
+
         // Sample morning brief data
         const briefData = {
             en: {
