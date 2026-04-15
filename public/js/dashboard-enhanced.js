@@ -921,23 +921,23 @@ function stopPolling() {
  */
 function fetchUserLocation() {
     console.log('📍 [GEOLOCATION] Requesting user location...');
-    
+
     if (!navigator.geolocation) {
         console.warn('⚠️ [GEOLOCATION] Geolocation not supported');
         return;
     }
-    
+
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const { latitude, longitude, accuracy } = position.coords;
             const location = { latitude, longitude, accuracy, timestamp: new Date().toISOString() };
-            
+
             // Store in localStorage
             localStorage.setItem('userLocation', JSON.stringify(location));
-            
+
             // Store globally
             window.userLocation = location;
-            
+
             console.log(`✅ [GEOLOCATION] Location obtained: ${latitude.toFixed(4)}, ${longitude.toFixed(4)} (±${accuracy.toFixed(0)}m)`);
         },
         (error) => {
@@ -964,7 +964,7 @@ function fetchUserLocation() {
  */
 function initializeDashboard() {
     console.log('📊 [DASHBOARD] Initializing enhanced dashboard...');
-    
+
     // Fetch user location
     fetchUserLocation();
 
