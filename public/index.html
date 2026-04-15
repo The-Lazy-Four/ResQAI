@@ -88,6 +88,34 @@
                     </div>
                 </div>
 
+                <!-- 🎯 DAILY SAFETY SCORE SECTION -->
+                <div class="safety-score-card" id="safetyScoreSection">
+                    <div class="score-container">
+                        <div class="score-circle" id="scoreCircle">
+                            <span class="score-value" id="scoreValue">--</span>
+                            <span class="score-max">/100</span>
+                        </div>
+                        <div class="score-info">
+                            <h3>Daily Safety Score</h3>
+                            <p class="score-level" id="scoreLevel">Calculating...</p>
+                            <div class="score-breakdown">
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">🌤️ Weather</span>
+                                    <span class="breakdown-value" id="weatherScore">-</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">📍 Incidents</span>
+                                    <span class="breakdown-value" id="incidentsScore">-</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">🤖 AI Risk</span>
+                                    <span class="breakdown-value" id="aiRiskScore">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="filter-section">
                     <input type="text" id="searchIncidents" placeholder="Search incidents..." class="search-box">
                     <select id="filterStatus" class="filter-select">
@@ -121,6 +149,18 @@
                             <i class="fas fa-shield-alt"></i>
                             <strong>100</strong>
                             <small>Police</small>
+                        </button>
+                    </div>
+                    <div style="margin-left: 20px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; display: flex; gap: 10px;">
+                        <button class="emergency-btn" style="background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(138,43,226,0.3)); border: 1px solid rgba(0,212,255,0.5);" onclick="showMorningBrief()">
+                            <i class="fas fa-sun"></i>
+                            <strong>Brief</strong>
+                            <small>Today</small>
+                        </button>
+                        <button class="emergency-btn" style="background: linear-gradient(135deg, rgba(81,207,102,0.3), rgba(75,192,192,0.3)); border: 1px solid rgba(81,207,102,0.5);" onclick="showSafePlaces()">
+                            <i class="fas fa-hospital"></i>
+                            <strong>Safe</strong>
+                            <small>Places</small>
                         </button>
                     </div>
                 </div>
@@ -522,12 +562,83 @@
         </div>
     </div>
 
+    <!-- 🌅 MORNING SAFETY BRIEF MODAL -->
+    <div id="morningBriefModal" class="modal morning-brief-modal">
+        <div class="modal-content morning-brief-content">
+            <button class="modal-close" onclick="closeMorningBrief()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="morning-brief-header">
+                <h2 id="morningBriefTitle">🌅 Today's Safety Brief</h2>
+                <p id="morningBriefTime" class="brief-time"></p>
+            </div>
+
+            <div class="brief-alerts">
+                <h3>⚠️ Today's Alerts</h3>
+                <div id="briefAlerts" class="alerts-list">
+                    <!-- Alerts will be populated here -->
+                </div>
+            </div>
+
+            <div class="brief-recommendations">
+                <h3>💡 Recommendations</h3>
+                <ol id="briefRecommendations" class="recommendations-list">
+                    <!-- Recommendations will be populated here -->
+                </ol>
+            </div>
+
+            <div class="brief-footer">
+                <button class="btn-brief-ok" onclick="closeMorningBrief()">
+                    <i class="fas fa-check-circle"></i> Got it, Stay Safe!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🏥 SAFE PLACES NEARBY MODAL -->
+    <div id="safePlacesModal" class="modal safe-places-modal">
+        <div class="modal-content safe-places-content">
+            <button class="modal-close" onclick="closeSafePlaces()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="safe-places-header">
+                <h2>🏥 Safe Places Nearby</h2>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterSafePlaces('all')">All</button>
+                    <button class="filter-tab" onclick="filterSafePlaces('hospital')">🏥 Hospitals</button>
+                    <button class="filter-tab" onclick="filterSafePlaces('police')">🚔 Police</button>
+                    <button class="filter-tab" onclick="filterSafePlaces('shelter')">🏠 Shelters</button>
+                </div>
+            </div>
+
+            <div id="safePlacesList" class="safe-places-list">
+                <!-- Safe places will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔔 SMART NOTIFICATIONS AREA -->
+    <div id="smartNotificationsContainer" class="smart-notifications">
+        <!-- Notifications will appear here -->
+    </div>
+
+    <!-- 📡 OFFLINE MODE INDICATOR -->
+    <div id="offlineModeIndicator" class="offline-indicator hidden">
+        <div class="offline-content">
+            <i class="fas fa-wifi-off"></i>
+            <span>Offline Mode - Cached Data</span>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="js/app.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/chatbot.js"></script>
     <script src="js/nearby.js"></script>
     <script src="js/voice.js"></script>
+    <script src="js/features.js"></script>
 </body>
 
 </html>

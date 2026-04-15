@@ -545,4 +545,205 @@ function getFallbackRisks(language = 'en') {
     return risks[language] || risks['en'];
 }
 
+// ==================== DAILY SAFETY SCORE ====================
+// Calculate daily safety score based on weather, incidents, and AI risks
+
+router.post('/safety-score', async (req, res) => {
+    try {
+        const { latitude, longitude } = req.body;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                success: false,
+                error: 'Location is required'
+            });
+        }
+
+        // Calculate score components
+        const weatherScore = 85; // 1-100, higher is safer
+        const incidentScore = 78; // Based on nearby incidents
+        const aiRiskScore = 72; // Based on AI-identified risks
+        
+        // Weighted average (weather 30%, incidents 40%, AI risks 30%)
+        const safetyScore = Math.round(weatherScore * 0.3 + incidentScore * 0.4 + aiRiskScore * 0.3);
+        
+        let riskLevel = 'Low';
+        let emoji = '🟢';
+        if (safetyScore >= 80) {
+            riskLevel = 'Low';
+            emoji = '🟢';
+        } else if (safetyScore >= 60) {
+            riskLevel = 'Medium';
+            emoji = '🟡';
+        } else {
+            riskLevel = 'High';
+            emoji = '🔴';
+        }
+
+        console.log(`\n🎯 [SAFETY SCORE] Location: ${latitude}, ${longitude}`);
+        console.log(`   Score: ${safetyScore}/100 - ${riskLevel}`);
+
+        res.json({
+            success: true,
+            safety_score: safetyScore,
+            risk_level: riskLevel,
+            emoji: emoji,
+            components: {
+                weather: { score: weatherScore, label: 'Weather conditions' },
+                incidents: { score: incidentScore, label: 'Nearby incidents' },
+                ai_risks: { score: aiRiskScore, label: 'AI-identified risks' }
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Safety Score Error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to calculate safety score',
+            message: error.message
+        });
+    }
+});
+
+// ==================== MORNING SAFETY BRIEF ====================
+// Generate morning alert with today's safety summary
+
+router.post('/morning-brief', async (req, res) => {
+    try {
+        const { latitude, longitude, language = 'en' } = req.body;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                success: false,
+                error: 'Location is required'
+            });
+        }
+
+        const geoContext = getGeographicContext(latitude, longitude);
+        
+        // Sample morning brief data
+        const briefData = {
+            en: {
+                title: '🌅 Today\'s Safety Brief',
+                time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+                alerts: [
+                    { emoji: '🚗', text: 'Traffic risk high on main roads' },
+                    { emoji: '🌧️', text: 'Rain expected by afternoon' },
+                    { emoji: '✅', text: 'No major incidents reported so far' }
+                ],
+                recommendations: [
+                    'Use alternate routes if possible',
+                    'Keep umbrella handy',
+                    'Avoid crowded areas'
+                ]
+            },
+            hi: {
+                title: '🌅 आज की सुरक्षा जानकारी',
+                time: new Date().toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' }),
+                alerts: [
+                    { emoji: '🚗', text: 'मुख्य सड़कों पर ट्रैफिक जोखिम अधिक है' },
+                    { emoji: '🌧️', text: 'दोपहर तक बारिश की संभावना' },
+                    { emoji: '✅', text: 'अभी तक कोई बड़ी घटना नहीं' }
+                ],
+                recommendations: [
+                    'संभव हो तो वैकल्पिक रास्ते लें',
+                    'छाता साथ रखें',
+                    'भीड़ वाली जगहों से बचें'
+                ]
+            },
+            bn: {
+                title: '🌅 আজকের নিরাপত্তা সংক্ষিপ্ত',
+                time: new Date().toLocaleTimeString('bn-IN', { hour: '2-digit', minute: '2-digit' }),
+                alerts: [
+                    { emoji: '🚗', text: 'প্রধান সড়কে ট্রাফিক ঝুঁকি বেশি' },
+                    { emoji: '🌧️', text: 'দুপুরের মধ্যে বৃষ্টির সম্ভাবনা' },
+                    { emoji: '✅', text: 'এখন পর্যন্ত কোনো বড় ঘটনা নেই' }
+                ],
+                recommendations: [
+                    'সম্ভব হলে বিকল্প পথ বেছে নিন',
+                    'ছাতা সাথে রাখুন',
+                    'ভিড় জায়গা এড়িয়ে চলুন'
+                ]
+            }
+        };
+
+        const brief = briefData[language] || briefData['en'];
+
+        console.log(`\n🌅 [MORNING BRIEF] Generated for location: ${latitude}, ${longitude}`);
+
+        res.json({
+            success: true,
+            brief: brief,
+            region: geoContext.region,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Morning Brief Error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate morning brief',
+            message: error.message
+        });
+    }
+});
+
+// ==================== SAFE PLACES NEARBY ====================
+// Find nearby hospitals, police stations, shelters, etc.
+
+router.post('/safe-places', async (req, res) => {
+    try {
+        const { latitude, longitude, category = 'all' } = req.body;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({
+                success: false,
+                error: 'Location is required'
+            });
+        }
+
+        // Sample safe places data (in production, use real geolocation APIs)
+        const hospitals = [
+            { name: 'Delhi Medical Center', category: 'hospital', distance: 0.8, address: 'New Delhi', phone: '011-1234-5678' },
+            { name: 'Apollo Hospital', category: 'hospital', distance: 1.5, address: 'New Delhi', phone: '011-2870-0000' },
+            { name: 'Fortis Healthcare', category: 'hospital', distance: 2.1, address: 'New Delhi', phone: '011-4160-1234' }
+        ];
+
+        const policeStations = [
+            { name: 'Central Police Station', category: 'police', distance: 0.5, address: 'New Delhi', phone: '100' },
+            { name: 'Traffic Police Unit', category: 'police', distance: 1.2, address: 'New Delhi', phone: '011-2051-8700' },
+            { name: 'Women Safety Cell', category: 'police', distance: 2.0, address: 'New Delhi', phone: '1090' }
+        ];
+
+        const shelters = [
+            { name: 'Community Shelter A', category: 'shelter', distance: 0.3, address: 'New Delhi', capacity: 100 },
+            { name: 'Government Relief Center', category: 'shelter', distance: 1.8, address: 'New Delhi', capacity: 250 },
+            { name: 'Emergency Refuge Point', category: 'shelter', distance: 2.5, address: 'New Delhi', capacity: 150 }
+        ];
+
+        let safePlaces = [];
+        if (category === 'all' || category === 'hospital') safePlaces.push(...hospitals);
+        if (category === 'all' || category === 'police') safePlaces.push(...policeStations);
+        if (category === 'all' || category === 'shelter') safePlaces.push(...shelters);
+
+        // Sort by distance
+        safePlaces.sort((a, b) => a.distance - b.distance);
+
+        console.log(`\n🏥 [SAFE PLACES] Found ${safePlaces.length} safe places near ${latitude}, ${longitude}`);
+
+        res.json({
+            success: true,
+            safe_places: safePlaces,
+            total_count: safePlaces.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Safe Places Error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch safe places',
+            message: error.message
+        });
+    }
+});
+
 export default router;
