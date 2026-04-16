@@ -2,10 +2,12 @@
 // ResQAI - Nearby Crisis System (Frontend)
 // ============================================
 
-const API_BASE = 'http://localhost:3000/api';
+// Use relative path for API calls (works on both localhost and production)
+const API_BASE = '/api';
 let currentLocation = null;
 
 console.log('📍 Nearby alerts system loaded');
+console.log('🔗 API Base URL:', API_BASE, 'Host:', window.location.origin);
 
 // ==================== GET NEARBY INCIDENTS ====================
 
