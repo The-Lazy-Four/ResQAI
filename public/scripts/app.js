@@ -2,7 +2,14 @@
 // ResQAI - Main App Logic
 // ============================================
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// ==================== API CONFIGURATION ====================
+// Use relative paths for flexibility across localhost and production (Render)
+// This will work on both http://localhost:3000 and https://your-app.onrender.com
+const API_BASE_URL = '/api';
+
+// Debugging - log the actual origin in console
+console.log('🌐 [API Config] Using base URL:', window.location.origin + API_BASE_URL);
+console.log('🌐 [API Config] Environment:', window.location.hostname);
 
 // ==================== TAB NAVIGATION ====================
 function showTab(tabName) {
