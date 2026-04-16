@@ -9,11 +9,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Import API routes
-import emergencyRoutes from './api/emergency.js';
-import classificationRoutes from './api/classification.js';
-import chatRoutes from './api/chat.js';
-import voiceRoutes from './api/voice.js';
-import nearbyRoutes from './api/nearby.js';
+import emergencyRoutes from './api/routes/emergency.js';
+import classificationRoutes from './api/routes/classification.js';
+import chatRoutes from './api/routes/chat.js';
+import voiceRoutes from './api/routes/voice.js';
+import nearbyRoutes from './api/routes/nearby.js';
 
 // Load environment variables
 dotenv.config();
@@ -64,7 +64,7 @@ app.use('/api/nearby', nearbyRoutes);
 // Serve index.html for any route not matched by API
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, '../public/index.html'));
+        res.sendFile(path.join(__dirname, '../public/pages/index.html'));
     }
 });
 
