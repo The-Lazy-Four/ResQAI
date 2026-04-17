@@ -1,4 +1,4 @@
-// ============================================
+﻿// ============================================
 // ResQAI - Voice Control System (Frontend)
 // ============================================
 
@@ -210,7 +210,6 @@ function synthesisSupported() {
 
 function initializeVoiceUI() {
     // Add voice button to chat
-
     const chatForm = document.querySelector('.chat-input-area');
     if (chatForm && recognitionSupported()) {
         const voiceBtn = document.createElement('button');
@@ -249,11 +248,3 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`   Text-to-Speech: ${synthesisSupported() ? '✅' : '❌'}`);
     }
 });
-
-// Listen for language changes
-document.addEventListener('languageChanged', (e) => {
-    setVoiceLanguage(e.detail.language);
-});
-/ /   V o i c e   m o d u l e   l o g i c  
- / /   V o i c e  
- 
