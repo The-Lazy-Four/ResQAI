@@ -241,6 +241,180 @@ function changeLanguage() {
     }
 }
 
+// ==================== ECHOPLUS MODULE INTEGRATION ====================
+
+/**
+ * Initialize global APP_STATE for module communication
+ */
+window.APP_STATE = window.APP_STATE || {
+    mode: null,
+    userLocation: null,
+    language: 'en',
+    timestamp: Date.now()
+};
+
+/**
+ * Load EcoPlus Hotel Emergency Module
+ */
+function loadEcoPlusModule(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    console.log('🏨 Loading EcoPlus Hotel Emergency Module...');
+
+    try {
+        // Hide the selection screen
+        const selectionScreen = document.getElementById('selectionScreen');
+        if (selectionScreen) {
+            selectionScreen.classList.remove('active');
+            selectionScreen.classList.add('exit-left');
+        }
+
+        // Create an iframe to load EcoPlus in isolation
+        const iframeContainer = document.createElement('div');
+        iframeContainer.id = 'echo-plus-iframe-container';
+        iframeContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5100;
+            background: #0a0a0a;
+            animation: fadeInModule 0.5s ease-out;
+        `;
+
+        // Add fade-in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInModule {
+                from {
+                    opacity: 0;
+                    background: rgba(10, 10, 10, 0);
+                }
+                to {
+                    opacity: 1;
+                    background: rgba(10, 10, 10, 1);
+                }
+            }
+        `;
+        if (!document.querySelector('style[data-animation="fadeInModule"]')) {
+            style.setAttribute('data-animation', 'fadeInModule');
+            document.head.appendChild(style);
+        }
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'echo-plus-module-frame';
+        iframe.src = '/modules/echo-plus/wrapper.html';
+        iframe.title = 'EcoPlus Hotel Emergency Module';
+        iframe.style.cssText = `
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        `;
+
+        iframe.onload = () => {
+            console.log('✅ EcoPlus Module Frame Loaded Successfully');
+            showToast('🏨 EcoPlus Hotel Module Loaded', 'success');
+
+            // Log the event
+            if (window.APP_STATE) {
+                window.APP_STATE.lastModuleLoaded = 'echo-plus';
+                window.APP_STATE.moduleLoadTime = Date.now();
+            }
+        };
+
+        iframe.onerror = (error) => {
+            console.error('❌ Failed to load EcoPlus Module:', error);
+            showToast('❌ Failed to load EcoPlus Module. Please try again.', 'error');
+
+            // Cleanup on error
+            iframeContainer.remove();
+            const selectionScreen = document.getElementById('selectionScreen');
+            if (selectionScreen) {
+                selectionScreen.classList.add('active');
+                selectionScreen.classList.remove('exit-left');
+            }
+        };
+
+        iframeContainer.appendChild(iframe);
+        document.body.appendChild(iframeContainer);
+
+        // Update APP_STATE
+        window.APP_STATE.mode = 'hotel';
+        window.APP_STATE.timestamp = Date.now();
+        console.log('📊 APP_STATE Updated:', window.APP_STATE);
+
+    } catch (error) {
+        console.error('❌ Error loading EcoPlus Module:', error);
+        showToast('❌ Error loading module. Please try again.', 'error');
+    }
+}
+
+/**
+ * Return from EcoPlus module back to ResQAI
+ */
+function goBackFromEcoPlus() {
+    console.log('← Returning from EcoPlus to ResQAI Main App');
+
+    try {
+        const iframe = document.getElementById('echo-plus-module-frame');
+        const container = document.getElementById('echo-plus-iframe-container');
+
+        if (iframe && container) {
+            // Add fade-out animation
+            container.style.animation = 'fadeOutModule 0.5s ease-out forwards';
+
+            // Add the animation if not already present
+            const style = document.querySelector('style[data-animation="fadeOutModule"]');
+            if (!style) {
+                const newStyle = document.createElement('style');
+                newStyle.setAttribute('data-animation', 'fadeOutModule');
+                newStyle.textContent = `
+                    @keyframes fadeOutModule {
+                        from {
+                            opacity: 1;
+                            background: rgba(10, 10, 10, 1);
+                        }
+                        to {
+                            opacity: 0;
+                            background: rgba(10, 10, 10, 0);
+                        }
+                    }
+                `;
+                document.head.appendChild(newStyle);
+            }
+
+            setTimeout(() => {
+                container.remove();
+
+                // Reset APP_STATE
+                window.APP_STATE.mode = null;
+                window.APP_STATE.lastModuleLoaded = 'echo-plus';
+                window.APP_STATE.moduleUnloadTime = Date.now();
+                window.APP_STATE.timestamp = Date.now();
+
+                // Show selection screen again with animation
+                const selectionScreen = document.getElementById('selectionScreen');
+                if (selectionScreen) {
+                    // Force reflow to reset animation
+                    selectionScreen.offsetHeight;
+                    selectionScreen.classList.add('active');
+                    selectionScreen.classList.remove('exit-left');
+                }
+
+                showToast('← Returned to ResQAI Main App', 'info');
+            }, 500);
+        }
+    } catch (error) {
+        console.error('❌ Error returning from EcoPlus:', error);
+        showToast('❌ Error returning to main app. Please refresh.', 'error');
+    }
+}
+
 // ==================== INITIALIZE APP ====================
 document.addEventListener('DOMContentLoaded', () => {
     // Show dashboard on load
@@ -249,4 +423,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dashboard initialization is handled in dashboard.js
     // loadIncidents() is called there with proper polling setup
 });
+
 
