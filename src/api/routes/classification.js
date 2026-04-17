@@ -3,7 +3,7 @@
 // ============================================
 
 import { getSystemPrompt, isValidLanguage } from '../../utils/languages.js';
-import { generateAIResponse, getAIRouterStatus } from '../../utils/aiRouter.js';
+import { generateAIResponse, getAIRouterStatus, getLastAIUsageReport } from '../../utils/aiRouter.js';
 
 // Emergency classification types
 const EMERGENCY_TYPES = ['fire', 'flood', 'medical', 'accident', 'other'];
@@ -146,7 +146,20 @@ Return ONLY the JSON object, nothing else.`;
         // Use the multi-provider AI router
         const responseText = await generateAIResponse(prompt, language);
 
-        console.log('✅ AI response received');
+        // Get the AI usage report
+        const aiUsageReport = getLastAIUsageReport();
+
+        console.log('\n═══════════════════════════════════════════════════════════');
+        console.log('🤖 AI USAGE REPORT FOR CLASSIFICATION:');
+        if (aiUsageReport) {
+            console.log(`   Provider: ${aiUsageReport.provider}`);
+            console.log(`   Fallback: ${aiUsageReport.fallback ? 'YES ⚠️' : 'NO ✅ (Live AI)'}`);
+            console.log(`   Response Time: ${aiUsageReport.responseTime}ms`);
+            console.log(`   Response Type: ${aiUsageReport.type}`);
+        } else {
+            console.log('   Report: Unavailable');
+        }
+        console.log('═══════════════════════════════════════════════════════════\n');
         console.log(`   ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`);
 
         // Validate response is not empty
