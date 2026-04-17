@@ -113,10 +113,15 @@ app.use('/api/ai', aiRoutes);
 
 // ==================== SERVE FRONTEND ====================
 
-// Serve index.html for any route not matched by API
+// Serve the dashboard for /dashboard route
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+});
+
+// Serve the cinematic landing page as the default entry point
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+        res.sendFile(path.join(__dirname, '../public/pages/landing.html'));
     }
 });
 

@@ -38,3 +38,6 @@ tmp/
 *.swp
 *.swo
 *~
+
+# Large Media Data Output
+public/frames/

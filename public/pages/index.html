@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ResQAI - India Emergency Intelligence System 🇮🇳</title>
     <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/rapid-portal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <style>
@@ -394,12 +395,12 @@
             </div>
 
             <div class="selection-cards">
-                <!-- Card 1: Personal Rescue AI -->
+                <!-- Card 1: Rapid Crisis Portal -->
                 <div class="rescue-card personal" onclick="selectRescueSystem('personal')">
-                    <span class="card-icon">👤</span>
-                    <h3 class="card-title">Personal Rescue AI</h3>
-                    <p class="card-description">AI-powered personal emergency assistant</p>
-                    <button class="card-action">Get Started</button>
+                    <span class="card-icon">🆘</span>
+                    <h3 class="card-title">Rapid Crisis Portal</h3>
+                    <p class="card-description">AI-powered real-time alerts, SOS & safety guidance</p>
+                    <button class="card-action">Launch Portal</button>
                 </div>
 
                 <!-- Card 2: Hotel / Resort Rescue System -->
@@ -458,177 +459,200 @@
 
             <!-- Main Content -->
             <div class="content">
-                <!-- DASHBOARD TAB -->
+                <!-- DASHBOARD TAB - RAPID CRISIS ACCESS PORTAL -->
                 <section id="dashboard" class="tab-content active">
-                    <div class="dashboard-header">
-                        <div class="header-with-helplines">
-                            <h1>🇮🇳 Live Emergency Dashboard</h1>
-                            <div class="emergency-helplines">
-                                <span class="helpline">📞 <strong>112</strong> National Emergency</span>
-                                <span class="helpline">🔥 <strong>101</strong> Fire Brigade</span>
-                                <span class="helpline">🚑 <strong>108</strong> Ambulance</span>
-                                <span class="helpline">🚨 <strong>100</strong> Police</span>
-                            </div>
-                        </div>
-                        <div class="stats">
-                            <div class="stat-card">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <div>
-                                    <span class="stat-label">Total Incidents</span>
-                                    <span class="stat-value" id="totalIncidents">0</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <i class="fas fa-check-circle"></i>
-                                <div>
-                                    <span class="stat-label">Resolved</span>
-                                    <span class="stat-value" id="resolvedIncidents">0</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <i class="fas fa-clock"></i>
-                                <div>
-                                    <span class="stat-label">Pending</span>
-                                    <span class="stat-value" id="pendingIncidents">0</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <i class="fas fa-robot"></i>
-                                <div>
-                                    <span class="stat-label">Verified by AI</span>
-                                    <span class="stat-value" id="verifiedIncidents">0</span>
-                                </div>
-                            </div>
+                    <!-- NEW HEADER WITH PORTAL BRANDING -->
+                    <div class="rapid-portal-header">
+                        <div class="portal-title-section">
+                            <h1>🚨 Rapid Crisis Access Portal</h1>
+                            <p class="portal-subtitle">Stay aware. Stay connected. Get help instantly.</p>
                         </div>
                     </div>
 
-                    <!-- 🎯 DAILY SAFETY SCORE SECTION -->
-                    <div class="safety-score-card" id="safetyScoreSection">
-                        <div class="score-container">
-                            <div class="score-circle" id="scoreCircle">
-                                <span class="score-value" id="safetyScoreValue">--</span>
-                                <span class="score-max">/100</span>
+                    <!-- SECTION A: HERO TOP BAR -->
+                    <div class="hero-top-bar">
+                        <div class="hero-location">
+                            <span class="hero-icon">📍</span>
+                            <div class="hero-content">
+                                <span class="hero-label">Current Location</span>
+                                <span class="hero-value" id="heroLocation">Detecting...</span>
                             </div>
-                            <div class="score-info">
-                                <h3>Daily Safety Score</h3>
-                                <p class="score-level" id="safetyScoreLevel">Calculating...</p>
-                                <div class="score-breakdown">
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">📊 Analysis</span>
-                                        <span class="breakdown-value">Real-time</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">🔴 High Risk</span>
-                                        <span class="breakdown-value" id="highRiskCount">0</span>
-                                    </div>
-                                    <div class="breakdown-item">
-                                        <span class="breakdown-label">📌 Location</span>
-                                        <span class="breakdown-value">Monitored</span>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="hero-safety-status">
+                            <span class="hero-icon">🛡️</span>
+                            <div class="hero-content">
+                                <span class="hero-label">Safety Status</span>
+                                <span class="hero-value" id="heroSafetyStatus">Safe</span>
+                            </div>
+                        </div>
+                        <div class="hero-time">
+                            <span class="hero-icon">🕐</span>
+                            <div class="hero-content">
+                                <span class="hero-label">Current Time</span>
+                                <span class="hero-value" id="heroTime">--:--</span>
+                            </div>
+                        </div>
+                        <button class="hero-refresh-btn" onclick="refreshPortalData()" title="Refresh Data">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+
+                    <!-- SECTION B: NEARBY CRISIS ALERTS (MAIN USP) -->
+                    <div class="nearby-crisis-section">
+                        <div class="section-header">
+                            <h2>📍 Nearby Crisis Alerts <span class="within-radius">(within 5 km)</span></h2>
+                            <span class="auto-refresh-indicator">Auto-refresh every 60s</span>
+                        </div>
+                        <div class="crisis-alerts-grid" id="crisisAlertsGrid">
+                            <div class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i> Loading nearby alerts...
                             </div>
                         </div>
                     </div>
 
-                    <div class="filter-section">
-                        <input type="text" id="searchIncidents" placeholder="Search incidents..." class="search-box">
-                        <select id="filterStatus" class="filter-select">
-                            <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="verified">Verified</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
+                    <!-- SECTION C: SMART SOS HUB -->
+                    <div class="smart-sos-hub">
+                        <div class="section-header">
+                            <h2>🆘 Smart SOS Hub</h2>
+                            <p class="sos-subtitle">Tap to activate emergency assistance</p>
+                        </div>
+                        <div class="sos-buttons-grid">
+                            <button class="sos-btn fire-btn" onclick="activateSOS('fire')">
+                                <div class="sos-icon">🔥</div>
+                                <div class="sos-label">Fire</div>
+                            </button>
+                            <button class="sos-btn medical-btn" onclick="activateSOS('medical')">
+                                <div class="sos-icon">🏥</div>
+                                <div class="sos-label">Medical</div>
+                            </button>
+                            <button class="sos-btn women-safety-btn" onclick="activateSOS('women-safety')">
+                                <div class="sos-icon">👩</div>
+                                <div class="sos-label">Women Safety</div>
+                            </button>
+                            <button class="sos-btn child-safety-btn" onclick="activateSOS('child-safety')">
+                                <div class="sos-icon">👧</div>
+                                <div class="sos-label">Child Safety</div>
+                            </button>
+                            <button class="sos-btn earthquake-btn" onclick="activateSOS('earthquake')">
+                                <div class="sos-icon">🏚️</div>
+                                <div class="sos-label">Earthquake</div>
+                            </button>
+                            <button class="sos-btn flood-btn" onclick="activateSOS('flood')">
+                                <div class="sos-icon">🌊</div>
+                                <div class="sos-label">Flood</div>
+                            </button>
+                            <button class="sos-btn theft-btn" onclick="activateSOS('theft')">
+                                <div class="sos-icon">🚨</div>
+                                <div class="sos-label">Theft/Threat</div>
+                            </button>
+                            <button class="sos-btn custom-btn" onclick="activateSOS('custom')">
+                                <div class="sos-icon">⚙️</div>
+                                <div class="sos-label">Custom SOS</div>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Quick Emergency Buttons -->
-                    <div class="emergency-buttons-bar">
-                        <div class="emergency-button-group">
-                            <span class="emergency-label">Emergency Numbers:</span>
-                            <button class="emergency-btn emergency-112" onclick="makeCall('112')">
+                    <!-- SECTION D: AI ASSISTANT PANEL -->
+                    <div class="ai-assistant-panel">
+                        <div class="section-header">
+                            <h2>🤖 Emergency AI Guide</h2>
+                        </div>
+                        <div class="ai-panel-content">
+                            <div class="language-selector-ai">
+                                <label>Response Language:</label>
+                                <select id="aiLanguageSelect">
+                                    <option value="en">English</option>
+                                    <option value="hi">हिंदी (Hindi)</option>
+                                    <option value="bn">বাংলা (Bengali)</option>
+                                </select>
+                            </div>
+                            <div class="ai-input-group">
+                                <input type="text" id="aiQueryInput" placeholder="Ask: What should I do during fire in hotel?" class="ai-input">
+                                <button class="ai-submit-btn" onclick="submitAIQuery()">Ask AI</button>
+                            </div>
+                            <div class="ai-voice-input">
+                                <button class="voice-btn" onclick="startVoiceInput()" title="Use voice input">
+                                    <i class="fas fa-microphone"></i> Voice Input
+                                </button>
+                            </div>
+                            <div class="ai-response-area" id="aiResponseArea">
+                                <p class="ai-prompt-text">Ask your emergency question above...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION E: LIVE SAFETY MAP -->
+                    <div class="live-safety-map-section">
+                        <div class="section-header">
+                            <h2>🗺️ Live Safety Map</h2>
+                        </div>
+                        <button class="map-view-btn" onclick="showTab('map')">
+                            <i class="fas fa-expand"></i> View Full Map
+                        </button>
+                        <div id="miniMap" style="min-height: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
+                            <span style="color: #888;">Map will load when you view full map tab</span>
+                        </div>
+                    </div>
+
+                    <!-- SECTION F: QUICK CONTACT BAR -->
+                    <div class="quick-contact-bar">
+                        <div class="section-header">
+                            <h2>📞 Quick Emergency Contacts</h2>
+                        </div>
+                        <div class="quick-contacts-grid">
+                            <button class="quick-contact-btn emergency-112" onclick="dialNumber('112')">
                                 <i class="fas fa-phone"></i>
                                 <strong>112</strong>
-                                <small>National</small>
+                                <small>National Emergency</small>
                             </button>
-                            <button class="emergency-btn emergency-101" onclick="makeCall('101')">
+                            <button class="quick-contact-btn emergency-101" onclick="dialNumber('101')">
                                 <i class="fas fa-fire"></i>
                                 <strong>101</strong>
                                 <small>Fire</small>
                             </button>
-                            <button class="emergency-btn emergency-108" onclick="makeCall('108')">
+                            <button class="quick-contact-btn emergency-108" onclick="dialNumber('108')">
                                 <i class="fas fa-ambulance"></i>
                                 <strong>108</strong>
                                 <small>Ambulance</small>
                             </button>
-                            <button class="emergency-btn emergency-100" onclick="makeCall('100')">
+                            <button class="quick-contact-btn emergency-100" onclick="dialNumber('100')">
                                 <i class="fas fa-shield-alt"></i>
                                 <strong>100</strong>
                                 <small>Police</small>
                             </button>
                         </div>
-                        <div
-                            style="margin-left: 20px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px; display: flex; gap: 10px;">
-                            <button class="emergency-btn"
-                                style="background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(138,43,226,0.3)); border: 1px solid rgba(0,212,255,0.5);"
-                                onclick="showMorningBrief()">
-                                <i class="fas fa-sun"></i>
-                                <strong>Brief</strong>
-                                <small>Today</small>
-                            </button>
-                            <button class="emergency-btn"
-                                style="background: linear-gradient(135deg, rgba(81,207,102,0.3), rgba(75,192,192,0.3)); border: 1px solid rgba(81,207,102,0.5);"
-                                onclick="showSafePlaces()">
-                                <i class="fas fa-hospital"></i>
-                                <strong>Safe</strong>
-                                <small>Places</small>
-                            </button>
-                        </div>
                     </div>
 
-                    <!-- AI Risk Predictions Section -->
-                    <div class="ai-predictions-section">
-                        <h3>🤖 AI Risk Predictions for Your Area</h3>
-                        <div class="predictions-grid" id="predictionsGrid">
-                            <div class="prediction-card">
-                                <span class="prediction-icon">⚠️</span>
-                                <span class="prediction-text">No predictions yet</span>
+                    <!-- SECTION G: PERSONAL SAFETY TIPS -->
+                    <div class="personal-safety-tips">
+                        <div class="section-header">
+                            <h2>💡 Safety Tips</h2>
+                        </div>
+                        <div class="tips-carousel">
+                            <div id="safetyTipContent" class="safety-tip-card">
+                                <div class="tip-icon">💡</div>
+                                <div class="tip-text-content">
+                                    <h4 id="tipTitle">Loading safety tips...</h4>
+                                    <p id="tipContent">We're fetching personalized safety recommendations for you.</p>
+                                </div>
                             </div>
+                            <button class="tip-nav-btn prev-btn" onclick="previousSafetyTip()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="tip-nav-btn next-btn" onclick="nextSafetyTip()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Live Activity Feed -->
-                    <div class="live-activity-section">
-                        <div class="live-header">
-                            <h3>🚨 Live Activity Feed</h3>
-                            <span class="live-indicator">
-                                <span class="pulse-dot"></span>
-                                Live Updating
-                            </span>
-                        </div>
-                        <div class="activity-feed" id="activityFeed">
-                            <div class="activity-item loading">
-                                <span class="activity-icon">⏳</span>
-                                <p>Loading live activity...</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="incidents-grid" id="incidentsGrid">
-                        <!-- Loading skeletons -->
-                        <div class="skeleton-grid" id="skeletonLoader" style="display: none;">
-                            <div class="incident-skeleton"></div>
-                            <div class="incident-skeleton"></div>
-                            <div class="incident-skeleton"></div>
-                        </div>
-                        <!-- Incident cards will be populated here -->
+                    <!-- BACKUP: INCIDENTS GRID (for existing features) -->
+                    <div class="incidents-grid" id="incidentsGrid" style="display: none;">
                         <div class="empty-state" id="emptyState">
                             <div class="empty-illustration">
                                 <i class="fas fa-inbox"></i>
                             </div>
-                            <h3>No Incidents Yet</h3>
-                            <p>No emergency reports have been filed. Stay safe out there!</p>
-                            <button onclick="showTab('report')" class="btn btn-primary" style="margin-top: 1.5rem;">
-                                <i class="fas fa-plus-circle"></i> Report First Incident
-                            </button>
+                            <h3>No Incidents To Display</h3>
+                            <p>Local incident data currently unavailable.</p>
                         </div>
                     </div>
                 </section>
@@ -1059,6 +1083,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="/scripts/app.js"></script>
+    <script src="/scripts/modules/rapid-portal.js"></script>
     <script src="/scripts/modules/dashboard.js"></script>
     <script src="/scripts/modules/chatbot.js"></script>
     <script src="/scripts/modules/nearby.js"></script>
