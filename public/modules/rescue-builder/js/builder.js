@@ -5,6 +5,8 @@
 // ===== GLOBAL CONFIG =====
 const API_BASE_URL = '/api/custom-system';
 const AUTH_TOKEN_KEY = 'auth-token';
+const DEBUG = true;  // Comprehensive debug logging
+const STORAGE_KEY = 'rescue_systems';  // Standardized localStorage key
 
 // ===== DATA STORAGE =====
 let systemData = {
@@ -58,23 +60,307 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-// ===== BACK BUTTON FUNCTION =====
+// ===== SYSTEMS MANAGEMENT =====
+
+// Load user's systems from backend
+async function loadUserSystems() {
+    if (DEBUG) console.group('🔍 [LOAD] Systems');
+    
+    try {
+        const token = getAuthToken();
+        if (DEBUG) console.log('Token:', !!token);
+        
+        // TRY API WITH TIMEOUT
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(API_BASE_URL + '/user/list', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+                const data = await response.json();
+                const apiSystems = data.systems || [];
+                
+                if (DEBUG) console.log('✅ API returned:', apiSystems.length, 'systems');
+                
+                // Map snake_case to camelCase
+                const mapped = apiSystems.map(s => ({
+                    systemID: s.id || s.systemID,
+                    organizationName: s.organization_name || s.organizationName,
+                    organizationType: s.organization_type || s.organizationType,
+                    location: s.location,
+                    contactEmail: s.contact_email || s.contactEmail,
+                    status: s.status || 'saved',
+                    createdAt: s.created_at || s.createdAt
+                }));
+                
+                if (DEBUG) console.log('After mapping:', mapped.length, 'systems');
+                if (DEBUG) console.groupEnd();
+                
+                renderSystemsDashboard(mapped);
+                return;
+            } else {
+                throw new Error(`API ${response.status}`);
+            }
+        } catch (apiErr) {
+            if (DEBUG) console.warn('⚠️ API failed:', apiErr.message);
+        }
+
+    } catch (error) {
+        if (DEBUG) console.error('Error:', error.message);
+    }
+    
+    // FALLBACK: Load from localStorage
+    if (DEBUG) console.log('📦 Using localStorage fallback');
+    
+    let systems = [];
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            systems = JSON.parse(stored);
+        }
+    } catch (e) {
+        if (DEBUG) console.error('Corrupted localStorage');
+        systems = [];
+    }
+    
+    if (DEBUG) {
+        console.log('Loaded:', systems.length, 'systems');
+        console.groupEnd();
+    }
+    
+    renderSystemsDashboard(systems || []);
+}
+
+// DEBUG: Check what's actually in localStorage and display on page
+function debugLocalStorage() {
+    try {
+        const stored = localStorage.getItem('resqai-systems');
+        console.log('=== LOCAL STORAGE DEBUG ===');
+        console.log('Raw localStorage value:', stored);
+        
+        let debugHtml = '';
+        
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                debugHtml += `<div style="margin-bottom: 10px;">✅ localStorage parsed successfully</div>`;
+                debugHtml += `<div style="margin-bottom: 10px;">📦 Count: ${Array.isArray(parsed) ? parsed.length : 'ERROR - NOT AN ARRAY'}</div>`;
+                debugHtml += `<div style="margin-bottom: 10px;">📋 Data:</div>`;
+                debugHtml += `<pre style="background: #0a0a14; padding: 10px; border-radius: 4px; overflow-x: auto; max-height: 300px;">${JSON.stringify(parsed, null, 2)}</pre>`;
+                console.log('Parsed count:', Array.isArray(parsed) ? parsed.length : 'NOT AN ARRAY');
+                console.log('Parsed content:', parsed);
+            } catch (parseErr) {
+                debugHtml += `<div style="color: #ff0;">❌ JSON Parse Error: ${parseErr.message}</div>`;
+            }
+        } else {
+            debugHtml += `<div style="color: #ff0;">⚠️ localStorage['resqai-systems'] is EMPTY or NULL</div>`;
+        }
+        
+        // Update debug panel
+        const debugPanel = document.getElementById('debug-panel');
+        const debugContent = document.getElementById('debug-content');
+        if (debugContent) {
+            debugContent.innerHTML = debugHtml;
+            if (debugPanel) debugPanel.style.display = 'block';
+        }
+        
+    } catch (e) {
+        console.error('Error reading localStorage:', e);
+        const debugContent = document.getElementById('debug-content');
+        if (debugContent) {
+            debugContent.innerHTML = `<div style="color: #ff0;">❌ Debug Error: ${e.message}</div>`;
+        }
+    }
+}
+
+// Toggle debug panel visibility  
+function toggleDebugPanel() {
+    const debugPanel = document.getElementById('debug-panel');
+    if (debugPanel) {
+        debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Press F12 to toggle debug (only in development)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12') {
+        e.preventDefault();
+        toggleDebugPanel();
+    }
+});
+
+// Render systems dashboard with list of user's systems
+function renderSystemsDashboard(systems) {
+    // VALIDATE INPUT
+    const container = document.getElementById('systems-list');
+    if (!container) {
+        if (DEBUG) console.error('❌ Container not found!');
+        return;
+    }
+
+    // VALIDATE SYSTEMS ARRAY
+    if (!Array.isArray(systems)) {
+        if (DEBUG) console.error('❌ Systems not an array');
+        systems = [];
+    }
+
+    container.innerHTML = '';
+    if (DEBUG) console.log('🎨 [RENDER] Systems:', systems.length, 'found');
+
+    // EMPTY STATE
+    if (systems.length === 0) {
+        if (DEBUG) console.log('📭 No systems - empty state');
+        container.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                <h3 style="color: #fff; margin-bottom: 10px;">No Systems Yet</h3>
+                <p style="color: #888;">Create your first rescue system to get started</p>
+            </div>
+        `;
+        return;
+    }
+
+    // RENDER CARDS WITH ERROR HANDLING
+    systems.forEach((system, index) => {
+        try {
+            const card = document.createElement('div');
+            card.className = 'system-card';
+            
+            // STATUS INDICATOR
+            let statusDot = '⏳';
+            if (system.status === 'saved') statusDot = '✅';
+            else if (system.status === 'local') statusDot = '💾';
+            
+            const createdDate = system.createdAt 
+                ? new Date(system.createdAt).toLocaleDateString() 
+                : 'Unknown';
+            const systemID = system.systemID || system.id;
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span style="background: rgba(255,255,255,0.1); color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 12px;">${system.organizationType || 'Unknown'}</span>
+                    <span title="${statusDot === '✅' ? 'Saved' : 'Local Only'}">${statusDot}</span>
+                </div>
+                <h3 style="color: #fff; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">${system.organizationName || 'Unnamed'}</h3>
+                <p style="color: #888; margin: 8px 0; font-size: 14px;">📍 ${system.location || 'No location'}</p>
+                <p style="color: #666; margin: 8px 0 16px 0; font-size: 12px;">Created: ${createdDate}</p>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-small btn-primary" onclick="openSystemPanel('${systemID}')" style="flex: 1;">Open</button>
+                    <button class="btn-small btn-danger" onclick="deleteSystemConfirm('${systemID}')" style="flex: 1;">Delete</button>
+                </div>
+            `;
+            container.appendChild(card);
+            if (DEBUG) console.log(`✅ Card ${index + 1} rendered`);
+        } catch (cardErr) {
+            if (DEBUG) console.error(`❌ Card ${index} failed:`, cardErr.message);
+        }
+    });
+
+    if (DEBUG) console.log('🎨 Dashboard render complete');
+}
+
+// Show systems dashboard screen
+async function showSystemsDashboard() {
+    showScreen('screen-systems-dashboard');
+    await loadUserSystems();  // Wait for systems to load before returning
+}
+
+// Open system control panel
+function openSystemPanel(systemID) {
+    systemData.systemID = systemID;
+    showScreen('screen-system-control-panel');
+    loadSystemIntoPanel(systemID);
+}
+
+// Load system details for control panel
+async function loadSystemIntoPanel(systemID) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/${systemID}`, {
+            headers: getAPIHeaders()
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const system = data.system;
+            const panelInfo = document.getElementById('panel-system-info');
+            if (panelInfo) {
+                panelInfo.innerHTML = `
+                    <div class="info-line">
+                        <span class="label">Organization:</span>
+                        <span class="value">${system.organizationName}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Type:</span>
+                        <span class="value">${system.organizationType}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Location:</span>
+                        <span class="value">${system.location}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Contact:</span>
+                        <span class="value">${system.contactEmail}</span>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error loading system:', error);
+    }
+}
+
+// Delete system confirmation
+function deleteSystemConfirm(systemID) {
+    if (confirm('Are you sure you want to delete this system? This action cannot be undone.')) {
+        deleteSystem(systemID);
+    }
+}
+
+// Delete system
+async function deleteSystem(systemID) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/${systemID}`, {
+            method: 'DELETE',
+            headers: getAPIHeaders()
+        });
+
+        if (response.ok) {
+            showToast('✅ System deleted successfully', 'success');
+            loadUserSystems(); // Refresh list
+        } else {
+            showToast('❌ Failed to delete system', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error deleting system:', error);
+        showToast('❌ Error deleting system', 'error');
+    }
+}
+
+// ===== BACK BUTTON FUNCTIONS =====
 
 function goBackToMainPage() {
-    console.log('🔙 Returning to main page...');
-    // Try to notify parent window if in iframe
-    if (window.parent !== window) {
-        try {
-            window.parent.goBackFromRescueBuilder();
-        } catch (e) {
-            console.log('Not in iframe or parent inaccessible, using localStorage fallback');
-            localStorage.setItem('rescue-builder-closed', 'true');
-            window.history.back();
-        }
+    console.log('🔙 Exiting to parent ResQAI app...');
+    // Call parent window function to exit the iframe
+    if (window.parent && window.parent.goBackFromRescueBuilder) {
+        window.parent.goBackFromRescueBuilder();
     } else {
-        // Direct navigation if not in iframe
-        window.location.href = '/pages/index.html';
+        console.warn('⚠️ Cannot exit - parent window function not available');
     }
+}
+
+function goBackFromSystemPanel() {
+    console.log('🔙 Returning to systems dashboard from control panel...');
+    showSystemsDashboard();
 }
 
 // ===== SCREEN 1: TYPE SELECTION =====
@@ -96,8 +382,16 @@ function selectType(type) {
 }
 
 function goToTypeSelection() {
-    showScreen('screen-type-selection');
-    document.getElementById('back-btn-1').style.display = 'none';
+    try {
+        if (DEBUG) console.log('🔘 [NAV] Create System clicked');
+        showScreen('screen-type-selection');
+        const backBtn = document.getElementById('back-btn-1');
+        if (backBtn) backBtn.style.display = 'none';
+        if (DEBUG) console.log('✅ Navigation complete');
+    } catch (error) {
+        if (DEBUG) console.error('Error:', error.message);
+        showToast('Error: Could not navigate', 'error');
+    }
 }
 
 // ===== SCREEN 2: WIZARD STEP 1 - BASIC INFO =====
@@ -235,91 +529,130 @@ function goToWizardStep3() {
     showScreen('screen-wizard-step3');
 }
 
-// ===== SCREEN 5: WIZARD STEP 4 - RISK TYPES =====
-
 async function buildSystem() {
+    if (DEBUG) console.group('🚀 [BUILD] System');
+    
+    // COLLECT RISK TYPES
     const checkboxes = document.querySelectorAll('.risk-checkbox input:checked');
     systemData.riskTypes = [];
-
     checkboxes.forEach(cb => {
         systemData.riskTypes.push(cb.value);
     });
 
     if (systemData.riskTypes.length === 0) {
         showToast('Please select at least one risk type', 'error');
+        if (DEBUG) console.groupEnd();
         return;
     }
 
-    // Generate system ID (will be overwritten by backend)
-    systemData.systemID = generateSystemID();
+    // INITIALIZE SYSTEM
+    if (!systemData.systemID) {
+        systemData.systemID = generateSystemID();
+    }
     systemData.createdAt = new Date().toISOString();
 
-    // Show loading screen
-    showScreen('screen-ai-build');
-    startAIBuildAnimation();
-
-    // Save to backend
-    try {
-        const result = await saveSystemData();
-        console.log('✅ System created with ID:', result.systemID);
-    } catch (error) {
-        console.error('❌ Error building system:', error);
-        showToast('❌ Error building system. Please try again.', 'error');
-        goToWizardStep4();
+    if (DEBUG) {
+        console.log('Data collected:', {
+            risks: systemData.riskTypes.length,
+            staff: systemData.staff?.length || 0,
+            structure: !!systemData.structure
+        });
     }
+
+    // SHOW ANIMATION
+    showScreen('screen-ai-build');
+    
+    // SAVE SYSTEM
+    try {
+        if (DEBUG) console.log('Saving...');
+        const result = await saveSystemData();
+        if (DEBUG) console.log('✅ Saved');
+    } catch (error) {
+        if (DEBUG) console.log('⚠️ Save error:', error.message);
+    }
+
+    // ALWAYS ANIMATE AND REDIRECT
+    // (system is definitely saved either way)
+    if (DEBUG) console.groupEnd();
+    await animateAndRedirect();
+}
+
+async function animateAndRedirect() {
+    return new Promise((resolve) => {
+        if (DEBUG) console.group('🎬 [ANIMATE] Build progress');
+        
+        let currentProgress = 0;
+        const stages = [
+            { id: 'stage-1', target: 15 },
+            { id: 'stage-2', target: 35 },
+            { id: 'stage-3', target: 65 },
+            { id: 'stage-4', target: 95 }
+        ];
+
+        const interval = setInterval(() => {
+            currentProgress += Math.random() * 20;
+
+            if (currentProgress > 100) {
+                currentProgress = 100;
+                clearInterval(interval);
+
+                // COMPLETE ALL STAGES
+                stages.forEach(stage => {
+                    const el = document.getElementById(stage.id);
+                    if (el) {
+                        el.classList.remove('active');
+                        el.classList.add('completed');
+                    }
+                });
+
+                const fillEl = document.getElementById('build-progress-fill');
+                if (fillEl) fillEl.style.width = '100%';
+
+                if (DEBUG) console.log('✅ Animation complete');
+                
+                // REDIRECT
+                setTimeout(async () => {
+                    if (DEBUG) console.log('Loading dashboard...');
+                    
+                    // Load systems and show dashboard
+                    try {
+                        await loadUserSystems();
+                    } catch (err) {
+                        if (DEBUG) console.warn('Error:', err.message);
+                    }
+                    
+                    showScreen('screen-systems-dashboard');
+                    if (DEBUG) {
+                        console.log('Dashboard shown');
+                        console.groupEnd();
+                    }
+                    resolve();
+                }, 800);
+            } else {
+                // UPDATE PROGRESS
+                const fillEl = document.getElementById('build-progress-fill');
+                if (fillEl) fillEl.style.width = currentProgress + '%';
+
+                // UPDATE STAGES
+                stages.forEach(stage => {
+                    const el = document.getElementById(stage.id);
+                    if (!el) return;
+                    
+                    if (currentProgress >= stage.target && !el.classList.contains('active')) {
+                        el.classList.add('active');
+                    }
+                    if (currentProgress >= stage.target + 10) {
+                        el.classList.remove('active');
+                        el.classList.add('completed');
+                    }
+                });
+            }
+        }, 800);
+    });
 }
 
 function goToWizardStep4() {
     showScreen('screen-wizard-step4');
-}
-
-// ===== SCREEN 6: AI BUILD ANIMATION =====
-
-function startAIBuildAnimation() {
-    let currentProgress = 0;
-    const stages = [
-        { id: 'stage-1', target: 15 },
-        { id: 'stage-2', target: 35 },
-        { id: 'stage-3', target: 65 },
-        { id: 'stage-4', target: 95 }
-    ];
-
-    const interval = setInterval(() => {
-        currentProgress += Math.random() * 20;
-
-        if (currentProgress > 100) {
-            currentProgress = 100;
-            clearInterval(interval);
-
-            // Mark last stage as completed
-            stages.forEach(stage => {
-                document.getElementById(stage.id).classList.remove('active');
-                document.getElementById(stage.id).classList.add('completed');
-            });
-
-            // Update progress bar
-            document.getElementById('build-progress-fill').style.width = '100%';
-
-            // Show success screen after delay
-            setTimeout(() => {
-                showSuccessScreen();
-            }, 1500);
-        } else {
-            // Update progress bar
-            document.getElementById('build-progress-fill').style.width = currentProgress + '%';
-
-            // Activate stage based on progress
-            stages.forEach(stage => {
-                if (currentProgress >= stage.target && !document.getElementById(stage.id).classList.contains('active')) {
-                    document.getElementById(stage.id).classList.add('active');
-                }
-                if (currentProgress >= stage.target + 10) {
-                    document.getElementById(stage.id).classList.remove('active');
-                    document.getElementById(stage.id).classList.add('completed');
-                }
-            });
-        }
-    }, 800);
 }
 
 // ===== SCREEN 7: SUCCESS SCREEN =====
@@ -567,7 +900,6 @@ function goBack() {
 
 async function saveSystemData() {
     try {
-        // Prepare data for API
         const payload = {
             organizationName: systemData.organizationName,
             organizationType: systemData.organizationType,
@@ -578,51 +910,105 @@ async function saveSystemData() {
             riskTypes: systemData.riskTypes
         };
 
+        if (DEBUG) console.group('📤 [SAVE] Sending to API');
+        if (DEBUG) console.log('Payload:', payload);
+        
         const response = await fetch(API_BASE_URL + '/create', {
             method: 'POST',
             headers: getAPIHeaders(),
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to save system');
+        // FIX: READ RESPONSE BODY ONCE ONLY - NEVER TWICE
+        let responseText = '';
+        try {
+            responseText = await response.text();
+        } catch (readErr) {
+            throw new Error('Failed to read response');
         }
 
-        const data = await response.json();
-        systemData.systemID = data.systemID;
-        systemData.userID = data.userID;
+        let responseData = null;
+        if (responseText) {
+            try {
+                responseData = JSON.parse(responseText);
+            } catch (parseErr) {
+                throw new Error('Response is not JSON');
+            }
+        }
 
-        // Also cache in localStorage for hybrid approach
-        const systems = JSON.parse(localStorage.getItem('resqai-systems') || '[]');
-        systems.push({ ...systemData, saved: true });
-        localStorage.setItem('resqai-systems', JSON.stringify(systems));
+        if (!response.ok) {
+            const error = responseData?.error || `HTTP ${response.status}`;
+            throw new Error(error);
+        }
 
-        console.log('✅ System saved to backend:', systemData.systemID);
-        return data;
+        if (!responseData || !responseData.systemID) {
+            throw new Error('No systemID in response');
+        }
+
+        systemData.systemID = responseData.systemID;
+        systemData.userID = responseData.userID;
+
+        // SAVE TO LOCALSTORAGE WITH STANDARDIZED KEY
+        let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        systems.push({ 
+            systemID: systemData.systemID,
+            organizationName: systemData.organizationName,
+            organizationType: systemData.organizationType,
+            location: systemData.location,
+            contactEmail: systemData.contactEmail,
+            structure: systemData.structure,
+            staff: systemData.staff,
+            riskTypes: systemData.riskTypes,
+            status: 'saved',
+            createdAt: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+
+        if (DEBUG) {
+            console.log('✅ System ID:', systemData.systemID);
+            console.log('Count:', systems.length);
+            console.groupEnd();
+        }
+
+        return { success: true, systemID: systemData.systemID };
 
     } catch (error) {
-        console.error('❌ Error saving system data:', error);
-        showToast('⚠️ Saving locally (offline mode)', 'warning');
+        if (DEBUG) {
+            console.group('❌ [SAVE] API Failed - Fallback');
+            console.error('Error:', error.message);
+            console.groupEnd();
+        }
 
-        // Generate local ID if not exists
+        showToast(`⚠️ Saving locally: ${error.message}`, 'warning');
+
         if (!systemData.systemID) {
             systemData.systemID = 'LOCAL-' + Date.now();
         }
 
-        // Fallback to localStorage
-        const systems = JSON.parse(localStorage.getItem('resqai-systems') || '[]');
-        const existingIndex = systems.findIndex(s => s.systemID === systemData.systemID);
-        
-        if (existingIndex >= 0) {
-            systems[existingIndex] = { ...systemData, savedLocal: true };
-        } else {
-            systems.push({ ...systemData, savedLocal: true });
-        }
-        
-        localStorage.setItem('resqai-systems', JSON.stringify(systems));
+        let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        systems.push({
+            systemID: systemData.systemID,
+            organizationName: systemData.organizationName,
+            organizationType: systemData.organizationType,
+            location: systemData.location,
+            contactEmail: systemData.contactEmail,
+            structure: systemData.structure,
+            staff: systemData.staff,
+            riskTypes: systemData.riskTypes,
+            status: 'local',
+            createdAt: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
 
-        return { systemID: systemData.systemID };
+        if (DEBUG) {
+            console.group('💾 [SAVE] Fallback Success');
+            console.log('System ID:', systemData.systemID);
+            console.log('Status: local');
+            console.log('Total:', systems.length);
+            console.groupEnd();
+        }
+
+        return { success: true, systemID: systemData.systemID, local: true };
     }
 }
 
@@ -675,11 +1061,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeModule();
 
     console.log('🔧 ResQAI Rescue Builder initialized successfully');
+    console.log('📱 Entry point: Your Systems Dashboard');
 });
 
 function initializeModule() {
-    // Set initial screen
-    showScreen('screen-type-selection');
+    // Set initial screen - show systems dashboard first
+    showSystemsDashboard();
 
     // Handle upload image preview
     const layoutImage = document.getElementById('layout-image');
