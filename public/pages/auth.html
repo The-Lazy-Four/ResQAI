@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI - Login / Register</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 50px 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .auth-logo {
+            font-size: 32px;
+            font-weight: 900;
+            color: #ff4444;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ddd;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ff4444;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: #777;
+        }
+
+        .btn-submit {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit.loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-auth-text {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .toggle-auth-btn {
+            background: none;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-auth-btn:hover {
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .error {
+            padding: 12px 16px;
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #ff8888;
+            font-size: 13px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            padding: 12px 16px;
+            background: rgba(68, 255, 134, 0.1);
+            border: 1px solid rgba(68, 255, 134, 0.3);
+            border-radius: 8px;
+            color: #4eff86;
+            font-size: 13px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .auth-container {
+                padding: 30px 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo">ResQAI</div>
+            <div class="auth-title" id="authTitle">Welcome Back</div>
+            <div class="auth-subtitle" id="authSubtitle">Sign in to your account</div>
+        </div>
+
+        <div id="errorMsg" class="error"></div>
+        <div id="successMsg" class="success"></div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Sign In</button>
+
+            <div class="toggle-auth">
+                <div class="toggle-auth-text">Don't have an account?</div>
+                <button type="button" class="toggle-auth-btn" onclick="toggleAuthMode()">Create One</button>
+            </div>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="registerForm" class="auth-form hidden">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="regFirstName">First Name</label>
+                    <input type="text" id="regFirstName" placeholder="John" required>
+                </div>
+                <div class="form-group">
+                    <label for="regLastName">Last Name</label>
+                    <input type="text" id="regLastName" placeholder="Doe" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="regEmail">Email Address</label>
+                <input type="email" id="regEmail" placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="regOrganization">Organization</label>
+                <input type="text" id="regOrganization" placeholder="Your organization name">
+            </div>
+
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" placeholder="••••••••" minlength="6" required>
+            </div>
+
+            <div class="form-group">
+                <label for="regPasswordConfirm">Confirm Password</label>
+                <input type="password" id="regPasswordConfirm" placeholder="••••••••" minlength="6" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Create Account</button>
+
+            <div class="toggle-auth">
+                <div class="toggle-auth-text">Already have an account?</div>
+                <button type="button" class="toggle-auth-btn" onclick="toggleAuthMode()">Sign In</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const API_BASE = '/api/auth';
+        let isLoginMode = true;
+
+        // Toggle between login and register
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('loginForm').classList.toggle('hidden');
+            document.getElementById('registerForm').classList.toggle('hidden');
+            document.getElementById('authTitle').textContent = isLoginMode ? 'Welcome Back' : 'Create Account';
+            document.getElementById('authSubtitle').textContent = isLoginMode ? 'Sign in to your account' : 'Join ResQAI today';
+            clearMessages();
+        }
+
+        // Clear error and success messages
+        function clearMessages() {
+            document.getElementById('errorMsg').classList.remove('show');
+            document.getElementById('successMsg').classList.remove('show');
+        }
+
+        // Show error
+        function showError(message) {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        // Show success
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMsg');
+            successEl.textContent = message;
+            successEl.classList.add('show');
+        }
+
+        // Login handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            const btn = e.target.querySelector('.btn-submit');
+            btn.classList.add('loading');
+            btn.textContent = 'Signing in...';
+
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                // Save token
+                localStorage.setItem('auth-token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                showSuccess('Login successful! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                showError(error.message);
+                btn.classList.remove('loading');
+                btn.textContent = 'Sign In';
+            }
+        });
+
+        // Register handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+
+            const firstName = document.getElementById('regFirstName').value.trim();
+            const lastName = document.getElementById('regLastName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const organization = document.getElementById('regOrganization').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            const btn = e.target.querySelector('.btn-submit');
+            btn.classList.add('loading');
+            btn.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, firstName, lastName, organization })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                // Save token
+                localStorage.setItem('auth-token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                showSuccess('Account created! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                showError(error.message);
+                btn.classList.remove('loading');
+                btn.textContent = 'Create Account';
+            }
+        });
+
+        // Check if user already logged in
+        if (localStorage.getItem('auth-token')) {
+            window.location.href = '/dashboard.html';
+        }
+    </script>
+</body>
+</html>
