@@ -28,9 +28,7 @@
         "express": "^4.22.1",
         "groq-sdk": "^1.1.2",
         "jsonwebtoken": "^9.0.2",
-        "mongoose": "^9.4.1",
         "mysql2": "^3.6.5",
-        "socket.io": "^4.8.3",
         "sqlite3": "^5.1.6",
         "uuid": "^9.0.0"
     },

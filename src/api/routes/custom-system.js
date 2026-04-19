@@ -4,10 +4,10 @@
 
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { query, execute, isMySQLAvailable } from '../../db/mysql.js';
-import { getDatabase } from '../../db/db.js';
-import { generateAIResponse } from '../../utils/aiRouter.js';
-import { verifyToken, optionalAuth } from '../../middleware/auth.js';
+import { query, execute, isMySQLAvailable } from '../db/mysql.js';
+import { getDatabase } from '../db/db.js';
+import { callAI } from '../utils/aiRouter.js';
+import { verifyToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const DEBUG = true;
@@ -234,7 +234,7 @@ Generate:
 
 Response should be practical, concise, and action-oriented.`;
 
-        const guidance = await generateAIResponse(prompt);
+        const guidance = await callAI(prompt);
 
         res.json({
             success: true,
@@ -352,7 +352,7 @@ router.post('/log-emergency', optionalAuth, async (req, res) => {
 
         // Save emergency event
         const eventID = 'EV-' + Date.now();
-
+        
         try {
             if (isMySQLAvailable()) {
                 await execute(
@@ -409,7 +409,7 @@ router.post('/broadcast-alert', optionalAuth, async (req, res) => {
 
         // Save alert event
         const alertID = 'ALERT-' + Date.now();
-
+        
         try {
             if (isMySQLAvailable()) {
                 await execute(

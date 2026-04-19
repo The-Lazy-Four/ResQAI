@@ -6,8 +6,8 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { query, execute, isMySQLAvailable } from '../../db/mysql.js';
-import { getDatabase } from '../../db/db.js';
+import { query, execute, isMySQLAvailable } from '../db/mysql.js';
+import { getDatabase } from '../db/db.js';
 
 const router = express.Router();
 
