@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ResQAI - Custom Rescue System Builder</title>
+    <link rel="stylesheet" href="/modules/rescue-builder/css/style.css" />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23dc2626'/><text y='.9em' font-size='80' x='5'>R</text></svg>" />
+</head>
+
+<body>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-wrap" id="toast-wrap"></div>
+
+    <!-- =====================================================
+     SCREEN 1: LANDING / TYPE SELECTION
+     ===================================================== -->
+    <div class="rescue-screen active" id="screen-type-selection">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit Builder</button>
+            <div class="selection-inner">
+                <div class="selection-brand">
+                    <strong>Build Your Rescue System</strong>
+                    <div class="ai-active-badge">
+                        <span class="pulse-dot"></span>
+                        AI POWERED
+                    </div>
+                </div>
+
+                <div class="selection-header">
+                    <h1>Select Your Organization Type</h1>
+                    <p>Choose the environment where you need crisis management</p>
+                </div>
+
+                <div class="type-grid">
+                    <div class="type-card" onclick="selectType('school')">
+                        <div class="type-icon">🏫</div>
+                        <div class="type-name">School</div>
+                        <div class="type-desc">Primary, secondary, or higher education</div>
+                    </div>
+
+                    <div class="type-card" onclick="selectType('hospital')">
+                        <div class="type-icon">🏥</div>
+                        <div class="type-name">Hospital</div>
+                        <div class="type-desc">Medical facility with multi-department</div>
+                    </div>
+
+                    <div class="type-card" onclick="selectType('hostel')">
+                        <div class="type-icon">🏢</div>
+                        <div class="type-name">Hostel</div>
+                        <div class="type-desc">Student or employee accommodation</div>
+                    </div>
+
+                    <div class="type-card" onclick="selectType('college')">
+                        <div class="type-icon">🎓</div>
+                        <div class="type-name">College</div>
+                        <div class="type-desc">University or higher education campus</div>
+                    </div>
+
+                    <div class="type-card" onclick="selectType('restaurant')">
+                        <div class="type-icon">🍽️</div>
+                        <div class="type-name">Restaurant</div>
+                        <div class="type-desc">Dining or hospitality venue</div>
+                    </div>
+
+                    <div class="type-card" onclick="selectType('other')">
+                        <div class="type-icon">⚙️</div>
+                        <div class="type-name">Custom</div>
+                        <div class="type-desc">Define your own organization type</div>
+                    </div>
+                </div>
+
+                <div class="selection-footer">
+                    <p>✨ Your custom system will be powered by AI and built in minutes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 2: WIZARD - STEP 1: BASIC INFO
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-wizard-step1">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goToTypeSelection()">← Back</button>
+        </div>
+
+        <div class="rescue-content">
+            <div class="wizard-container">
+                <div class="wizard-progress">
+                    <div class="progress-bar" style="width: 25%"></div>
+                </div>
+                <div class="wizard-steps">
+                    <span class="step-active">Step 1</span> / 4
+                </div>
+
+                <h2 class="wizard-title">Basic Information</h2>
+                <p class="wizard-subtitle">Tell us about your organization</p>
+
+                <form id="form-basic-info" class="wizard-form">
+                    <div class="form-group">
+                        <label for="org-name">Organization Name *</label>
+                        <input type="text" id="org-name" placeholder="e.g., Lincoln High School" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="org-type">Organization Type *</label>
+                        <select id="org-type" required>
+                            <option value="">Select type...</option>
+                            <option value="school">School</option>
+                            <option value="hospital">Hospital</option>
+                            <option value="hostel">Hostel</option>
+                            <option value="college">College</option>
+                            <option value="restaurant">Restaurant</option>
+                            <option value="other">Custom</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="org-location">Location / Address *</label>
+                        <input type="text" id="org-location" placeholder="e.g., 123 Main Street, City, State"
+                            required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="org-contact">Contact Email *</label>
+                        <input type="email" id="org-contact" placeholder="admin@organization.com" required />
+                    </div>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn-secondary" onclick="goToTypeSelection()">Back</button>
+                        <button type="button" class="btn-primary" onclick="nextStep1()">Next: Structure</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 3: WIZARD - STEP 2: STRUCTURE
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-wizard-step2">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goToWizardStep1()">← Back</button>
+        </div>
+
+        <div class="rescue-content">
+            <div class="wizard-container">
+                <div class="wizard-progress">
+                    <div class="progress-bar" style="width: 50%"></div>
+                </div>
+                <div class="wizard-steps">
+                    <span class="step-active">Step 2</span> / 4
+                </div>
+
+                <h2 class="wizard-title">Structure Setup</h2>
+                <p class="wizard-subtitle">Define your organization layout</p>
+
+                <div class="structure-tabs">
+                    <button class="tab-btn active" onclick="toggleStructureMode('manual')">Manual Input</button>
+                    <button class="tab-btn" onclick="toggleStructureMode('image')">Upload Layout</button>
+                </div>
+
+                <!-- MANUAL INPUT TAB -->
+                <div id="tab-manual" class="tab-content active">
+                    <form id="form-structure-manual" class="wizard-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="num-floors">Number of Floors *</label>
+                                <input type="number" id="num-floors" min="1" max="50" placeholder="e.g., 5" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="num-rooms">Number of Rooms *</label>
+                                <input type="number" id="num-rooms" min="1" max="500" placeholder="e.g., 50" required />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="num-buildings">Number of Buildings</label>
+                            <input type="number" id="num-buildings" min="1" max="20" placeholder="e.g., 1" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="structure-notes">Additional Structure Notes</label>
+                            <textarea id="structure-notes"
+                                placeholder="e.g., Main building connected to annex via bridge..." rows="4"></textarea>
+                        </div>
+
+                        <div class="wizard-buttons">
+                            <button type="button" class="btn-secondary" onclick="goToWizardStep1()">Back</button>
+                            <button type="button" class="btn-primary" onclick="nextStep2()">Next: Staff Setup</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- IMAGE UPLOAD TAB -->
+                <div id="tab-image" class="tab-content">
+                    <form id="form-structure-image" class="wizard-form">
+                        <div class="upload-box">
+                            <div class="upload-icon">📸</div>
+                            <p>Upload your organization layout image</p>
+                            <p class="upload-hint">AI will analyze the image to understand your structure</p>
+                            <input type="file" id="layout-image" accept="image/*" />
+                            <div class="upload-preview" id="upload-preview"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image-notes">Describe your layout (optional)</label>
+                            <textarea id="image-notes" placeholder="e.g., 3 floors, East and West wings..."
+                                rows="3"></textarea>
+                        </div>
+
+                        <div class="wizard-buttons">
+                            <button type="button" class="btn-secondary" onclick="goToWizardStep1()">Back</button>
+                            <button type="button" class="btn-primary" onclick="nextStep2()">Next: Staff Setup</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 4: WIZARD - STEP 3: STAFF SETUP
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-wizard-step3">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goToWizardStep2()">← Back</button>
+        </div>
+
+        <div class="rescue-content">
+            <div class="wizard-container">
+                <div class="wizard-progress">
+                    <div class="progress-bar" style="width: 75%"></div>
+                </div>
+                <div class="wizard-steps">
+                    <span class="step-active">Step 3</span> / 4
+                </div>
+
+                <h2 class="wizard-title">Staff Management</h2>
+                <p class="wizard-subtitle">Add key staff members and assign roles</p>
+
+                <div id="staff-list" class="staff-list">
+                    <div class="staff-item">
+                        <div class="staff-form">
+                            <input type="text" class="staff-name" placeholder="Staff Name" />
+                            <select class="staff-role">
+                                <option value="">Select Role</option>
+                                <option value="commander">Emergency Commander</option>
+                                <option value="warden">Floor Warden</option>
+                                <option value="medical">Medical Lead</option>
+                                <option value="coordinator">Coordinator</option>
+                                <option value="responder">First Responder</option>
+                            </select>
+                            <input type="tel" class="staff-phone" placeholder="Phone Number" />
+                            <button type="button" class="btn-remove" onclick="removeStaffItem(this)">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-add-staff" onclick="addStaffItem()">+ Add Staff Member</button>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-secondary" onclick="goToWizardStep2()">Back</button>
+                    <button type="button" class="btn-primary" onclick="nextStep3()">Next: Risk Assessment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 5: WIZARD - STEP 4: RISK TYPES
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-wizard-step4">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goToWizardStep3()">← Back</button>
+        </div>
+
+        <div class="rescue-content">
+            <div class="wizard-container">
+                <div class="wizard-progress">
+                    <div class="progress-bar" style="width: 100%"></div>
+                </div>
+                <div class="wizard-steps">
+                    <span class="step-active">Step 4</span> / 4
+                </div>
+
+                <h2 class="wizard-title">Risk Assessment</h2>
+                <p class="wizard-subtitle">Select potential risks in your environment</p>
+
+                <div class="risk-grid">
+                    <div class="risk-checkbox">
+                        <input type="checkbox" id="risk-fire" value="fire" checked />
+                        <label for="risk-fire">
+                            <span class="risk-icon">🔥</span>
+                            <span class="risk-name">Fire</span>
+                            <span class="risk-desc">Evacuation procedures</span>
+                        </label>
+                    </div>
+
+                    <div class="risk-checkbox">
+                        <input type="checkbox" id="risk-flood" value="flood" />
+                        <label for="risk-flood">
+                            <span class="risk-icon">💧</span>
+                            <span class="risk-name">Flood</span>
+                            <span class="risk-desc">Water damage management</span>
+                        </label>
+                    </div>
+
+                    <div class="risk-checkbox">
+                        <input type="checkbox" id="risk-intruder" value="intruder" />
+                        <label for="risk-intruder">
+                            <span class="risk-icon">🚨</span>
+                            <span class="risk-name">Intruder</span>
+                            <span class="risk-desc">Active threat response</span>
+                        </label>
+                    </div>
+
+                    <div class="risk-checkbox">
+                        <input type="checkbox" id="risk-medical" value="medical" checked />
+                        <label for="risk-medical">
+                            <span class="risk-icon">⚕️</span>
+                            <span class="risk-name">Medical Emergency</span>
+                            <span class="risk-desc">First aid & evacuation</span>
+                        </label>
+                    </div>
+
+                    <div class="risk-checkbox">
+                        <input type="checkbox" id="risk-chemical" value="chemical" />
+                        <label for="risk-chemical">
+                            <span class="risk-icon">☢️</span>
+                            <span class="risk-name">Chemical Hazard</span>
+                            <span class="risk-desc">Contamination protocol</span>
+                        </label>
+                    </div>
+
+                    <div class="risk-checkbox">
+                        <input type="checkbox" id="risk-earthquake" value="earthquake" />
+                        <label for="risk-earthquake">
+                            <span class="risk-icon">📍</span>
+                            <span class="risk-name">Earthquake</span>
+                            <span class="risk-desc">Structural safety measures</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="wizard-buttons">
+                    <button type="button" class="btn-secondary" onclick="goToWizardStep3()">Back</button>
+                    <button type="button" class="btn-primary" onclick="buildSystem()">Build System</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 6: AI BUILD SCREEN (LOADING)
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-ai-build">
+        <div class="build-container">
+            <div class="build-header">
+                <button class="btn-secondary" onclick="goBackToMainPage()"
+                    style="position: absolute; top: 20px; right: 20px;">Exit Builder</button>
+                <div class="build-logo">ResQAI</div>
+                <p>Generating your custom rescue system...</p>
+            </div>
+
+            <div class="build-animation">
+                <div class="build-icon">🤖</div>
+                <h2>AI System Builder</h2>
+                <p class="build-status">Analyzing your organization...</p>
+            </div>
+
+            <div class="progress-stages">
+                <div class="stage" id="stage-1">
+                    <span class="stage-progress">10%</span>
+                    <span class="stage-text">Analyzing structure</span>
+                </div>
+                <div class="stage" id="stage-2">
+                    <span class="stage-progress">30%</span>
+                    <span class="stage-text">Mapping evacuation routes</span>
+                </div>
+                <div class="stage" id="stage-3">
+                    <span class="stage-progress">60%</span>
+                    <span class="stage-text">Assigning staff roles</span>
+                </div>
+                <div class="stage" id="stage-4">
+                    <span class="stage-progress">90%</span>
+                    <span class="stage-text">Activating AI intelligence</span>
+                </div>
+            </div>
+
+            <div class="build-progress-bar">
+                <div class="build-progress-fill" id="build-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 7: SUCCESS / DASHBOARD ACCESS
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-success">
+        <div style="text-align: right; padding: 20px;">
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit Builder</button>
+        </div>
+        <div class="success-container">
+            <div class="success-icon">✅</div>
+            <h1 class="success-title">System Created Successfully!</h1>
+            <p class="success-subtitle">Your custom rescue system is ready to use</p>
+
+            <div class="system-info" id="system-info">
+                <div class="info-item">
+                    <span class="info-label">Organization:</span>
+                    <span class="info-value" id="success-org-name">—</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value" id="success-org-type">—</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">AI Status:</span>
+                    <span class="info-value">🟢 Active</span>
+                </div>
+            </div>
+
+            <div class="dashboard-buttons">
+                <button class="btn-primary" onclick="accessAdminDashboard()">Access Admin Panel</button>
+                <button class="btn-secondary" onclick="accessUserDashboard()">User Safety Panel</button>
+            </div>
+
+            <div class="success-footer">
+                <p>💾 Your data is securely stored. You can access your system anytime.</p>
+                <button class="btn-text" onclick="goToTypeSelection()">Create Another System</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 8: ADMIN DASHBOARD
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-admin-dashboard">
+        <div class="admin-header">
+            <div class="admin-title">
+                <span class="admin-logo">ResQAI</span>
+                <span class="admin-mode">ADMIN PANEL</span>
+            </div>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit Builder</button>
+        </div>
+
+        <div class="admin-content">
+            <div class="admin-grid">
+                <!-- ORGANIZATION INFO -->
+                <div class="admin-card">
+                    <h3>Organization Overview</h3>
+                    <div class="org-stats">
+                        <div class="stat">
+                            <div class="stat-label">Organization</div>
+                            <div class="stat-value" id="admin-org-name">—</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Type</div>
+                            <div class="stat-value" id="admin-org-type">—</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Location</div>
+                            <div class="stat-value" id="admin-location">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMERGENCY TRIGGER -->
+                <div class="admin-card alert-card">
+                    <h3>Trigger Emergency</h3>
+                    <div class="emergency-buttons">
+                        <button class="btn-emergency fire-btn" onclick="triggerEmergency('fire')">
+                            <span class="em-icon">🔥</span>
+                            <span class="em-text">Fire</span>
+                        </button>
+                        <button class="btn-emergency medical-btn" onclick="triggerEmergency('medical')">
+                            <span class="em-icon">⚕️</span>
+                            <span class="em-text">Medical</span>
+                        </button>
+                        <button class="btn-emergency intruder-btn" onclick="triggerEmergency('intruder')">
+                            <span class="em-icon">🚨</span>
+                            <span class="em-text">Intruder</span>
+                        </button>
+                        <button class="btn-emergency flood-btn" onclick="triggerEmergency('flood')">
+                            <span class="em-icon">💧</span>
+                            <span class="em-text">Flood</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAFF COORDINATION -->
+                <div class="admin-card">
+                    <h3>Staff Coordination</h3>
+                    <div class="staff-list-admin" id="admin-staff-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- ALERT BROADCAST -->
+                <div class="admin-card">
+                    <h3>Alert Broadcast</h3>
+                    <div class="alert-broadcast">
+                        <textarea id="alert-message" placeholder="Type alert message..." rows="4"></textarea>
+                        <button class="btn-primary" onclick="broadcastAlert()">Broadcast Alert</button>
+                    </div>
+                </div>
+
+                <!-- EVACUATION ROUTES -->
+                <div class="admin-card">
+                    <h3>Evacuation Routes</h3>
+                    <div class="routes-list" id="evacuation-routes">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- AI GUIDANCE -->
+                <div class="admin-card ai-card">
+                    <h3>AI Guidance Engine</h3>
+                    <div class="ai-status">
+                        <div class="ai-indicator">🟢 Active</div>
+                        <p>AI is monitoring and ready to provide emergency guidance</p>
+                        <button class="btn-secondary" onclick="requestAIGuidance()">Get AI Instructions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 9: USER SAFETY PANEL
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-user-panel">
+        <div class="user-header">
+            <div class="user-title">
+                <span class="user-logo">ResQAI</span>
+                <span class="user-mode">SAFETY PANEL</span>
+            </div>
+            <button class="btn-secondary" onclick="logoutSystem()">← Exit</button>
+        </div>
+
+        <div class="user-content">
+            <div class="user-grid">
+                <!-- ACTIVE ALERTS -->
+                <div class="user-card alert-section">
+                    <h3>Active Alerts</h3>
+                    <div class="alerts-container" id="user-alerts">
+                        <p class="no-alerts">No active alerts. You're safe.</p>
+                    </div>
+                </div>
+
+                <!-- SOS BUTTON -->
+                <div class="user-card sos-section">
+                    <h3>Need Help?</h3>
+                    <button class="btn-sos" onclick="activateSOS()">🆘 SOS</button>
+                    <p class="sos-desc">Tap to send emergency signal. Your location will be shared with responders.</p>
+                </div>
+
+                <!-- AI GUIDANCE -->
+                <div class="user-card guidance-section">
+                    <h3>AI Safety Guide</h3>
+                    <div class="guidance-container" id="user-guidance">
+                        <p>Ask AI for safety instructions or evacuation steps</p>
+                        <input type="text" id="guidance-input" placeholder="e.g., How do I evacuate?" />
+                        <button class="btn-secondary" onclick="askAI()">Get Guidance</button>
+                    </div>
+                </div>
+
+                <!-- EVACUATION PLAN -->
+                <div class="user-card evacuation-section">
+                    <h3>My Evacuation Plan</h3>
+                    <div class="plan-container" id="user-evacuation-plan">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- EMERGENCY CONTACTS -->
+                <div class="user-card contacts-section">
+                    <h3>Emergency Contacts</h3>
+                    <div class="contacts-list" id="user-contacts">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- SAFETY TIPS -->
+                <div class="user-card tips-section">
+                    <h3>Safety Tips</h3>
+                    <div class="tips-list" id="safety-tips">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/modules/rescue-builder/js/templates.js"></script>
+    <script src="/modules/rescue-builder/js/builder.js"></script>
+</body>
+
+</html>
