@@ -62,23 +62,19 @@ function showToast(message, type = 'info') {
 
 // ===== SYSTEMS MANAGEMENT =====
 
-// Load user's systems from backend or localStorage
+// Load user's systems from backend
 async function loadUserSystems() {
     if (DEBUG) console.group('🔍 [LOAD] Systems');
-    console.log('[LOAD] Starting system load at', new Date().toISOString());
-
-    let systems = [];  // Initialize here so it's available in all paths
 
     try {
         const token = getAuthToken();
-        console.log('[LOAD] Auth token present:', !!token);
+        if (DEBUG) console.log('Token:', !!token);
 
         // TRY API WITH TIMEOUT
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            console.log('[LOAD] Attempting API fetch from', API_BASE_URL + '/user/list');
             const response = await fetch(API_BASE_URL + '/user/list', {
                 method: 'GET',
                 headers: {
@@ -93,10 +89,11 @@ async function loadUserSystems() {
             if (response.ok) {
                 const data = await response.json();
                 const apiSystems = data.systems || [];
-                console.log('[LOAD] ✅ API Success: returned', apiSystems.length, 'systems');
+
+                if (DEBUG) console.log('✅ API returned:', apiSystems.length, 'systems');
 
                 // Map snake_case to camelCase
-                systems = apiSystems.map(s => ({
+                const mapped = apiSystems.map(s => ({
                     systemID: s.id || s.systemID,
                     organizationName: s.organization_name || s.organizationName,
                     organizationType: s.organization_type || s.organizationType,
@@ -106,58 +103,42 @@ async function loadUserSystems() {
                     createdAt: s.created_at || s.createdAt
                 }));
 
-                console.log('[LOAD] After mapping:', systems.length, 'systems');
-                renderSystemsDashboard(systems);
+                if (DEBUG) console.log('After mapping:', mapped.length, 'systems');
                 if (DEBUG) console.groupEnd();
+
+                renderSystemsDashboard(mapped);
                 return;
             } else {
-                console.log('[LOAD] API returned non-OK status:', response.status);
                 throw new Error(`API ${response.status}`);
             }
         } catch (apiErr) {
-            console.log('[LOAD] ⚠️  API failed, attempting localStorage fallback:', apiErr.message);
+            if (DEBUG) console.warn('⚠️ API failed:', apiErr.message);
         }
 
     } catch (error) {
-        console.log('[LOAD] Outer error:', error.message);
+        if (DEBUG) console.error('Error:', error.message);
     }
 
     // FALLBACK: Load from localStorage
-    console.log('[LOAD] 📦 Using localStorage fallback with key:', STORAGE_KEY);
+    if (DEBUG) console.log('📦 Using localStorage fallback');
 
+    let systems = [];
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        console.log('[LOAD] Raw localStorage:', stored ? stored.length + ' chars' : 'NULL/EMPTY');
-
         if (stored) {
             systems = JSON.parse(stored);
-            console.log('[LOAD] ✅ Parsed localStorage:', systems.length, 'systems');
-            
-            // Validate structure
-            if (!Array.isArray(systems)) {
-                console.log('[LOAD] ❌ localStorage data is not an array, resetting');
-                systems = [];
-            }
-        } else {
-            console.log('[LOAD] ⚠️  localStorage is empty for key:', STORAGE_KEY);
-            systems = [];
         }
-    } catch (parseErr) {
-        console.error('[LOAD] ❌ localStorage parse error:', parseErr.message);
+    } catch (e) {
+        if (DEBUG) console.error('Corrupted localStorage');
         systems = [];
     }
 
-    console.log('[LOAD] Final systems count:', systems.length);
-    if (systems.length > 0) {
-        console.table(systems.map(s => ({ 
-            name: s.organizationName, 
-            type: s.organizationType, 
-            id: s.systemID.substring(0, 8) + '...'
-        })));
+    if (DEBUG) {
+        console.log('Loaded:', systems.length, 'systems');
+        console.groupEnd();
     }
 
     renderSystemsDashboard(systems || []);
-    if (DEBUG) console.groupEnd();
 }
 
 // DEBUG: Check what's actually in localStorage and display on page
@@ -165,7 +146,6 @@ function debugLocalStorage() {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         console.log('=== LOCAL STORAGE DEBUG ===');
-        console.log('Storage Key:', STORAGE_KEY);
         console.log('Raw localStorage value:', stored);
 
         let debugHtml = '';
@@ -183,7 +163,7 @@ function debugLocalStorage() {
                 debugHtml += `<div style="color: #ff0;">❌ JSON Parse Error: ${parseErr.message}</div>`;
             }
         } else {
-            debugHtml += `<div style="color: #ff0;">⚠️ localStorage['${STORAGE_KEY}'] is EMPTY or NULL</div>`;
+            debugHtml += `<div style="color: #ff0;">⚠️ localStorage['resqai-systems'] is EMPTY or NULL</div>`;
         }
 
         // Update debug panel
@@ -221,30 +201,21 @@ document.addEventListener('keydown', (e) => {
 
 // Render systems dashboard with list of user's systems
 function renderSystemsDashboard(systems) {
-    if (DEBUG) console.group('🎨 [RENDER] Dashboard');
-    console.log('[RENDER] Received systems:', systems);
-    console.log('[RENDER] Is array:', Array.isArray(systems));
-    console.log('[RENDER] Count:', Array.isArray(systems) ? systems.length : 'NOT AN ARRAY');
-
     // VALIDATE INPUT
     const container = document.getElementById('systems-list');
     if (!container) {
-        console.error('[RENDER] ❌ Container #systems-list not found!');
-        if (DEBUG) console.groupEnd();
+        if (DEBUG) console.error('❌ Container not found!');
         return;
     }
 
-    console.log('[RENDER] Container found, clearing...');
-
     // VALIDATE SYSTEMS ARRAY
     if (!Array.isArray(systems)) {
-        console.log('[RENDER] ❌ Systems not an array, resetting to empty');
+        if (DEBUG) console.error('❌ Systems not an array');
         systems = [];
     }
 
-    // Clear container
     container.innerHTML = '';
-    console.log('[RENDER] Container cleared, systems count:', systems.length);
+    if (DEBUG) console.log('🎨 [RENDER] Systems:', systems.length, 'found');
 
     // EMPTY STATE
     if (systems.length === 0) {
@@ -295,10 +266,7 @@ function renderSystemsDashboard(systems) {
         }
     });
 
-    if (DEBUG) {
-        console.log('🎨 Dashboard render complete');
-        console.groupEnd();
-    }
+    if (DEBUG) console.log('🎨 Dashboard render complete');
 }
 
 // Show systems dashboard screen
@@ -748,25 +716,22 @@ async function animateAndRedirect() {
                 const fillEl = document.getElementById('build-progress-fill');
                 if (fillEl) fillEl.style.width = '100%';
 
-                console.log('[ANIMATE] Animation complete, proceeding to dashboard');
+                if (DEBUG) console.log('✅ Animation complete');
 
                 // REDIRECT
                 setTimeout(async () => {
-                    console.log('[ANIMATE] Loading systems after delay...');
+                    if (DEBUG) console.log('Loading dashboard...');
 
-                    // Load systems BEFORE showing screen to ensure data is rendered
+                    // Load systems and show dashboard
                     try {
                         await loadUserSystems();
-                        console.log('[ANIMATE] Systems loaded successfully');
                     } catch (err) {
-                        console.warn('[ANIMATE] Error loading systems:', err.message);
+                        if (DEBUG) console.warn('Error:', err.message);
                     }
 
-                    // Now show the dashboard with populated systems
                     showScreen('screen-systems-dashboard');
-                    console.log('[ANIMATE] Dashboard screen displayed');
                     if (DEBUG) {
-                        console.log('Redirect complete');
+                        console.log('Dashboard shown');
                         console.groupEnd();
                     }
                     resolve();
@@ -1733,8 +1698,8 @@ async function saveSystemData() {
             riskTypes: systemData.riskTypes
         };
 
-        console.group('[SAVE] Saving system');
-        console.log('[SAVE] Payload:', payload);
+        if (DEBUG) console.group('📤 [SAVE] Sending to API');
+        if (DEBUG) console.log('Payload:', payload);
 
         const response = await fetch(API_BASE_URL + '/create', {
             method: 'POST',
@@ -1773,8 +1738,6 @@ async function saveSystemData() {
 
         // SAVE TO LOCALSTORAGE WITH STANDARDIZED KEY
         let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        console.log('[SAVE] Current localStorage count:', systems.length);
-        
         systems.push({
             systemID: systemData.systemID,
             organizationName: systemData.organizationName,
@@ -1787,17 +1750,22 @@ async function saveSystemData() {
             status: 'saved',
             createdAt: new Date().toISOString()
         });
-        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
-        console.log('[SAVE] ✅ API Success: System saved. Total count:', systems.length);
-        console.log('[SAVE] System ID:', systemData.systemID);
-        console.groupEnd();
+
+        if (DEBUG) {
+            console.log('✅ System ID:', systemData.systemID);
+            console.log('Count:', systems.length);
+            console.groupEnd();
+        }
 
         return { success: true, systemID: systemData.systemID };
 
     } catch (error) {
-        console.group('[SAVE] API Failed - Using localStorage fallback');
-        console.error('[SAVE] Error:', error.message);
+        if (DEBUG) {
+            console.group('❌ [SAVE] API Failed - Fallback');
+            console.error('Error:', error.message);
+            console.groupEnd();
+        }
 
         showToast(`⚠️ Saving locally: ${error.message}`, 'warning');
 
@@ -1806,8 +1774,6 @@ async function saveSystemData() {
         }
 
         let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        console.log('[SAVE] Fallback - Current count:', systems.length);
-        
         systems.push({
             systemID: systemData.systemID,
             organizationName: systemData.organizationName,
@@ -1820,13 +1786,15 @@ async function saveSystemData() {
             status: 'local',
             createdAt: new Date().toISOString()
         });
-        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
 
-        console.log('[SAVE] 💾 Fallback Success: Saved locally');
-        console.log('[SAVE] System ID:', systemData.systemID);
-        console.log('[SAVE] Total count:', systems.length);
-        console.groupEnd();
+        if (DEBUG) {
+            console.group('💾 [SAVE] Fallback Success');
+            console.log('System ID:', systemData.systemID);
+            console.log('Status: local');
+            console.log('Total:', systems.length);
+            console.groupEnd();
+        }
 
         return { success: true, systemID: systemData.systemID, local: true };
     }

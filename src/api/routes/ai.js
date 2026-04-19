@@ -20,10 +20,13 @@ router.get('/health', (req, res) => {
             message: 'EcoPlus AI System is operational',
             providers: {
                 gemini: aiStatus.gemini ? 'Available' : 'Not configured',
+                openrouter_primary: aiStatus.openRouterPrimary ? 'Available' : 'Not configured',
+                openrouter_secondary: aiStatus.openRouterSecondary ? 'Available' : 'Not configured',
                 openrouter: aiStatus.openRouter ? 'Available' : 'Not configured',
                 groq: aiStatus.groq ? 'Available' : 'Not configured'
             },
-            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None'
+            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None',
+            providerPriority: aiStatus.providerPriority
         });
     } catch (error) {
         console.error('❌ Error in /api/ai/health:', error);

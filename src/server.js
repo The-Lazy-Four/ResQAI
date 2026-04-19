@@ -2,14 +2,11 @@
 // ResQAI - Express Server
 // ============================================
 
-import './utils/loadEnv.js';
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Import database initialization
 import { initMySQL } from './db/mysql.js';
@@ -28,9 +25,30 @@ import customSystemRoutes from './api/routes/custom-system.js';
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
 
-// Environment variables already loaded at the top
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..');
 
-// Env variables loaded via import './utils/loadEnv.js'
+// Load environment variables from project root (MUST be before any env var access)
+// Override system environment variables with .env file
+const envConfig = dotenv.config({ path: path.join(projectRoot, '.env'), override: true });
+
+// Debug: Show what was loaded
+if (envConfig.parsed) {
+    console.log('\n✅ [DOTENV] Loaded .env variables:');
+    if (envConfig.parsed.GROQ_MODEL) {
+        console.log(`   GROQ_MODEL from .env: ${envConfig.parsed.GROQ_MODEL}`);
+    }
+}
+
+// Force override any system environment variables with .env values
+if (envConfig.parsed) {
+    Object.keys(envConfig.parsed).forEach(key => {
+        process.env[key] = envConfig.parsed[key];
+    });
+    console.log('✅ [DOTENV] Forced all .env values into process.env\n');
+}
 
 // Validate environment on startup
 validateEnvironment();
@@ -52,7 +70,8 @@ await initMySQL().catch(err => {
 // Log environment status (first 10 chars of keys for security)
 console.log(`\n📋 [ENVIRONMENT] Node Env: ${NODE_ENV}`);
 console.log(`📋 [ENVIRONMENT] GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
-console.log(`📋 [ENVIRONMENT] OPENROUTER_API_KEY: ${process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
+console.log(`📋 [ENVIRONMENT] OPENROUTER_PRIMARY_API_KEY: ${(process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY) ? (process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY).slice(0, 10) + '...' : 'NOT SET'}`);
+console.log(`📋 [ENVIRONMENT] OPENROUTER_SECONDARY_API_KEY: ${process.env.OPENROUTER_SECONDARY_API_KEY ? process.env.OPENROUTER_SECONDARY_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] GROQ_API_KEY: ${process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] PORT: ${PORT}\n`);
 
@@ -91,9 +110,12 @@ app.get('/api/health', (req, res) => {
         port: PORT,
         ai: {
             gemini: aiStatus.gemini ? '✅ Available' : '❌ Not configured',
+            openrouterPrimary: aiStatus.openRouterPrimary ? '✅ Available' : '❌ Not configured',
+            openrouterSecondary: aiStatus.openRouterSecondary ? '✅ Available' : '❌ Not configured',
             openrouter: aiStatus.openRouter ? '✅ Available' : '❌ Not configured',
             groq: aiStatus.groq ? '✅ Available' : '❌ Not configured',
-            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None'
+            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None',
+            providerPriority: aiStatus.providerPriority
         },
         cors: NODE_ENV === 'production' ? 'Allow All (Production)' : 'Localhost Only (Development)'
     });
@@ -112,10 +134,15 @@ app.use('/api/custom-system', customSystemRoutes);
 
 // ==================== SERVE FRONTEND ====================
 
-// Serve index.html for any route not matched by API
+// Serve the dashboard for /dashboard route
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+});
+
+// Serve the cinematic landing page as the default entry point
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+        res.sendFile(path.join(__dirname, '../public/pages/landing.html'));
     }
 });
 
