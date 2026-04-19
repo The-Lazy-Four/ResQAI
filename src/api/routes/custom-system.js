@@ -130,18 +130,20 @@ router.get('/:systemID', optionalAuth, async (req, res) => {
 });
 
 // ===== LIST USER'S SYSTEMS =====
-router.get('/user/list', verifyToken, async (req, res) => {
+router.get('/user/list', optionalAuth, async (req, res) => {
     try {
-        const userID = req.user.userID;
-        let systems;
+        const userID = req.user?.userID;
+        let systems = [];
 
-        if (isMySQLAvailable()) {
+        // If authenticated, fetch from MySQL for that user
+        if (userID && isMySQLAvailable()) {
             systems = await query(
                 `SELECT id, organization_name, organization_type, location, status, created_at
                  FROM systems WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
                 [userID]
             );
-        } else {
+        } else if (userID && !isMySQLAvailable()) {
+            // MySQL unavailable but authenticated - try SQLite
             const db = await getDatabase();
             systems = await new Promise((resolve, reject) => {
                 db.all(
@@ -154,16 +156,17 @@ router.get('/user/list', verifyToken, async (req, res) => {
                 );
             });
         }
+        // If not authenticated, return empty array (frontend will use localStorage)
 
         res.json({
             success: true,
             count: systems.length,
-            systems
+            systems: systems || []
         });
 
     } catch (error) {
         console.error('❌ Error listing systems:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message, systems: [] });
     }
 });
 
