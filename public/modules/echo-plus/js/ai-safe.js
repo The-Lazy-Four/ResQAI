@@ -104,8 +104,10 @@ window.EchoPlusAI = (function () {
                 language: language,
                 // Request parameters only - NO SECRETS
                 params: {
-                    maxTokens: 200,
-                    temperature: 0.7
+                    maxTokens: 300,
+                    temperature: 0.7,
+                    tone: "calm, reassuring, authoritative",
+                    instructionType: "directional_safety_tips"
                 }
             };
 
@@ -148,24 +150,37 @@ window.EchoPlusAI = (function () {
     // ============================================================
     // FALLBACK GUIDANCE (when backend unavailable)
     // ============================================================
-    function getFallbackGuidance(emergencyType, language = 'en') {
+    function getFallbackGuidance(emergencyType, language = 'en', guestContext = null) {
         log('warn', 'Using fallback guidance', { type: emergencyType });
 
-        // This leverages the translations in data.js
-        if (!window.ECHO_DATA || !window.ECHO_DATA.translations) {
-            return 'Emergency in progress. Follow staff instructions immediately. Move to safe location.';
+        const steps = [];
+        const exitDir = (guestContext && guestContext.zone === 'east') ? 'right' : 'left';
+        const exitName = (guestContext && guestContext.zone === 'east') ? 'Exit A' : 'Exit B';
+
+        if (emergencyType === 'fire') {
+            steps.push("Leave your room immediately. Do not collect belongings.");
+            steps.push(`Turn ${exitDir} in the corridor toward ${exitName}.`);
+            steps.push("Take the stairs down. DO NOT use elevators.");
+            steps.push("Exit the building to the assembly point.");
+        } else if (emergencyType === 'earthquake') {
+            steps.push("Drop, cover, and hold on under a sturdy desk.");
+            steps.push("Wait for the shaking to stop completely.");
+            steps.push(`Carefully exit building via stairs at ${exitName}.`);
+        } else if (emergencyType === 'suspicious') {
+            steps.push("Lock your door and remain inside the room.");
+            steps.push("Avoid standing near windows.");
+            steps.push("Wait for further instructions from authorities.");
+        } else if (emergencyType === 'medical') {
+            steps.push("Help is on the way. Please stay calm.");
+            steps.push("Unlock your door so responders can enter.");
+            steps.push("Clear space around the person needing help.");
+        } else {
+            steps.push("Please remain calm and stay in a safe location.");
+            steps.push("Follow all instructions from hotel staff.");
         }
 
-        const translations = window.ECHO_DATA.translations[language] || window.ECHO_DATA.translations['en'];
-
-        const fallbacks = {
-            fire: translations.fire?.general || 'Fire emergency. Evacuate immediately.',
-            medical: translations.medical?.general || 'Medical emergency. Clear the area.',
-            earthquake: translations.earthquake?.general || 'Earthquake detected. Take cover immediately.',
-            suspicious: translations.suspicious?.general || 'Security alert. Return to room.'
-        };
-
-        return fallbacks[emergencyType] || 'Emergency detected. Follow staff instructions.';
+        // Return as a single string joined by newlines, or a specific format if needed
+        return steps.join("\n");
     }
 
     // ============================================================

@@ -196,6 +196,7 @@ body::before {
   margin-bottom: 16px;
   background: linear-gradient(135deg, #eef2ff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1673,4 +1674,316 @@ body::before {
   .scenarios-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================================================
+   NEARBY STAFF SECTION (GUEST)
+   ========================================================= */
+.staff-nearby-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.2s;
+}
+
+.staff-nearby-card:hover {
+  background: var(--glass2);
+  border-color: var(--border2);
+}
+
+.staff-nearby-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.staff-nearby-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--blue-dim);
+  border: 1px solid rgba(79, 142, 247, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--blue);
+}
+
+.staff-nearby-detail {
+  flex: 1;
+}
+
+.staff-nearby-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.staff-nearby-role {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 1px;
+}
+
+.staff-nearby-dist {
+  font-size: 10px;
+  color: var(--medical);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.staff-status-pill {
+  font-size: 9px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+.staff-status-pill.online {
+  background: rgba(0, 217, 126, 0.1);
+  color: var(--medical);
+}
+
+.staff-status-pill.busy {
+  background: rgba(255, 184, 0, 0.1);
+  color: var(--quake);
+}
+
+.staff-nearby-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.staff-nearby-actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text2);
+  transition: 0.2s;
+}
+
+.staff-nearby-actions .s-action-call:hover {
+  background: var(--medical-dim);
+  border-color: var(--medical);
+  color: var(--medical);
+}
+
+.staff-nearby-actions .s-action-chat:hover {
+  background: var(--blue-dim);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+
+/* =========================================================
+   NEW REDESIGNED CHAT HUB (GUEST)
+   ========================================================= */
+.chat-main-container {
+  padding: 0;
+  overflow: hidden;
+  margin-top: 20px;
+  background: rgba(12, 17, 32, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.chat-main-header {
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 500;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--medical);
+  border-radius: 50%;
+  animation: pulse-green 1.5s infinite;
+}
+
+.chat-layout {
+  display: flex;
+  height: 480px; /* Increased height */
+}
+
+.chat-targets-side {
+  width: 200px;
+  padding: 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.target-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.target-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.target-btn:hover {
+  background: var(--glass);
+  color: var(--text);
+}
+
+.target-btn.active {
+  background: var(--blue-glow);
+  border-color: rgba(79, 142, 247, 0.3);
+  color: var(--blue);
+}
+
+.t-icon { font-size: 16px; }
+.t-text { font-size: 13px; font-weight: 500; }
+
+.chat-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-main-feed {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.chat-controls-area {
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.chat-main-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 100px 14px 16px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-main-input:focus {
+  border-color: var(--blue);
+}
+
+.chat-input-actions {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.chat-action-btn {
+  padding: 8px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-action-btn:hover {
+  background: var(--glass);
+  color: white;
+}
+
+.chat-send-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chat-send-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--blue-glow);
+}
+
+.chat-emergency-footer {
+  padding: 8px 20px 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.emergency-alert-btn {
+  width: 100%;
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.emergency-alert-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
 }

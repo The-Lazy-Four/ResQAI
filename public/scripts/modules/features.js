@@ -302,28 +302,21 @@ async function showSafePlaces() {
                     currentLocation = { lat: latitude, lng: longitude };
 
                     try {
-                        const incidentType = currentSafePlacesFilter === 'all' ? 'general' : currentSafePlacesFilter;
-                        const params = new URLSearchParams({
-                            userLat: latitude,
-                            userLng: longitude,
-                            incidentType,
-                            category: currentSafePlacesFilter
+                        const response = await fetch(`${API_BASE}/nearby/safe-places`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                latitude,
+                                longitude,
+                                category: currentSafePlacesFilter
+                            })
                         });
 
-                        const response = await fetch(`${API_BASE}/portal/safe-zones?${params.toString()}`);
-
                         const data = await response.json();
-                        if (data.success && Array.isArray(data.safe_zones)) {
-                            console.log('✅ Safe places fetched:', data.count || data.safe_zones.length);
+                        if (data.success) {
+                            console.log('✅ Safe places fetched:', data.total_count);
                             offlineCache.save('safePlaces', data);
                             displaySafePlaces(data);
-                        } else {
-                            const fallback = offlineCache.get('safePlaces');
-                            if (fallback) {
-                                displaySafePlaces(fallback);
-                            } else {
-                                displaySafePlaces(data);
-                            }
                         }
                     } catch (error) {
                         console.warn('⚠️ Safe places fetch error, using cache:', error.message);
@@ -352,47 +345,29 @@ function displaySafePlaces(data) {
 
     const placesList = document.getElementById('safePlacesList');
     const modal = document.getElementById('safePlacesModal');
-    const safePlaces = Array.isArray(data.safe_zones) ? data.safe_zones : (Array.isArray(data.safe_places) ? data.safe_places : []);
 
-    if (placesList) {
-        if (safePlaces.length === 0) {
-            placesList.innerHTML = `
-                <div class="safe-place-item">
+    if (placesList && data.safe_places) {
+        placesList.innerHTML = data.safe_places.map(place => {
+            let categoryIcon = '';
+            if (place.category === 'hospital') categoryIcon = '🏥';
+            else if (place.category === 'police') categoryIcon = '🚔';
+            else if (place.category === 'shelter') categoryIcon = '🏠';
+
+            return `
+                <div class="safe-place-item" onclick="callLocation('${place.name}')">
                     <div class="place-header">
-                        <span class="place-name">Unable to fetch nearby safe zones</span>
+                        <span class="place-icon">${categoryIcon}</span>
+                        <span class="place-name">${place.name}</span>
+                        <span class="place-distance">📍 ${place.distance.toFixed(1)}km</span>
                     </div>
                     <div class="place-details">
-                        <div>${data.fallback_advice || 'Follow local emergency instructions and move toward the nearest public safe facility.'}</div>
+                        <div>📍 ${place.address}</div>
+                        ${place.phone ? `<div>📞 ${place.phone}</div>` : ''}
+                        ${place.capacity ? `<div>👥 Capacity: ${place.capacity} people</div>` : ''}
                     </div>
                 </div>
             `;
-        } else {
-            placesList.innerHTML = safePlaces.slice(0, 5).map((place, index) => {
-                const type = String(place.type || place.category || 'safe_zone').toLowerCase();
-                const categoryIcon = type === 'hospital' ? '🏥' : type === 'police' ? '🚔' : type === 'shelter' ? '🏠' : type === 'elevated_area' ? '⛰️' : '🛟';
-                const distanceText = typeof place.distance === 'string' ? place.distance : `${Number(place.distance || 0).toFixed(1)} km`;
-                const zoneId = place.id || `${type}-${index}`;
-
-                return `
-                    <div class="safe-place-item" onclick="viewSafePlaceOnMap('${zoneId}')">
-                        <div class="place-header">
-                            <span class="place-icon">${categoryIcon}</span>
-                            <span class="place-name">${place.name}</span>
-                            <span class="place-distance">📍 ${distanceText}</span>
-                        </div>
-                        <div class="place-details">
-                            <div>🧭 ${place.direction || 'N/A'}</div>
-                            <div>🏷️ ${type.replace(/_/g, ' ')}</div>
-                            ${place.address ? `<div>📍 ${place.address}</div>` : ''}
-                        </div>
-                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.8rem;">
-                            <button class="quick-action-btn" onclick="event.stopPropagation(); navigateToSafePlace('${zoneId}')">Navigate</button>
-                            <button class="quick-action-btn" onclick="event.stopPropagation(); viewSafePlaceOnMap('${zoneId}')">View on Map</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+        }).join('');
 
         // Show modal
         if (modal) {
@@ -429,36 +404,6 @@ function callLocation(placeName) {
     console.log('📞 Calling location:', placeName);
     // In real app, would open maps or call the number
     showNotification('📌 Navigate', `Opening maps for ${placeName}`);
-}
-
-function getSafePlaceById(placeId) {
-    const cached = offlineCache.get('safePlaces');
-    const safePlaces = Array.isArray(cached?.safe_zones) ? cached.safe_zones : [];
-    return safePlaces.find((place, index) => String(place.id || `${place.type || place.category || 'safe_zone'}-${index}`) === String(placeId));
-}
-
-function viewSafePlaceOnMap(placeId) {
-    const place = getSafePlaceById(placeId);
-    if (!place) return;
-
-    if (typeof window.highlightNearbySafeZoneOnMap === 'function') {
-        window.highlightNearbySafeZoneOnMap(place);
-    }
-
-    if (typeof showTab === 'function') {
-        showTab('map');
-    }
-
-    showNotification('📍 View on map', `Highlighting ${place.name}`);
-}
-
-function navigateToSafePlace(placeId) {
-    const place = getSafePlaceById(placeId);
-    if (!place) return;
-
-    const destination = `${place.lat},${place.lng}`;
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank', 'noopener');
-    showNotification('🧭 Navigate', `Opening directions for ${place.name}`);
 }
 
 // ==================== SMART NOTIFICATIONS ====================
@@ -553,8 +498,6 @@ window.closeMorningBrief = closeMorningBrief;
 window.showSafePlaces = showSafePlaces;
 window.closeSafePlaces = closeSafePlaces;
 window.filterSafePlaces = filterSafePlaces;
-window.viewSafePlaceOnMap = viewSafePlaceOnMap;
-window.navigateToSafePlace = navigateToSafePlace;
 window.showNotification = showNotification;
 window.calculateSafetyScore = calculateSafetyScore;
 window.showOfflineIndicator = showOfflineIndicator;

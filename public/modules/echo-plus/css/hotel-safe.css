@@ -39,16 +39,11 @@
     --echo-r3: 8px;
 }
 
-/* SCOPE ECHO styles to .echo-container or root */
+/* Styles scoped to .echo-app or specific screens */
 .echo-app,
 .echo-container,
-#screen-landing,
-#screen-guest-select,
-#screen-guest-login,
-#screen-guest-dashboard,
-#screen-admin-login,
-#screen-admin-dashboard {
-    /* Ensure ECHO styles don't leak */
+[id^="screen-"] {
+    box-sizing: border-box;
 }
 
 /* SCREENS */
@@ -185,6 +180,7 @@
     margin-bottom: 16px;
     background: linear-gradient(135deg, #eef2ff 0%, #94a3b8 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -567,4 +563,123 @@
 .echo-vbtn-secondary:hover {
     background: var(--echo-glass2);
     color: var(--echo-text);
+}
+
+/* =========================================================
+   AI CALL SYSTEM STYLES
+   ========================================================= */
+.aicall-card {
+    background: linear-gradient(135deg, rgba(79, 142, 247, 0.05), rgba(0, 0, 0, 0));
+    border-color: rgba(79, 142, 247, 0.2);
+    overflow: hidden;
+}
+
+.aicall-pulse-icon {
+    width: 10px;
+    height: 10px;
+    background: var(--echo-blue);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 10px var(--echo-blue);
+    vertical-align: middle;
+}
+
+.aicall-card.active .aicall-pulse-icon {
+    animation: echo-blink 1s infinite;
+}
+
+.aicall-body {
+    padding: 16px;
+}
+
+.aicall-status {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--echo-text2);
+    margin-bottom: 12px;
+}
+
+.aicall-transcript-box {
+    height: 120px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--echo-r3);
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px solid var(--echo-border);
+}
+
+.aicall-placeholder {
+    color: var(--echo-text3);
+    font-style: italic;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.aicall-msg {
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 90%;
+}
+
+.aicall-msg.ai {
+    background: var(--echo-blue-dim);
+    color: var(--echo-blue);
+    align-self: flex-start;
+    border-left: 3px solid var(--echo-blue);
+}
+
+.aicall-msg.guest {
+    background: var(--echo-glass);
+    color: var(--echo-text);
+    align-self: flex-end;
+    border-right: 3px solid var(--echo-text2);
+}
+
+.aicall-main-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--echo-blue), #7c5bf7);
+    border: none;
+    border-radius: var(--echo-r2);
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.aicall-main-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--echo-blue-glow);
+}
+
+.aicall-main-btn.active {
+    background: var(--echo-fire);
+}
+
+.aicall-main-btn.active:hover {
+    box-shadow: 0 8px 24px var(--echo-fire-glow);
+}
+
+/* Scrollbar for transcript */
+.aicall-transcript-box::-webkit-scrollbar {
+    width: 3px;
+}
+
+.aicall-transcript-box::-webkit-scrollbar-thumb {
+    background: var(--echo-border2);
+    border-radius: 10px;
 }
