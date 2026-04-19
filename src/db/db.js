@@ -177,7 +177,8 @@ export function updateEmergency(id, updates) {
 }
 
 export function deleteEmergency(id) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+        const db = await getDatabase();
         db.run('DELETE FROM emergencies WHERE id = ?', [id], function (err) {
             if (err) reject(err);
             else resolve({ success: true });
@@ -196,7 +197,8 @@ export function getChatHistory() {
 }
 
 export function addChatMessage(id, userMessage, botResponse) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+        const db = await getDatabase();
         db.run(
             'INSERT INTO chat_history (id, user_message, bot_response) VALUES (?, ?, ?)',
             [id, userMessage, botResponse],

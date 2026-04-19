@@ -2,11 +2,14 @@
 // ResQAI - Express Server
 // ============================================
 
+import './utils/loadEnv.js';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import API routes
 import emergencyRoutes from './api/routes/emergency.js';
@@ -15,35 +18,13 @@ import chatRoutes from './api/routes/chat.js';
 import voiceRoutes from './api/routes/voice.js';
 import nearbyRoutes from './api/routes/nearby.js';
 import aiRoutes from './api/routes/ai.js';
-import portalRoutes from './api/routes/portal.js';
 
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
 
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..');
+// Environment variables already loaded at the top
 
-// Load environment variables from project root (MUST be before any env var access)
-// Override system environment variables with .env file
-const envConfig = dotenv.config({ path: path.join(projectRoot, '.env'), override: true });
-
-// Debug: Show what was loaded
-if (envConfig.parsed) {
-    console.log('\n✅ [DOTENV] Loaded .env variables:');
-    if (envConfig.parsed.GROQ_MODEL) {
-        console.log(`   GROQ_MODEL from .env: ${envConfig.parsed.GROQ_MODEL}`);
-    }
-}
-
-// Force override any system environment variables with .env values
-if (envConfig.parsed) {
-    Object.keys(envConfig.parsed).forEach(key => {
-        process.env[key] = envConfig.parsed[key];
-    });
-    console.log('✅ [DOTENV] Forced all .env values into process.env\n');
-}
+// Env variables loaded via import './utils/loadEnv.js'
 
 // Validate environment on startup
 validateEnvironment();
@@ -57,8 +38,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // Log environment status (first 10 chars of keys for security)
 console.log(`\n📋 [ENVIRONMENT] Node Env: ${NODE_ENV}`);
 console.log(`📋 [ENVIRONMENT] GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
-console.log(`📋 [ENVIRONMENT] OPENROUTER_PRIMARY_API_KEY: ${(process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY) ? (process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY).slice(0, 10) + '...' : 'NOT SET'}`);
-console.log(`📋 [ENVIRONMENT] OPENROUTER_SECONDARY_API_KEY: ${process.env.OPENROUTER_SECONDARY_API_KEY ? process.env.OPENROUTER_SECONDARY_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
+console.log(`📋 [ENVIRONMENT] OPENROUTER_API_KEY: ${process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] GROQ_API_KEY: ${process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] PORT: ${PORT}\n`);
 
@@ -97,12 +77,9 @@ app.get('/api/health', (req, res) => {
         port: PORT,
         ai: {
             gemini: aiStatus.gemini ? '✅ Available' : '❌ Not configured',
-            openrouterPrimary: aiStatus.openRouterPrimary ? '✅ Available' : '❌ Not configured',
-            openrouterSecondary: aiStatus.openRouterSecondary ? '✅ Available' : '❌ Not configured',
             openrouter: aiStatus.openRouter ? '✅ Available' : '❌ Not configured',
             groq: aiStatus.groq ? '✅ Available' : '❌ Not configured',
-            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None',
-            providerPriority: aiStatus.providerPriority
+            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None'
         },
         cors: NODE_ENV === 'production' ? 'Allow All (Production)' : 'Localhost Only (Development)'
     });
@@ -115,19 +92,13 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/nearby', nearbyRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/portal', portalRoutes);
 
 // ==================== SERVE FRONTEND ====================
 
-// Serve the dashboard for /dashboard route
-app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
-});
-
-// Serve the cinematic landing page as the default entry point
+// Serve index.html for any route not matched by API
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, '../public/pages/landing.html'));
+        res.sendFile(path.join(__dirname, '../public/pages/index.html'));
     }
 });
 

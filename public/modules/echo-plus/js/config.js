@@ -100,6 +100,39 @@ window.ECHO_CONFIG = window.ECHO_CONFIG || {
     },
 
     // ============================================================
+    // AI CALL SETTINGS
+    // ============================================================
+    aiCall: {
+        ttsLang: { en: 'en-US', hi: 'hi-IN', bn: 'bn-IN' },
+        sttLang: { en: 'en-US', hi: 'hi-IN', bn: 'bn-IN' },
+        openingMessages: {
+            en: {
+                fire: "ResQ AI here. I've received your FIRE alert. Please stay calm. I'm guiding you out now.",
+                medical: "ResQ AI here. Medical emergency received. Help is on the way. Are you breathing okay?",
+                earthquake: "ResQ AI here. Earthquake detected. Please Drop, Cover, and Hold on. I am with you.",
+                other: "ResQ AI emergency assistant here. How can I help you safely?"
+            },
+            hi: {
+                fire: "ResQ AI बोल रहा हूँ। हमें आग की सूचना मिली है। कृपया शांत रहें, मैं आपको बाहर निकाल रहा हूँ।",
+                medical: "ResQ AI बोल रहा हूँ। मेडिकल इमरजेंसी मिली है। मदद रास्ते में है।",
+                earthquake: "ResQ AI बोल रहा हूँ। भूकंप आया है। कृपया छुपें और खुद को बचाएं।",
+                other: "ResQ AI सहायता केंद्र। हम आपकी कैसे मदद कर सकते हैं?"
+            },
+            bn: {
+                fire: "ResQ AI বলছি। আগুনের খবর পেয়েছি। শান্ত থাকুন, আমি আপনাকে বার করে নিয়ে যাচ্ছি।",
+                medical: "ResQ AI বলছি। মেডিকেল ইমার্জেন্সি রিপোর্ট করা হয়েছে। সাহায্য আসছে।",
+                earthquake: "ResQ AI বলছি। ভূমিকম্প হয়েছে। নিচে বসে মাথা ঢেকে রাখুন।",
+                other: "ResQ AI সাহায্য কেন্দ্র। আপনি কেমন আছেন?"
+            }
+        },
+        systemPrompts: {
+            en: "You are a professional emergency responder AI. Provide short, calm, actionable instructions. Max 2-3 sentences.",
+            hi: "आप एक पेशेवर आपातकालीन प्रतिक्रियाकर्ता एआई हैं। संक्षिप्त, शांत और कार्रवाई योग्य निर्देश दें।",
+            bn: "আপনি একজন পেশাদার জরুরি রেসপন্ডার এআই। ছোট এবং শান্ত নির্দেশ দিন।"
+        }
+    },
+
+    // ============================================================
     // VALIDATION
     // ============================================================
     validation: {

@@ -15,8 +15,7 @@ export function validateEnvironment() {
         'NODE_ENV': nodeEnv,
         'PORT': port,
         'GEMINI_API_KEY': process.env.GEMINI_API_KEY,
-        'OPENROUTER_PRIMARY_API_KEY': process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY,
-        'OPENROUTER_SECONDARY_API_KEY': process.env.OPENROUTER_SECONDARY_API_KEY,
+        'OPENROUTER_API_KEY': process.env.OPENROUTER_API_KEY,
         'GROQ_API_KEY': process.env.GROQ_API_KEY
     };
 
@@ -55,16 +54,10 @@ export function validateEnvironment() {
 }
 
 export function getAIStatus() {
-    const openRouterPrimary = !!((process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY || '').trim());
-    const openRouterSecondary = !!((process.env.OPENROUTER_SECONDARY_API_KEY || '').trim());
-
     return {
         gemini: !!(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim()),
-        openRouterPrimary,
-        openRouterSecondary,
-        openRouter: openRouterPrimary || openRouterSecondary,
+        openRouter: !!(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim()),
         groq: !!(process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.trim()),
-        providerPriority: process.env.AI_PROVIDER_PRIORITY || '["gemini","openrouter_primary","openrouter_secondary","grok","fallback"]',
         environment: process.env.NODE_ENV || 'development'
     };
 }

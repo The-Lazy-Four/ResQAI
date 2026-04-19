@@ -398,26 +398,25 @@
                 <!-- Card 1: Rapid Crisis Portal -->
                 <div class="rescue-card personal" onclick="selectRescueSystem('personal')">
                     <span class="card-icon">🆘</span>
-                    <h3 class="card-title">Guest / Visitor Crisis Portal</h3>
-                    <p class="card-description">AI-powered intelligence for travelers, guests, and hospitality spaces
-                    </p>
+                    <h3 class="card-title">Rapid Crisis Portal</h3>
+                    <p class="card-description">AI-powered real-time alerts, SOS & safety guidance</p>
                     <button class="card-action">Launch Portal</button>
                 </div>
 
                 <!-- Card 2: Hotel / Resort Rescue System -->
-                <div class="rescue-card hotel">
+                <div class="rescue-card hotel" onclick="loadEcoPlusModule(event)">
                     <span class="card-icon">🏨</span>
                     <h3 class="card-title">Hotel / Resort</h3>
                     <p class="card-description">Emergency management for hotels & hospitality</p>
-                    <button class="card-action" onclick="loadEcoPlusModule(event)">Get Started</button>
+                    <button class="card-action">Get Started</button>
                 </div>
 
                 <!-- Card 3: Custom Rescue Builder -->
-                <div class="rescue-card custom">
+                <div class="rescue-card custom" onclick="showComingSoon(event)">
                     <span class="card-icon">⚙️</span>
                     <h3 class="card-title">Custom Rescue</h3>
                     <p class="card-description">Create your own rescue system for any use-case</p>
-                    <button class="card-action" onclick="showComingSoon(event)">Coming Soon</button>
+                    <button class="card-action">Coming Soon</button>
                 </div>
             </div>
         </div>
@@ -465,9 +464,8 @@
                     <!-- NEW HEADER WITH PORTAL BRANDING -->
                     <div class="rapid-portal-header">
                         <div class="portal-title-section">
-                            <h1>🚨 Guest / Visitor Rapid Crisis Portal</h1>
-                            <p class="portal-subtitle">Real-time emergency intelligence for travelers, guests, and
-                                hospitality environments</p>
+                            <h1>🚨 Rapid Crisis Access Portal</h1>
+                            <p class="portal-subtitle">Stay aware. Stay connected. Get help instantly.</p>
                         </div>
                     </div>
 
@@ -569,8 +567,7 @@
                                 </select>
                             </div>
                             <div class="ai-input-group">
-                                <input type="text" id="aiQueryInput"
-                                    placeholder="Ask: What should I do during fire in hotel?" class="ai-input">
+                                <input type="text" id="aiQueryInput" placeholder="Ask: What should I do during fire in hotel?" class="ai-input">
                                 <button class="ai-submit-btn" onclick="submitAIQuery()">Ask AI</button>
                             </div>
                             <div class="ai-voice-input">
@@ -592,8 +589,7 @@
                         <button class="map-view-btn" onclick="showTab('map')">
                             <i class="fas fa-expand"></i> View Full Map
                         </button>
-                        <div id="miniMap"
-                            style="min-height: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
+                        <div id="miniMap" style="min-height: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
                             <span style="color: #888;">Map will load when you view full map tab</span>
                         </div>
                     </div>
@@ -809,87 +805,52 @@
                 <section id="nearby" class="tab-content">
                     <div class="nearby-header-top">
                         <div>
-                            <h1>🏨 Guest / Visitor Rapid Crisis Portal</h1>
-                            <p>Real-time emergency intelligence for travelers, guests, and hospitality environments</p>
+                            <h1>📍 Nearby Crisis Alerts</h1>
+                            <p>Real-time emergency incidents within 5km radius</p>
                         </div>
-                        <div class="nearby-header-actions">
-                            <button onclick="getNearbyIncidents()" class="btn-refresh">
-                                <i class="fas fa-sync"></i> Refresh
-                            </button>
-                            <button id="travelerModeToggle" onclick="toggleTravelerMode()"
-                                class="btn-refresh btn-traveler-mode">
-                                <i class="fas fa-location-arrow"></i> Traveler Mode: OFF
-                            </button>
-                        </div>
+                        <button onclick="getNearbyIncidents()" class="btn-refresh">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
                     </div>
 
                     <div class="nearby-dashboard">
-                        <!-- LEFT COLUMN: Unified Crisis Intelligence -->
+                        <!-- LEFT COLUMN: Alerts + Risk Zones -->
                         <div class="nearby-main">
-                            <div class="nearby-section live-crisis-section">
-                                <div class="section-header">
-                                    <div>
-                                        <h2 class="section-title">🔥 Live Crisis Intelligence</h2>
-                                        <p class="section-subtitle">Nearby alerts, risk zones, and inline AI insights in
-                                            one unified panel</p>
-                                    </div>
-                                </div>
-
-                                <div class="crisis-summary-strip" id="crisisSummaryStrip">
-                                    <span>0 Active Alerts Nearby</span>
-                                    <span>0 Critical</span>
-                                    <span>0 Medium</span>
-                                    <span>0 Low</span>
-                                </div>
-
-                                <div class="nearby-content unified-alert-grid" id="nearbyContent">
+                            <!-- Nearby Incidents Section -->
+                            <div class="nearby-section">
+                                <h2 class="section-title">🚨 Nearby Incidents</h2>
+                                <div class="nearby-content" id="nearbyContent">
                                     <div class="empty-state-box">
                                         <i class="fas fa-map-pin"></i>
                                         <p>Enable location to see nearby incidents</p>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="inline-insights-wrap">
-                                    <h3>🧠 AI Insights</h3>
-                                    <div id="aiRisksContainer" class="ai-inline-badges">
-                                        <span class="ai-inline-badge">AI insights will appear here</span>
+                            <!-- AI Risk Analysis Section (ELEVATED POSITION) -->
+                            <div class="nearby-section ai-risk-section">
+                                <div class="section-header">
+                                    <div>
+                                        <h2 class="section-title">🧠 AI Risk Intelligence</h2>
+                                        <p class="section-subtitle">Personalized risk insights based on your location
+                                        </p>
                                     </div>
                                 </div>
-
-                                <div class="inline-insights-wrap">
-                                    <h3>🔥 Risk Zones</h3>
-                                    <div class="risk-zones-tags" id="riskZonesContainer">
-                                        <span class="risk-zone-tag low">No active risk zones</span>
+                                <div id="aiRisksContainer">
+                                    <div class="empty-state-box">
+                                        <i class="fas fa-brain"></i>
+                                        <p>AI is analyzing your location...</p>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Risk Zones Section -->
                             <div class="nearby-section">
-                                <h2 class="section-title">🚨 Smart Evacuation Guide</h2>
-                                <div id="evacuationGuidePanel" class="evacuation-guide-panel">
+                                <h2 class="section-title">🔥 Risk Zones</h2>
+                                <div class="risk-zones-grid" id="riskZonesContainer">
                                     <div class="empty-state-box">
-                                        <i class="fas fa-route"></i>
-                                        <p>Select an alert to generate evacuation steps</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="nearby-section">
-                                <h2 class="section-title">🏨 Nearby Safe Zones</h2>
-                                <div class="safe-zones-grid" id="safeZonesContainer">
-                                    <div class="empty-state-box">
-                                        <i class="fas fa-hospital"></i>
-                                        <p>Fetching nearest safe buildings and shelters...</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="nearby-section">
-                                <h2 class="section-title">📡 Crowd Safety Mode</h2>
-                                <div id="crowdSafetyContainer" class="crowd-safety-panel">
-                                    <div class="empty-state-box">
-                                        <i class="fas fa-traffic-light"></i>
-                                        <p>Analyzing crowd density and traffic congestion...</p>
+                                        <i class="fas fa-fire"></i>
+                                        <p>Analyzing risk zones...</p>
                                     </div>
                                 </div>
                             </div>
@@ -897,6 +858,7 @@
 
                         <!-- RIGHT COLUMN: Sidebar -->
                         <div class="nearby-sidebar">
+                            <!-- SOS Beacon Card -->
                             <div class="sidebar-card sos-card">
                                 <div class="card-icon">🚨</div>
                                 <h3>Emergency SOS</h3>
@@ -906,6 +868,7 @@
                                 </button>
                             </div>
 
+                            <!-- Status Panel -->
                             <div class="sidebar-card status-card">
                                 <h3>Status</h3>
                                 <div class="status-item">
@@ -913,34 +876,32 @@
                                     <span class="status-value" id="locationStatus">Disabled</span>
                                 </div>
                                 <div class="status-item">
-                                    <span class="status-label">Active Alerts</span>
+                                    <span class="status-label">Incidents Found</span>
                                     <span class="status-value" id="incidentCount">0</span>
                                 </div>
                                 <div class="status-item">
-                                    <span class="status-label">Traveler Mode</span>
-                                    <span class="status-value" id="travelerModeStatus">OFF</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">Critical Alerts</span>
+                                    <span class="status-label">High Risk Zones</span>
                                     <span class="status-value danger" id="riskCount">0</span>
                                 </div>
                             </div>
 
+                            <!-- Quick Actions -->
                             <div class="sidebar-card">
                                 <h3>Quick Actions</h3>
                                 <div class="quick-actions-list">
                                     <button class="quick-action-btn" onclick="callEmergency('112')">
                                         <i class="fas fa-phone"></i> Call 112
                                     </button>
-                                    <button class="quick-action-btn" onclick="toggleTravelerMode()">
-                                        <i class="fas fa-location-arrow"></i> Toggle Traveler Mode
+                                    <button class="quick-action-btn" onclick="askAI()">
+                                        <i class="fas fa-robot"></i> Ask AI
                                     </button>
-                                    <button class="quick-action-btn" onclick="startEmergencyVoiceMode()">
-                                        <i class="fas fa-microphone"></i> One-Tap Voice Mode
+                                    <button class="quick-action-btn" onclick="getNearbyIncidents()">
+                                        <i class="fas fa-redo"></i> Refresh
                                     </button>
                                 </div>
                             </div>
 
+                            <!-- Emergency Contacts -->
                             <div class="sidebar-card contacts-card">
                                 <h3>Emergency Numbers</h3>
                                 <div class="contacts-list">
@@ -1175,10 +1136,6 @@
 
             setTimeout(() => {
                 content.classList.add('loaded');
-                // Initialize the rapid crisis portal ONLY when entering dashboard
-                if (typeof initializeRapidPortal === 'function') {
-                    initializeRapidPortal();
-                }
             }, 200);
         }
 

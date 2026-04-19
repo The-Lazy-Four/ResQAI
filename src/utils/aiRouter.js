@@ -10,59 +10,13 @@ import axios from 'axios';
 // ==================== INITIALIZATION ====================
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const OPENROUTER_PRIMARY_API_KEY = process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY;
-const OPENROUTER_SECONDARY_API_KEY = process.env.OPENROUTER_SECONDARY_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const AI_TIMEOUT = parseInt(process.env.AI_TIMEOUT || '30000');
-const DEFAULT_AI_PROVIDER_PRIORITY = [
-    'gemini',
-    'openrouter_primary',
-    'openrouter_secondary',
-    'grok',
-    'fallback'
-];
 
 console.log('\n📋 [AI ROUTER] Environment Variables Check:');
 console.log(`   GROQ_API_KEY: ${GROQ_API_KEY ? GROQ_API_KEY.slice(0, 20) + '...' : 'NOT SET'}`);
 console.log(`   GROQ_MODEL: ${process.env.GROQ_MODEL || 'NOT SET (will use default)'}\n`);
-
-function normalizeProviderName(name) {
-    const value = String(name || '').trim().toLowerCase();
-    if (value === 'groq') return 'grok';
-    if (value === 'openrouter') return 'openrouter_primary';
-    return value;
-}
-
-function parseProviderPriority() {
-    const configured = process.env.AI_PROVIDER_PRIORITY;
-    if (!configured || !configured.trim()) {
-        return DEFAULT_AI_PROVIDER_PRIORITY;
-    }
-
-    let parsed = [];
-    try {
-        if (configured.trim().startsWith('[')) {
-            parsed = JSON.parse(configured);
-        } else {
-            parsed = configured.split(',');
-        }
-    } catch (error) {
-        console.warn('⚠️  [AI ROUTER] Invalid AI_PROVIDER_PRIORITY. Using default chain.');
-        return DEFAULT_AI_PROVIDER_PRIORITY;
-    }
-
-    const normalized = parsed
-        .map(normalizeProviderName)
-        .filter((name) => DEFAULT_AI_PROVIDER_PRIORITY.includes(name));
-
-    if (!normalized.includes('fallback')) {
-        normalized.push('fallback');
-    }
-
-    return [...new Set(normalized)];
-}
-
-const AI_PROVIDER_PRIORITY = parseProviderPriority();
 
 // Initialize Gemini
 let geminiClient = null;
@@ -83,19 +37,11 @@ if (GROQ_API_KEY && GROQ_API_KEY.trim() && GROQ_API_KEY !== 'your-key') {
 }
 
 // OpenRouter uses HTTP
-const hasOpenRouterPrimary = OPENROUTER_PRIMARY_API_KEY && OPENROUTER_PRIMARY_API_KEY.trim() && OPENROUTER_PRIMARY_API_KEY !== 'your-key';
-const hasOpenRouterSecondary = OPENROUTER_SECONDARY_API_KEY && OPENROUTER_SECONDARY_API_KEY.trim() && OPENROUTER_SECONDARY_API_KEY !== 'your-key';
-
-if (hasOpenRouterPrimary) {
-    console.log('✅ [AI ROUTER] OpenRouter PRIMARY configured');
+const hasOpenRouter = OPENROUTER_API_KEY && OPENROUTER_API_KEY.trim() && OPENROUTER_API_KEY !== 'your-key';
+if (hasOpenRouter) {
+    console.log('✅ [AI ROUTER] OpenRouter configured as SECONDARY provider');
 } else {
-    console.warn('⚠️  [AI ROUTER] OpenRouter PRIMARY API key not configured - will be skipped');
-}
-
-if (hasOpenRouterSecondary) {
-    console.log('✅ [AI ROUTER] OpenRouter SECONDARY configured');
-} else {
-    console.warn('⚠️  [AI ROUTER] OpenRouter SECONDARY API key not configured - will be skipped');
+    console.warn('⚠️  [AI ROUTER] OpenRouter API key not configured - will be skipped');
 }
 
 // ==================== PROVIDER: GEMINI ====================
@@ -133,11 +79,11 @@ async function callGemini(prompt, language = 'en') {
 
 // ==================== PROVIDER: OPENROUTER ====================
 
-async function callOpenRouterProvider(prompt, apiKey, model, providerLabel) {
-    console.log(`🟢 [AI] Attempting ${providerLabel}...`);
+async function callOpenRouter(prompt, language = 'en') {
+    console.log('🟢 [AI] Attempting OpenRouter (Secondary)...');
 
-    if (!apiKey || !apiKey.trim()) {
-        throw new Error(`${providerLabel} API key not configured`);
+    if (!hasOpenRouter) {
+        throw new Error('OpenRouter API key not configured');
     }
 
     try {
@@ -145,14 +91,14 @@ async function callOpenRouterProvider(prompt, apiKey, model, providerLabel) {
             axios.post(
                 'https://openrouter.ai/api/v1/chat/completions',
                 {
-                    model: model || process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-8b-instruct',
+                    model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-8b-instruct',
                     messages: [{ role: 'user', content: prompt }],
                     temperature: 0.7,
                     max_tokens: 1500
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${apiKey}`,
+                        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                         'HTTP-Referer': 'http://localhost:3000',
                         'X-Title': 'ResQAI Emergency Response'
                     },
@@ -167,33 +113,15 @@ async function callOpenRouterProvider(prompt, apiKey, model, providerLabel) {
         const content = response.data?.choices?.[0]?.message?.content;
 
         if (!content || content.trim().length === 0) {
-            throw new Error(`Empty response from ${providerLabel}`);
+            throw new Error('Empty response from OpenRouter');
         }
 
-        console.log(`✅ [AI] ${providerLabel} succeeded`);
+        console.log('✅ [AI] OpenRouter succeeded');
         return content.trim();
     } catch (error) {
-        console.error(`❌ [AI] ${providerLabel} failed:`, error.message);
+        console.error('❌ [AI] OpenRouter failed:', error.message);
         throw error;
     }
-}
-
-async function callOpenRouterPrimary(prompt, language = 'en') {
-    return callOpenRouterProvider(
-        prompt,
-        OPENROUTER_PRIMARY_API_KEY,
-        process.env.OPENROUTER_PRIMARY_MODEL || process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-8b-instruct',
-        'OpenRouter Primary'
-    );
-}
-
-async function callOpenRouterSecondary(prompt, language = 'en') {
-    return callOpenRouterProvider(
-        prompt,
-        OPENROUTER_SECONDARY_API_KEY,
-        process.env.OPENROUTER_SECONDARY_MODEL || process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-8b-instruct',
-        'OpenRouter Secondary'
-    );
 }
 
 // ==================== PROVIDER: GROQ ====================
@@ -235,10 +163,54 @@ async function callGroq(prompt, language = 'en') {
     }
 }
 
+// ==================== PROVIDER: FREE AI (POLLINATIONS) ====================
+
+async function callFreeAI(prompt, language = 'en') {
+    console.log('🟣 [AI] Attempting Free AI (Pollinations.ai)...');
+
+    try {
+        const response = await Promise.race([
+            axios.post('https://text.pollinations.ai/', {
+                messages: [
+                    { role: 'system', content: 'You are an intelligent ResQAI crisis response agent.' },
+                    { role: 'user', content: prompt }
+                ],
+                model: 'openai'
+            }, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: AI_TIMEOUT
+            }),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('FreeAI timeout')), AI_TIMEOUT)
+            )
+        ]);
+
+        const content = response.data;
+        if (!content || typeof content !== 'string') {
+            throw new Error('Empty or invalid response from Free AI');
+        }
+
+        console.log('✅ [AI] Free AI succeeded');
+        return content.trim();
+    } catch (error) {
+        console.error('❌ [AI] Free AI failed:', error.message);
+        throw error;
+    }
+}
+
 // ==================== SMART FALLBACK ====================
 
-function getFallbackResponse(language = 'en') {
+function getFallbackResponse(language = 'en', isVoiceOverride = false) {
     console.log('🔴 [AI] All providers failed - Using fallback');
+
+    if (isVoiceOverride) {
+        const voiceFallbacks = {
+            en: "I am having trouble connecting to my central systems, but please do not panic. Make sure you are safe, move away from any immediate danger, and dial 112 immediately for local authorities.",
+            hi: "मैं अपने मुख्य सर्वर से कनेक्ट नहीं कर पा रहा हूँ। कृपया घबराएं नहीं। सुरक्षित स्थान पर चले जाएं और सहायता के लिए तुरंत 112 डायल करें।",
+            bn: "আমি আমার প্রধান সিস্টেমের সাথে সংযোগ করতে পারছি না। অনুগ্রহ করে আতঙ্কিত হবেন না। নিরাপদ স্থানে যান এবং সাহায্যের জন্য অবিলম্বে 112 ডায়াল করুন।"
+        };
+        return voiceFallbacks[language] || voiceFallbacks.en;
+    }
 
     const fallbacks = {
         en: `🚨 EMERGENCY RESPONSE (AI System Offline)
@@ -316,99 +288,150 @@ Please contact emergency services directly for professional guidance.`,
 // Track AI usage for reporting
 let lastAIUsageReport = null;
 
-export async function generateAIResponse(prompt, language = 'en') {
+export async function generateAIResponse(prompt, language = 'en', isVoiceOverride = false) {
     const startTime = Date.now();
 
     console.log('\n════════════════════════════════════════════════════════════');
     console.log('🧠 [AI ROUTER] 🤖 LIVE AI REQUEST INITIATED 🤖');
     console.log('════════════════════════════════════════════════════════════');
     console.log(`   Language: ${language}`);
+    console.log(`   Voice Mode: ${isVoiceOverride}`);
     console.log(`   Prompt: "${prompt.substring(0, 80)}..."`);
-    console.log(`   Provider Chain: ${AI_PROVIDER_PRIORITY.join(' → ')}`);
+    console.log('   Provider Chain: Gemini → OpenRouter → Groq → Fallback');
 
     const errors = [];
     let usedProvider = null;
     let isFallback = false;
 
-    for (const provider of AI_PROVIDER_PRIORITY) {
-        try {
-            if (provider === 'gemini') {
-                if (!geminiClient) {
-                    console.log('⏭️  [AI] Gemini skipped - not configured');
-                    continue;
-                }
+    // Try Gemini (Primary)
+    try {
+        if (geminiClient) {
+            console.log('\n🤖 [PROVIDER] Attempting GEMINI (Primary Provider)...');
+            const startGemini = Date.now();
+            const response = await callGemini(prompt, language);
+            const geminiTime = Date.now() - startGemini;
 
-                console.log('\n🤖 [PROVIDER] Attempting GEMINI (Primary Provider)...');
-                const startGemini = Date.now();
-                const response = await callGemini(prompt, language);
-                const geminiTime = Date.now() - startGemini;
+            console.log(`✅ [PROVIDER] GEMINI SUCCESS - ${geminiTime}ms`);
+            console.log('🤖 Provider Used: GEMINI');
+            console.log('⚠️ Fallback Used: NO (Using live AI)');
+            console.log(`⏱️ Response Time: ${geminiTime}ms`);
+            console.log('✨ Response Type: AI-GENERATED');
 
-                usedProvider = 'Gemini';
-                isFallback = false;
-                lastAIUsageReport = { provider: 'Gemini', fallback: false, responseTime: geminiTime, type: 'AI-GENERATED' };
-                return response;
-            }
+            usedProvider = 'Gemini';
+            isFallback = false;
 
-            if (provider === 'openrouter_primary') {
-                if (!hasOpenRouterPrimary) {
-                    console.log('⏭️  [AI] OpenRouter Primary skipped - not configured');
-                    continue;
-                }
+            // Store usage report
+            lastAIUsageReport = {
+                provider: 'Gemini',
+                fallback: false,
+                responseTime: geminiTime,
+                type: 'AI-GENERATED'
+            };
 
-                console.log('\n🤖 [PROVIDER] Attempting OPENROUTER PRIMARY...');
-                const startOpenRouterPrimary = Date.now();
-                const response = await callOpenRouterPrimary(prompt, language);
-                const openRouterPrimaryTime = Date.now() - startOpenRouterPrimary;
-
-                usedProvider = 'OpenRouter Primary';
-                isFallback = false;
-                lastAIUsageReport = { provider: 'OpenRouter Primary', fallback: false, responseTime: openRouterPrimaryTime, type: 'AI-GENERATED' };
-                return response;
-            }
-
-            if (provider === 'openrouter_secondary') {
-                if (!hasOpenRouterSecondary) {
-                    console.log('⏭️  [AI] OpenRouter Secondary skipped - not configured');
-                    continue;
-                }
-
-                console.log('\n🤖 [PROVIDER] Attempting OPENROUTER SECONDARY...');
-                const startOpenRouterSecondary = Date.now();
-                const response = await callOpenRouterSecondary(prompt, language);
-                const openRouterSecondaryTime = Date.now() - startOpenRouterSecondary;
-
-                usedProvider = 'OpenRouter Secondary';
-                isFallback = false;
-                lastAIUsageReport = { provider: 'OpenRouter Secondary', fallback: false, responseTime: openRouterSecondaryTime, type: 'AI-GENERATED' };
-                return response;
-            }
-
-            if (provider === 'grok') {
-                if (!groqClient) {
-                    console.log('⏭️  [AI] Groq skipped - not configured');
-                    continue;
-                }
-
-                console.log('\n🤖 [PROVIDER] Attempting GROQ (Tertiary Provider)...');
-                const startGroq = Date.now();
-                const response = await callGroq(prompt, language);
-                const groqTime = Date.now() - startGroq;
-
-                usedProvider = 'Groq';
-                isFallback = false;
-                lastAIUsageReport = { provider: 'Groq', fallback: false, responseTime: groqTime, type: 'AI-GENERATED' };
-                return response;
-            }
-
-            if (provider === 'fallback') {
-                break;
-            }
-        } catch (error) {
-            errors.push(`${provider}: ${error.message}`);
+            return response;
+        } else {
+            console.log('⏭️  [AI] Gemini skipped - not configured');
         }
+    } catch (error) {
+        errors.push(`Gemini: ${error.message}`);
     }
 
-    // All providers failed - use fallback
+    // Try OpenRouter (Secondary)
+    try {
+        if (hasOpenRouter) {
+            console.log('\n🤖 [PROVIDER] Attempting OPENROUTER (Secondary Provider)...');
+            const startOpenRouter = Date.now();
+            const response = await callOpenRouter(prompt, language);
+            const openRouterTime = Date.now() - startOpenRouter;
+
+            console.log(`✅ [PROVIDER] OPENROUTER SUCCESS - ${openRouterTime}ms`);
+            console.log('🤖 Provider Used: OPENROUTER');
+            console.log('⚠️ Fallback Used: NO (Using live AI)');
+            console.log(`⏱️ Response Time: ${openRouterTime}ms`);
+            console.log('✨ Response Type: AI-GENERATED');
+
+            usedProvider = 'OpenRouter';
+            isFallback = false;
+
+            // Store usage report
+            lastAIUsageReport = {
+                provider: 'OpenRouter',
+                fallback: false,
+                responseTime: openRouterTime,
+                type: 'AI-GENERATED'
+            };
+
+            return response;
+        } else {
+            console.log('⏭️  [AI] OpenRouter skipped - not configured');
+        }
+    } catch (error) {
+        errors.push(`OpenRouter: ${error.message}`);
+    }
+
+    // Try Groq (Tertiary)
+    try {
+        if (groqClient) {
+            console.log('\n🤖 [PROVIDER] Attempting GROQ (Tertiary Provider)...');
+            const startGroq = Date.now();
+            const response = await callGroq(prompt, language);
+            const groqTime = Date.now() - startGroq;
+
+            console.log(`✅ [PROVIDER] GROQ SUCCESS - ${groqTime}ms`);
+            console.log('🤖 Provider Used: GROQ');
+            console.log('⚠️ Fallback Used: NO (Using live AI)');
+            console.log(`⏱️ Response Time: ${groqTime}ms`);
+            console.log('✨ Response Type: AI-GENERATED');
+
+            usedProvider = 'Groq';
+            isFallback = false;
+
+            // Store usage report
+            lastAIUsageReport = {
+                provider: 'Groq',
+                fallback: false,
+                responseTime: groqTime,
+                type: 'AI-GENERATED'
+            };
+
+            return response;
+        } else {
+            console.log('⏭️  [AI] Groq skipped - not configured');
+        }
+    } catch (error) {
+        errors.push(`Groq: ${error.message}`);
+    }
+
+    // Try Free AI (Pollinations) if others failed
+    try {
+        console.log('\n🤖 [PROVIDER] Attempting FREE AI (Quartenary Provider)...');
+        const startFreeAI = Date.now();
+        const response = await callFreeAI(prompt, language);
+        const freeAITime = Date.now() - startFreeAI;
+
+        console.log(`✅ [PROVIDER] FREE AI SUCCESS - ${freeAITime}ms`);
+        console.log('🤖 Provider Used: FREE AI');
+        console.log('⚠️ Fallback Used: NO (Using live free AI)');
+        console.log(`⏱️ Response Time: ${freeAITime}ms`);
+        console.log('✨ Response Type: AI-GENERATED');
+
+        usedProvider = 'FreeAI';
+        isFallback = false;
+
+        // Store usage report
+        lastAIUsageReport = {
+            provider: 'FreeAI',
+            fallback: false,
+            responseTime: freeAITime,
+            type: 'AI-GENERATED'
+        };
+
+        return response;
+    } catch (error) {
+        errors.push(`FreeAI: ${error.message}`);
+    }
+
+    // All providers failed - use absolute fallback
     const totalTime = Date.now() - startTime;
     console.error('\n🔴 [AI ROUTER] ALL PROVIDERS FAILED - FALLBACK ENGAGED');
     console.error('   Errors encountered:');
@@ -432,7 +455,7 @@ export async function generateAIResponse(prompt, language = 'en') {
         type: 'STATIC TEMPLATE'
     };
 
-    return getFallbackResponse(language);
+    return getFallbackResponse(language, isVoiceOverride);
 }
 
 // Export usage report for testing
@@ -451,16 +474,12 @@ export async function testGroqProvider(prompt, language = 'en') {
 export function getAIRouterStatus() {
     return {
         gemini: !!geminiClient,
-        openrouterPrimary: hasOpenRouterPrimary,
-        openrouterSecondary: hasOpenRouterSecondary,
-        openrouter: hasOpenRouterPrimary || hasOpenRouterSecondary,
+        openrouter: hasOpenRouter,
         groq: !!groqClient,
         fallback: true,
-        providerPriority: AI_PROVIDER_PRIORITY,
         availableProviders: [
             geminiClient ? 'Gemini' : null,
-            hasOpenRouterPrimary ? 'OpenRouter Primary' : null,
-            hasOpenRouterSecondary ? 'OpenRouter Secondary' : null,
+            hasOpenRouter ? 'OpenRouter' : null,
             groqClient ? 'Groq' : null,
             'Fallback'
         ].filter(Boolean)
