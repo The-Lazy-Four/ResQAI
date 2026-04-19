@@ -11,6 +11,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Import database initialization
+import { initMySQL } from './db/mysql.js';
+
 // Import API routes
 import emergencyRoutes from './api/routes/emergency.js';
 import classificationRoutes from './api/routes/classification.js';
@@ -18,6 +21,9 @@ import chatRoutes from './api/routes/chat.js';
 import voiceRoutes from './api/routes/voice.js';
 import nearbyRoutes from './api/routes/nearby.js';
 import aiRoutes from './api/routes/ai.js';
+import portalRoutes from './api/routes/portal.js';
+import authRoutes from './api/routes/auth.js';
+import customSystemRoutes from './api/routes/custom-system.js';
 
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
@@ -32,6 +38,14 @@ validateEnvironment();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// ==================== DATABASE INITIALIZATION ====================
+
+// Initialize MySQL (with SQLite fallback)
+console.log('\n🗄️  [DATABASE] Initializing database connections...');
+await initMySQL().catch(err => {
+    console.warn('⚠️  MySQL initialization failed, SQLite will be used:', err.message);
+});
 
 // ==================== ENVIRONMENT VALIDATION ====================
 
@@ -86,12 +100,18 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount API routes
+app.use('/api/auth', authRoutes);
 app.use('/api/emergencies', emergencyRoutes);
 app.use('/api/classification', classificationRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/nearby', nearbyRoutes);
 app.use('/api/ai', aiRoutes);
+<<<<<<< HEAD
+=======
+app.use('/api/portal', portalRoutes);
+app.use('/api/custom-system', customSystemRoutes);
+>>>>>>> 89c86b0 (Integrate MySQL and auth)
 
 // ==================== SERVE FRONTEND ====================
 
