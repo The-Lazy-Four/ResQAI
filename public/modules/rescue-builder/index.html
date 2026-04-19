@@ -31,12 +31,14 @@
                     <p>Manage and access your rescue systems</p>
                 </div>
 
-                <button class="btn-large btn-primary" id="create-system-btn" onclick="goToTypeSelection(); return false;">
+                <button class="btn-large btn-primary" id="create-system-btn"
+                    onclick="goToTypeSelection(); return false;">
                     ➕ Create New System
                 </button>
 
                 <!-- DEBUG PANEL (Hidden by default - Press Ctrl+D to toggle) -->
-                <div id="debug-panel" style="display: none; background: #1a1a2e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #0f0; border: 1px solid #0f0;">
+                <div id="debug-panel"
+                    style="display: none; background: #1a1a2e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #0f0; border: 1px solid #0f0;">
                     <div style="margin-bottom: 10px;"><strong>📊 DEBUG INFO (Press Ctrl+D to hide)</strong></div>
                     <div id="debug-content">Loading...</div>
                 </div>
@@ -568,6 +570,14 @@
                     </div>
                 </div>
 
+                <!-- ACTIVE SOS ALERTS -->
+                <div class="admin-card alert-card">
+                    <h3>🚨 Active SOS Alerts</h3>
+                    <div id="active-sos-list" style="max-height: 300px; overflow-y: auto;">
+                        <p style="color: #888; font-size: 14px;">No active SOS events</p>
+                    </div>
+                </div>
+
                 <!-- STAFF COORDINATION -->
                 <div class="admin-card">
                     <h3>Staff Coordination</h3>
@@ -675,10 +685,10 @@
     <!-- Scripts -->
     <script src="/modules/rescue-builder/js/templates.js"></script>
     <script src="/modules/rescue-builder/js/builder.js"></script>
-    
+
     <!-- Initialize on page load -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Load systems dashboard on page load
             showSystemsDashboard();
         });
