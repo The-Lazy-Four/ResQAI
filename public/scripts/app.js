@@ -82,6 +82,20 @@ document.getElementById('emergencyForm')?.addEventListener('submit', async (e) =
 
         if (response.ok) {
             showToast('Emergency report submitted successfully!', 'success');
+
+            if (typeof window.startImmediateEmergencyGuidance === 'function') {
+                window.startImmediateEmergencyGuidance({
+                    id: data.incident?.id,
+                    type: data.incident?.classified_type || severity,
+                    title: data.incident?.description || description,
+                    description,
+                    location: data.incident?.location || location,
+                    severity: data.incident?.severity || severity
+                }).catch((error) => {
+                    console.warn('⚠️ Immediate emergency guidance failed:', error);
+                });
+            }
+
             document.getElementById('emergencyForm').reset();
             document.getElementById('imagePreview').innerHTML = '';
             document.getElementById('fileName').textContent = 'Click to upload or drag & drop';
@@ -148,6 +162,11 @@ function getLocation() {
 
 function showLoading(show) {
     const spinner = document.getElementById('loadingSpinner');
+    if (!spinner) {
+        console.warn('⚠️ Loading spinner element not found');
+        return;
+    }
+
     if (show) {
         spinner.classList.remove('hidden');
     } else {

@@ -15,6 +15,7 @@ import chatRoutes from './api/routes/chat.js';
 import voiceRoutes from './api/routes/voice.js';
 import nearbyRoutes from './api/routes/nearby.js';
 import aiRoutes from './api/routes/ai.js';
+import portalRoutes from './api/routes/portal.js';
 
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
@@ -56,7 +57,8 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 // Log environment status (first 10 chars of keys for security)
 console.log(`\n📋 [ENVIRONMENT] Node Env: ${NODE_ENV}`);
 console.log(`📋 [ENVIRONMENT] GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
-console.log(`📋 [ENVIRONMENT] OPENROUTER_API_KEY: ${process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
+console.log(`📋 [ENVIRONMENT] OPENROUTER_PRIMARY_API_KEY: ${(process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY) ? (process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY).slice(0, 10) + '...' : 'NOT SET'}`);
+console.log(`📋 [ENVIRONMENT] OPENROUTER_SECONDARY_API_KEY: ${process.env.OPENROUTER_SECONDARY_API_KEY ? process.env.OPENROUTER_SECONDARY_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] GROQ_API_KEY: ${process.env.GROQ_API_KEY ? process.env.GROQ_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] PORT: ${PORT}\n`);
 
@@ -95,9 +97,12 @@ app.get('/api/health', (req, res) => {
         port: PORT,
         ai: {
             gemini: aiStatus.gemini ? '✅ Available' : '❌ Not configured',
+            openrouterPrimary: aiStatus.openRouterPrimary ? '✅ Available' : '❌ Not configured',
+            openrouterSecondary: aiStatus.openRouterSecondary ? '✅ Available' : '❌ Not configured',
             openrouter: aiStatus.openRouter ? '✅ Available' : '❌ Not configured',
             groq: aiStatus.groq ? '✅ Available' : '❌ Not configured',
-            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None'
+            primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None',
+            providerPriority: aiStatus.providerPriority
         },
         cors: NODE_ENV === 'production' ? 'Allow All (Production)' : 'Localhost Only (Development)'
     });
@@ -110,6 +115,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/nearby', nearbyRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/portal', portalRoutes);
 
 // ==================== SERVE FRONTEND ====================
 
