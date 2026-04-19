@@ -57,9 +57,25 @@ async function createTables() {
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS custom_rescue_systems (
+            id TEXT PRIMARY KEY,
+            organization_name TEXT NOT NULL,
+            organization_type TEXT NOT NULL,
+            location TEXT NOT NULL,
+            contact_email TEXT NOT NULL,
+            structure_json TEXT,
+            staff_json TEXT,
+            risk_types_json TEXT,
+            status TEXT DEFAULT 'created',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE INDEX IF NOT EXISTS idx_emergencies_status ON emergencies(status);
         CREATE INDEX IF NOT EXISTS idx_emergencies_created ON emergencies(created_at);
         CREATE INDEX IF NOT EXISTS idx_emergencies_type ON emergencies(classified_type);
+        CREATE INDEX IF NOT EXISTS idx_custom_systems_created ON custom_rescue_systems(created_at);
+        CREATE INDEX IF NOT EXISTS idx_custom_systems_status ON custom_rescue_systems(status);
     `);
 }
 
