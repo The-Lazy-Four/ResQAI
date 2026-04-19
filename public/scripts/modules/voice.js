@@ -72,13 +72,13 @@ async function handleVoiceInput(transcript, confidence) {
 
         // Check for emergency keywords
         if (lowerTranscript.includes('fire') || lowerTranscript.includes('aag')) {
-            sendToChat('fire emergency ' + transcript);
+            await handleImmediateVoiceEmergency('fire', transcript);
         } else if (lowerTranscript.includes('medical') || lowerTranscript.includes('injured') || lowerTranscript.includes('accident')) {
-            sendToChat('medical emergency ' + transcript);
+            await handleImmediateVoiceEmergency('medical', transcript);
         } else if (lowerTranscript.includes('flood') || lowerTranscript.includes('water') || lowerTranscript.includes('barish')) {
-            sendToChat('flood alert ' + transcript);
+            await handleImmediateVoiceEmergency('flood', transcript);
         } else if (lowerTranscript.includes('help') || lowerTranscript.includes('emergency') || lowerTranscript.includes('112')) {
-            sendToChat('emergency help ' + transcript);
+            await handleImmediateVoiceEmergency('general', transcript);
         } else {
             // General query
             sendToChat(transcript);
@@ -99,6 +99,24 @@ async function handleVoiceInput(transcript, confidence) {
         console.error('Error handling voice input:', error);
         showToast('❌ Error processing voice input', 'error');
     }
+}
+
+async function handleImmediateVoiceEmergency(emergencyType, transcript) {
+    if (typeof window.startImmediateEmergencyGuidance === 'function') {
+        try {
+            await window.startImmediateEmergencyGuidance({
+                emergencyType,
+                transcript,
+                description: transcript,
+                title: `Voice emergency: ${emergencyType}`,
+                severity: emergencyType === 'general' ? 'medium' : 'high'
+            });
+        } catch (error) {
+            console.warn('⚠️ Voice emergency guidance failed:', error);
+        }
+    }
+
+    sendToChat(`${emergencyType} emergency ${transcript}`);
 }
 
 // ==================== SEND TEXT TO CHAT ====================

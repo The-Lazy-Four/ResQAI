@@ -1,30 +1,120 @@
 # 🚨 ResQAI – AI Crisis Intelligence System
 
-**Google Hackathon Project** | AI-powered real-time emergency detection & response with location-based risk intelligence.
+**Google Hackathon Project** | AI-powered real-time emergency detection & response with location-based crisis intelligence
 
-> *Turning panic into action. Save lives with AI-guided emergency response.*
-
----
-
-## 🎯 Problem Statement
-
-In emergencies, people have **seconds to make critical decisions** but lack:
-- Real-time awareness of nearby dangers
-- Clear step-by-step guidance on what to do
-- Fast, reliable information access
-
-**ResQAI solves this** by using AI + Location Intelligence to provide instant, actionable guidance.
+> *When every second matters. Instant AI guidance. Safe zones. Evacuation routes. In any emergency.*
 
 ---
 
-## 💡 What It Does
+## 🎯 The Problem
 
-- 🤖 **AI Emergency Guidance** – Google Gemini generates step-by-step instructions for ANY disaster type
-- 📍 **Real-time Nearby Alerts** – Detects incidents within 5km with severity levels
-- 🆘 **SOS Emergency System** – One-click activation with alarm + location broadcast
-- 🌍 **Multi-Language Support** – English, Hindi, Bengali
-- 🔄 **Multi-Provider AI** – Automatic fallback if primary provider fails
-- 💾 **Offline-Ready** – Local SQLite database, works even without internet
+In emergencies, **people have seconds to make critical decisions** but lack:
+
+- ❌ Real-time awareness of nearby dangers
+- ❌ Clear, step-by-step guidance on immediate actions  
+- ❌ Knowledge of safe shelter locations nearby
+- ❌ Quick evacuation routes to safety
+- ❌ Language-accessible information (esp. for travelers)
+
+**Result:** Panic. Delayed response. Preventable casualties.
+
+---
+
+## 💡 Our Solution: ResQAI
+
+An **AI-powered emergency response system** that delivers:
+
+✅ **Instant AI guidance** – Step-by-step evacuation instructions in seconds  
+✅ **Live crisis alerts** – Real-time incident map within 5km radius  
+✅ **Smart safe zones** – Auto-finds shelters/hospitals/police nearby  
+✅ **Optimized routes** – Turn-by-turn navigation to nearest safety  
+✅ **Voice activation** – Speak emergency keywords, no typing needed  
+✅ **Multi-language** – English, Hindi, Bengali support  
+✅ **Zero downtime** – Multi-AI fallback system (Gemini → OpenRouter → Groq)
+
+---
+
+## 🖼️ Visual Overview
+
+### 🚀 Product Walkthrough (Click to Explore)
+
+<table>
+<tr>
+<td align="center">
+<img src="./docs/images/Screenshot%202026-04-18%20091401.png" width="100%"><br>
+<b>Landing Page</b><br>
+<sub>Instant AI-guided emergency response</sub>
+</td>
+
+<td align="center">
+<img src="./docs/images/Screenshot%202026-04-18%20091338.png" width="100%"><br>
+<b>System Selection</b><br>
+<sub>Choose your rescue system</sub>
+</td>
+</tr>
+
+<tr>
+<td align="center">
+<img src="./docs/images/Screenshot%202026-04-18%20091308.png" width="100%"><br>
+<b>Live Crisis Dashboard</b><br>
+<sub>Real-time alerts within 5km</sub>
+</td>
+
+<td align="center">
+<img src="./docs/images/Screenshot%202026-04-18%20091448.png" width="100%"><br>
+<b>Hotel Emergency Module</b><br>
+<sub>Smart safety for every guest</sub>
+</td>
+</tr>
+
+<tr>
+<td align="center" colspan="2">
+<img src="./docs/images/Screenshot%202026-04-18%20091523.png" width="60%"><br>
+<b>Admin Command Center</b><br>
+<sub>Real-time coordination & control</sub>
+</td>
+</tr>
+</table>
+
+---
+
+
+## 🧠 Key Features
+
+### 1. **Multi-Channel Emergency Reporting**
+- **Form-based:** Describe emergency + location
+- **Voice-first:** Say "Fire!" or "Medical emergency!" 
+- **One-tap SOS:** Instant alarm + location broadcast
+
+### 2. **Real-Time AI Evacuation Guidance**
+- Google Gemini generates contextual instructions
+- Immediate action steps ("What do I do RIGHT NOW?")
+- Panic-proof, structured responses
+- Fallback to secondary AI if primary fails
+
+### 3. **Live Crisis Alerts Dashboard**
+- Nearby incidents within 5km radius
+- Color-coded severity (Low/Medium/High)
+- Distance + ETA to each incident
+- Auto-refresh every 60 seconds
+
+### 4. **Smart Safe Zone Discovery**
+- Auto-finds shelters, hospitals, police stations
+- Uses OpenStreetMap live data
+- Enforced 5km max distance (no far-away suggestions)
+- Real-time availability info
+
+### 5. **AI-Guided Evacuation Routes**
+- Optimal path to nearest safe zone
+- Turn-by-turn directions on interactive map
+- Real-time distance & ETA
+- Integration with evacuation guidance
+
+### 6. **Voice Emergency Detection**
+- Detect keywords: fire, flood, medical, earthquake, accident
+- Instant guidance trigger (no form needed)
+- Voice synthesis reads guidance back to user
+- Works in noisy environments
 
 ---
 
@@ -32,206 +122,276 @@ In emergencies, people have **seconds to make critical decisions** but lack:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENT LAYER                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │  Web UI      │  │  Mobile      │  │  Voice Input │           │
-│  │  (HTML/CSS)  │  │  Location    │  │  Processing  │           │
-│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│                        USER LAYER                                │
+│  [ Web Dashboard ]  [ Emergency Form ]  [ Voice Input ]          │
 └─────────────────────┬───────────────────────────────────────────┘
                       │ HTTP/JSON
 ┌─────────────────────▼───────────────────────────────────────────┐
-│                    API GATEWAY (Express)                         │
-│  ├─ /api/ai/emergency-guidance                                  │
-│  ├─ /api/emergency/classify                                     │
-│  ├─ /api/nearby                                                 │
-│  └─ /api/voice/process                                          │
+│                   API GATEWAY (Express.js)                       │
+│  /api/emergency/classify  /api/portal/safe-zones                 │
+│  /api/ai/guidance         /api/portal/evacuation-route          │
+│  /api/nearby              /api/voice/process                    │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
-        ┌─────────────┴─────────────┐
-        │                           │
-┌───────▼──────────┐      ┌────────▼──────────┐
-│   AI ROUTER      │      │  DATA PROCESSOR   │
-│  (Multi-Provider)│      │  (Classification) │
-│                  │      │                   │
-│ ┌──────────────┐ │      └───────────────────┘
-│ │ Gemini       │ │
-│ │ (Primary)    │ │      ┌────────────────────┐
-│ ├──────────────┤ │      │   LOCATION ENGINE  │
-│ │ OpenRouter   │ │      │  (Map & Incidents) │
-│ │ (Secondary)  │ │      └────────────────────┘
-│ ├──────────────┤ │
-│ │ Groq         │ │      ┌────────────────────┐
-│ │ (Tertiary)   │ │      │  DATABASE (SQLite) │
-│ ├──────────────┤ │      │ - Emergencies      │
-│ │ Static Cache │ │      │ - Incidents Log    │
-│ │ (Fallback)   │ │      │ - User Data        │
-│ └──────────────┘ │      └────────────────────┘
-└──────────────────┘
+        ┌─────────────┴──────────────┬──────────────┐
+        │                            │              │
+┌───────▼──────────────┐    ┌────────▼────────┐   │
+│   AI ROUTER          │    │  SAFE ZONE      │   │
+│ (Multi-Provider)     │    │  ENGINE         │   │
+│                      │    │                 │   │
+│ • Gemini (Primary)   │    │ • Overpass API  │   │
+│ • OpenRouter (2nd)   │    │ • OSM Data      │   │
+│ • Groq (3rd)         │    │ • Distance      │   │
+│ • Cached Fallback    │    │   Filtering     │   │
+└──────────────────────┘    └─────────────────┘   │
+                                                   │
+        ┌──────────────────────────────────────────▼───────┐
+        │           EXTERNAL SERVICES                      │
+        │  • OpenStreetMap (Map data)                     │
+        │  • OpenRouteService / Mapbox (Routing)         │
+        │  • Google Geolocation (User location)          │
+        └──────────────────────────────────────────────────┘
+
+DATABASE: SQLite3 (Emergencies, Incidents, Safe Zones, Users)
 ```
 
 ---
 
-## 🚀 Quick Start
+## ⚙️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | HTML5, CSS3, JavaScript, Leaflet.js (Maps), Web Speech API |
+| **Backend** | Node.js, Express.js |
+| **AI** | Google Gemini 2.5, OpenRouter, Groq |
+| **Database** | SQLite3 |
+| **Location** | OpenStreetMap Overpass, OpenRouteService, Mapbox |
+| **Voice** | Web Speech API (recognition + synthesis) |
+
+---
+
+## 🔁 Multi-AI Fallback System
+
+**Why this matters:** Emergency systems cannot afford downtime.
+
+```
+Request for AI Guidance
+        ↓
+   [Try Gemini]
+        ↓
+   Failed? ↘
+   [Try OpenRouter - Primary Key]
+        ↓
+   Failed? ↘
+   [Try OpenRouter - Secondary Key]
+        ↓
+   Failed? ↘
+   [Try Groq]
+        ↓
+   Failed? ↘
+   [Use Cached Template]
+        ↓
+   ✅ Always responds with guidance
+```
+
+**Configuration:** `AI_PROVIDER_PRIORITY` env variable allows custom priority order.
+
+---
+
+## 📊 Example Workflows
+
+### Scenario 1: Form-Based Emergency Report
+```
+User: "Fire in my building!"
+     ↓
+[Auto-capture location via geolocation]
+[AI classifies: FIRE | Severity: HIGH]
+     ↓
+[Parallel Actions]
+├─ Gemini generates: "Evacuate NOW. Use stairs, not elevators..."
+├─ Find safe zones: Hospital (2.3km), Community Center (1.8km)
+└─ Calculate routes: Optimal path + turn-by-turn
+     ↓
+Response: 
+"🚨 IMMEDIATE ACTIONS:
+ 1. Evacuate using stairs
+ 2. Stay low to avoid smoke
+ 3. Don't stop for belongings
+ 4. Meet outside at assembly point
+ 
+ 📍 NEAREST SAFE ZONE (1.8 km):
+    Community Center - Shelter & First Aid
+    ➜ Route: Turn right → Left on 5th Ave"
+```
+
+### Scenario 2: Voice Emergency
+```
+User: [Speaks] "Flood nearby!"
+     ↓
+[Web Speech Recognition: Confidence 0.92]
+[Detected Intent: FLOOD]
+     ↓
+[System triggers immediate actions]
+├─ AI generates flood evacuation guide
+├─ Loads safe zones (within 5km)
+└─ Preloads optimal evacuation route
+     ↓
+System responds (voice + text):
+"🚨 FLOOD ALERT! Move to higher ground.
+ ✅ Safe Zone: Hospital (1.8 km away)
+ 📍 Directions loading..."
+```
+
+---
+
+## 🏥 Use Case: Hospitality & Guests
+
+**The Problem:** Hotel guests face emergencies in unfamiliar places.
+
+**ResQAI Solution:**
+- Guests get **instant guidance in their language**
+- Hotel staff gets **real-time command center** (floor map, staff coordination)
+- **AI guides evacuation** while staff manage operations
+- **Zero language barriers** (English, Hindi, Bengali)
+
+**Result:** Faster evacuation, better coordination, fewer casualties.
+
+---
+
+## 🚀 Setup Instructions
+
+### Prerequisites
+- Node.js 16+ 
+- npm or yarn
+- API keys (see below)
+
+### Installation
 
 ```bash
-# Install dependencies
+# 1. Clone repository
+git clone <repo-url>
+cd "Rapid Crisis Response"
+
+# 2. Install dependencies
 npm install
 
-# Setup environment
+# 3. Setup environment
 cp .env.example .env
 
-# Add your API keys:
-# - GEMINI_API_KEY (from Google Cloud)
-# - OPENROUTER_API_KEY (from openrouter.ai)
-# - GROQ_API_KEY (optional fallback)
+# 4. Add API keys to .env (see next section)
 
-# Run server
+# 5. Start server
 npm start
 ```
 
-Server runs on **`http://localhost:3000`**
+**Server runs on:** `http://localhost:3000`
 
 ---
 
-## 🛠 Tech Stack
+## 🎯 Why ResQAI Stands Out
 
-| Component | Technology |
-|-----------|-----------|
-| **Frontend** | HTML5, CSS3, JavaScript, Leaflet.js (Maps) |
-| **Backend** | Node.js, Express.js |
-| **AI** | Google Gemini 2.5 Flash (Primary) |
-| **Fallback AI** | OpenRouter + Groq (Multi-provider chain) |
-| **Database** | SQLite3 |
-| **Voice** | Web Speech API |
-
----
-
-## 📡 API Endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/ai/emergency-guidance` | POST | Get AI-generated guidance for disaster |
-| `/api/emergency/classify` | POST | Classify emergency type with AI |
-| `/api/nearby` | GET | Fetch nearby incidents (5km radius) |
-| `/api/voice/process` | POST | Convert speech to text |
+| Feature | Traditional Systems | ResQAI |
+|---------|-------------------|--------|
+| **Guidance** | Slow website + phone queue | AI instant response |
+| **Safe Zones** | Manual search | Auto-find within 5km |
+| **Language** | English only | 3+ languages |
+| **Reliability** | Single provider | 4-tier fallback |
+| **Speed** | Minutes | Seconds |
+| **Accessibility** | Requires typing | Voice-first |
 
 ---
 
-## 🎮 Key Features
+## 🔮 Future Scope
 
-### 1. **Intelligent Emergency Classification**
-- AI analyzes user description
-- Identifies disaster type (fire, earthquake, flood, etc.)
-- Assigns severity level (Low/Medium/High)
-
-### 2. **Step-by-Step AI Guidance**
-- Google Gemini generates contextual instructions
-- Answers: "What do I do RIGHT NOW?"
-- Structured, panic-proof responses
-- Multi-language support
-
-### 3. **Real-Time Incident Map**
-- Shows nearby emergencies within 5km
-- Color-coded severity indicators
-- Distance display + ETA to nearest help
-
-### 4. **SOS Emergency Button**
-- One-click activation
-- Loud alarm (helps people locate)
-- Broadcasts location instantly
-
-### 5. **Multi-Provider AI Failover**
-- Gemini fails → Automatically switches to OpenRouter
-- OpenRouter fails → Falls back to Groq
-- All fail → Uses cached templates
-- **Zero downtime** emergency service
+- 🌦️ Real-time weather integration for incident prediction
+- 👥 Community crowdsourced incident reporting
+- 📲 Native mobile apps (iOS/Android)
+- 🚑 Emergency dispatch system integration
+- 🏢 Enterprise admin dashboard
+- 🌐 Government emergency API integration
+- 📊 Post-incident analytics & reports
+- 🎯 Advanced incident pattern recognition
 
 ---
 
-## 📊 Example Workflow
+## 👥 Team
 
-```
-User: "There's a fire in my building!"
-     ↓
-[AI Classification]
-Type: FIRE | Severity: HIGH
-     ↓
-[Gemini AI Processing]
-     ↓
-Response:
-"🚨 IMMEDIATE ACTIONS:
- 1. Evacuate NOW (use stairs, not elevators)
- 2. Stay low to avoid smoke
- 3. Check if door is hot before opening
- 4. Meet outside at assembly point
- ..."
-     ↓
-[System automatically contacts emergency services]
-```
+**Team Leader:**
+- **Snehasis Chakraborty** – Idea Conceptualization & Developer
+
+**Core Team:**
+- **Souvik Dey** – Research Implementation, Lead Backend Developer
+- **Partha Sarathi Sarkar** – Research, UI Design, Side Developer  
+- **Samrat Chatterjee** – PPT Design Side Developer
 
 ---
 
 ## 📁 Project Structure
 
 ```
+ResQAI/
 ├── src/
-│   ├── server.js              # Express server entry point
-│   ├── api/
-│   │   └── routes/            # API endpoints
+│   ├── server.js
+│   ├── api/routes/
+│   │   ├── ai.js
+│   │   ├── emergency.js
+│   │   ├── portal.js
+│   │   └── voice.js
 │   ├── utils/
-│   │   └── aiRouter.js        # Multi-provider AI logic
-│   └── db/                    # SQLite database
+│   │   ├── aiRouter.js (Multi-provider logic)
+│   │   └── validateEnv.js
+│   └── db/
+│       └── db.js
 ├── public/
-│   ├── pages/                 # HTML pages
-│   ├── scripts/               # Frontend JS
-│   ├── styles/                # CSS styling
-│   └── assets/                # Images, icons, fonts
-└── docs/                      # Documentation
+│   ├── pages/
+│   ├── scripts/modules/
+│   │   ├── nearby.js
+│   │   ├── voice.js
+│   │   └── rapid-portal.js
+│   └── styles/
+├── docs/
+│   └── images/
+└── .env.example
 ```
 
 ---
 
-## 💪 Why ResQAI?
+## 📝 Key Statistics
 
-✅ **Real Impact** – Saves lives in actual emergencies  
-✅ **Enterprise-Ready** – Multi-provider AI, fallback chains, scalable DB  
-✅ **Google-Powered** – Uses Google Gemini's latest AI models  
-✅ **Inclusive** – Works in 12+ languages  
-✅ **No Dependencies** – Minimal bloat, runs anywhere Node.js runs  
-
----
-
-## 🚀 Future Enhancements
-
-- Real-time weather integration
-- Safe route navigation
-- Government emergency API integration
-- Push notifications
-- Mobile app version
+- ⏱️ **Response Time:** <2 seconds for AI guidance
+- 📍 **Coverage Radius:** 5km (enforced max distance)
+- 🗣️ **Languages Supported:** English, Hindi, Bengali  
+- 🔄 **AI Providers:** 4 (Gemini, OpenRouter x2, Groq) + cached fallback
+- 📡 **Real-time Updates:** Every 60 seconds
 
 ---
 
-## 🔧 Setup & Run
+## 🏁 Conclusion
 
-```bash
-npm install
-cp .env.example .env          # Add your API keys
-npm start                     # Start server
-# Visit: http://localhost:3000
-```
+ResQAI transforms emergency response from **reactive to proactive**. By combining:
+- **AI guidance** (step-by-step instructions)
+- **Real-time intelligence** (live incident map)
+- **Smart location services** (safe zones)
+- **Voice accessibility** (no typing in panic)
+- **Enterprise reliability** (multi-provider fallback)
+
+We enable **anyone to respond effectively to any emergency**, anywhere.
 
 ---
 
-## 📝 Notes
+## 📜 License
 
-- ✅ Requires location permission (for map features)
-- ✅ Works offline with cached responses
-- ✅ Database auto-initializes on first run
-- ✅ Multi-provider AI ensures 99.9% uptime
+MIT License – Open for contributions
+
+---
 
 **Built for Google Hackathon 🎯**
-npm install
-npm start
+
+Questions? Check our [documentation](./docs/) or open an issue.
+
+```bash
+# Get started now:
+npm install && npm start
 ```
 
-Open: http://localhost:3000
+**Your emergency response system is 3 commands away.**
