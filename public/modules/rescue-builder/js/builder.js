@@ -68,10 +68,13 @@ async function loadUserSystems() {
 
     try {
         const token = getAuthToken();
+        console.log('[LOAD] Token available:', !!token);
         if (DEBUG) console.log('Token:', !!token);
 
         // TRY API WITH TIMEOUT
         try {
+            console.log('[LOAD] Attempting API call to:', API_BASE_URL + '/user/list');
+            
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -86,10 +89,13 @@ async function loadUserSystems() {
 
             clearTimeout(timeoutId);
 
+            console.log('[LOAD] API response status:', response.status);
+
             if (response.ok) {
                 const data = await response.json();
                 const apiSystems = data.systems || [];
 
+                console.log('[LOAD] ✅ API returned:', apiSystems.length, 'systems');
                 if (DEBUG) console.log('✅ API returned:', apiSystems.length, 'systems');
 
                 // Map snake_case to camelCase
@@ -103,32 +109,53 @@ async function loadUserSystems() {
                     createdAt: s.created_at || s.createdAt
                 }));
 
+                console.log('[LOAD] After mapping:', mapped.length, 'systems');
                 if (DEBUG) console.log('After mapping:', mapped.length, 'systems');
                 if (DEBUG) console.groupEnd();
 
+                console.log('[LOAD] Calling renderSystemsDashboard with', mapped.length, 'systems');
                 renderSystemsDashboard(mapped);
                 return;
             } else {
                 throw new Error(`API ${response.status}`);
             }
         } catch (apiErr) {
+            console.warn('[LOAD] ⚠️ API failed:', apiErr.message);
             if (DEBUG) console.warn('⚠️ API failed:', apiErr.message);
         }
 
     } catch (error) {
+        console.error('[LOAD] Error:', error.message);
         if (DEBUG) console.error('Error:', error.message);
     }
 
     // FALLBACK: Load from localStorage
+    console.log('[LOAD] 📦 Using localStorage fallback');
     if (DEBUG) console.log('📦 Using localStorage fallback');
 
     let systems = [];
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
+        console.log('[LOAD] localStorage key:', STORAGE_KEY);
+        console.log('[LOAD] localStorage raw value (first 200 chars):', stored ? stored.substring(0, 200) : '(empty)');
+        
         if (stored) {
             systems = JSON.parse(stored);
+            console.log('[LOAD] ✅ Parsed localStorage:', systems.length, 'systems');
+            
+            // Log each system
+            systems.forEach((s, i) => {
+                console.log(`[LOAD] System ${i+1}:`, {
+                    systemID: s.systemID,
+                    organizationName: s.organizationName,
+                    status: s.status
+                });
+            });
+        } else {
+            console.log('[LOAD] localStorage is empty/null');
         }
     } catch (e) {
+        console.error('[LOAD] ❌ Corrupted localStorage:', e.message);
         if (DEBUG) console.error('Corrupted localStorage');
         systems = [];
     }
@@ -138,6 +165,7 @@ async function loadUserSystems() {
         console.groupEnd();
     }
 
+    console.log('[LOAD] ✅ Complete - calling renderSystemsDashboard with', systems.length, 'systems');
     renderSystemsDashboard(systems || []);
 }
 
@@ -638,9 +666,11 @@ function goToWizardStep3() {
 }
 
 async function buildSystem() {
+    console.log('\n========== [BUILD] SYSTEM CREATION STARTED ==========');
     if (DEBUG) console.group('🚀 [BUILD] System');
 
-    // COLLECT RISK TYPES
+    // ===== STEP 1: COLLECT RISK TYPES =====
+    console.log('[BUILD] STEP 1: Collecting risk types...');
     const checkboxes = document.querySelectorAll('.risk-checkbox input:checked');
     systemData.riskTypes = [];
     checkboxes.forEach(cb => {
@@ -648,46 +678,132 @@ async function buildSystem() {
     });
 
     if (systemData.riskTypes.length === 0) {
+        console.error('[BUILD] ❌ STEP 1 FAILED: No risk types selected');
         showToast('Please select at least one risk type', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
 
-    // INITIALIZE SYSTEM
+    console.log('[BUILD] ✅ STEP 1 COMPLETE: Risk types collected:', systemData.riskTypes);
+
+    // ===== STEP 2: VALIDATE ALL REQUIRED DATA =====
+    console.log('[BUILD] STEP 2: Validating systemData...');
+    
+    if (!systemData.organizationName) {
+        console.error('[BUILD] ❌ STEP 2 FAILED: Missing organizationName');
+        showToast('❌ Organization name is missing', 'error');
+        if (DEBUG) console.groupEnd();
+        return;
+    }
+    
+    if (!systemData.organizationType) {
+        console.error('[BUILD] ❌ STEP 2 FAILED: Missing organizationType');
+        showToast('❌ Organization type is missing', 'error');
+        if (DEBUG) console.groupEnd();
+        return;
+    }
+    
+    if (!systemData.location) {
+        console.error('[BUILD] ❌ STEP 2 FAILED: Missing location');
+        showToast('❌ Location is missing', 'error');
+        if (DEBUG) console.groupEnd();
+        return;
+    }
+    
+    if (!systemData.contactEmail) {
+        console.error('[BUILD] ❌ STEP 2 FAILED: Missing contactEmail');
+        showToast('❌ Contact email is missing', 'error');
+        if (DEBUG) console.groupEnd();
+        return;
+    }
+    
+    if (!systemData.staff || systemData.staff.length === 0) {
+        console.error('[BUILD] ❌ STEP 2 FAILED: Missing staff');
+        showToast('❌ At least one staff member is required', 'error');
+        if (DEBUG) console.groupEnd();
+        return;
+    }
+
+    console.log('[BUILD] ✅ STEP 2 COMPLETE: All required fields present');
+
+    // ===== STEP 3: GENERATE SYSTEM ID IF NEEDED =====
+    console.log('[BUILD] STEP 3: Generating system ID...');
     if (!systemData.systemID) {
         systemData.systemID = generateSystemID();
     }
     systemData.createdAt = new Date().toISOString();
 
-    if (DEBUG) {
-        console.log('Data collected:', {
-            risks: systemData.riskTypes.length,
-            staff: systemData.staff?.length || 0,
-            structure: !!systemData.structure
-        });
-    }
+    console.log('[BUILD] ✅ STEP 3 COMPLETE: System data ready:', {
+        systemID: systemData.systemID,
+        organizationName: systemData.organizationName,
+        organizationType: systemData.organizationType,
+        location: systemData.location,
+        staff: systemData.staff.length,
+        risks: systemData.riskTypes.length
+    });
 
-    // SHOW ANIMATION
+    // ===== STEP 4: SHOW ANIMATION SCREEN =====
+    console.log('[BUILD] STEP 4: Showing animation screen...');
     showScreen('screen-ai-build');
+    console.log('[BUILD] ✅ STEP 4 COMPLETE: Animation screen shown');
 
-    // SAVE SYSTEM
+    // ===== STEP 5: SAVE TO API/LOCALSTORAGE =====
+    console.log('[BUILD] STEP 5: CRITICAL - Saving system to API/localStorage...');
+    let saveSuccess = false;
+    let savedSystemID = null;
+    let saveError = null;
+
     try {
-        if (DEBUG) console.log('Saving...');
+        console.log('[BUILD] STEP 5A: Calling saveSystemData()...');
         const result = await saveSystemData();
-        if (DEBUG) console.log('✅ Saved');
+        console.log('[BUILD] STEP 5B: saveSystemData() returned:', result);
+        
+        if (result && result.systemID) {
+            saveSuccess = true;
+            savedSystemID = result.systemID;
+            console.log('[BUILD] ✅ STEP 5 COMPLETE: System saved successfully with ID:', savedSystemID);
+        } else {
+            saveError = 'No systemID in result: ' + JSON.stringify(result);
+            console.error('[BUILD] ❌ STEP 5 FAILED: Invalid result structure -', saveError);
+        }
     } catch (error) {
-        if (DEBUG) console.log('⚠️ Save error:', error.message);
+        saveError = error.message;
+        console.error('[BUILD] ❌ STEP 5 FAILED: saveSystemData() threw exception:', error.message, error);
     }
 
-    // ALWAYS ANIMATE AND REDIRECT
-    // (system is definitely saved either way)
+    // ===== STEP 5 VALIDATION: CHECK IF SAVE SUCCEEDED =====
+    if (!saveSuccess || !savedSystemID) {
+        console.error('[BUILD] ❌❌❌ CRITICAL FAILURE - SAVE DID NOT COMPLETE ❌❌❌');
+        console.error('[BUILD] Save error details:', saveError);
+        console.error('[BUILD] Aborting animation and redirecting to step 4');
+        showToast('❌ Failed to save system: ' + saveError, 'error');
+        showScreen('screen-wizard-step4');
+        if (DEBUG) console.groupEnd();
+        console.log('========== [BUILD] SYSTEM CREATION ABORTED - SAVE FAILED ==========\n');
+        return;
+    }
+
+    // ===== STEP 6: ANIMATE AND LOAD DASHBOARD =====
+    console.log('[BUILD] STEP 6: CRITICAL - Starting animation and dashboard load...');
+    showToast('✅ System created! Loading dashboard...', 'success');
     if (DEBUG) console.groupEnd();
-    await animateAndRedirect();
+    
+    try {
+        console.log('[BUILD] STEP 6A: Calling animateAndRedirect()...');
+        await animateAndRedirect();
+        console.log('[BUILD] ✅ STEP 6 COMPLETE: Animation and redirect finished');
+        console.log('========== [BUILD] SYSTEM CREATION SUCCESSFUL ==========\n');
+    } catch (error) {
+        console.error('[BUILD] ❌ STEP 6 FAILED: Completion flow error:', error.message);
+        showToast('❌ Error displaying dashboard: ' + error.message, 'error');
+        console.log('========== [BUILD] SYSTEM CREATION FAILED AT STEP 6 ==========\n');
+    }
 }
 
 async function animateAndRedirect() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         if (DEBUG) console.group('🎬 [ANIMATE] Build progress');
+        console.log('[ANIMATE] Animation starting - will progress 0-100% then load dashboard');
 
         let currentProgress = 0;
         const stages = [
@@ -704,38 +820,55 @@ async function animateAndRedirect() {
                 currentProgress = 100;
                 clearInterval(interval);
 
+                console.log('[ANIMATE] Progress reached 100% - animation complete');
+
                 // COMPLETE ALL STAGES
                 stages.forEach(stage => {
                     const el = document.getElementById(stage.id);
                     if (el) {
                         el.classList.remove('active');
                         el.classList.add('completed');
+                        console.log('[ANIMATE] Stage marked complete:', stage.id);
                     }
                 });
 
                 const fillEl = document.getElementById('build-progress-fill');
                 if (fillEl) fillEl.style.width = '100%';
 
-                if (DEBUG) console.log('✅ Animation complete');
+                if (DEBUG) console.log('✅ Animation complete at 100%');
 
-                // REDIRECT
+                // REDIRECT WITH DELAY
+                const REDIRECT_DELAY = 1000; // 1 second delay to ensure data is written
+                console.log('[ANIMATE] Waiting', REDIRECT_DELAY, 'ms before loading dashboard...');
+                
                 setTimeout(async () => {
-                    if (DEBUG) console.log('Loading dashboard...');
+                    console.log('\n========== [ANIMATE] CRITICAL - Dashboard Loading Phase ==========');
+                    console.log('[ANIMATE] Now loading dashboard...');
 
                     // Load systems and show dashboard
                     try {
+                        console.log('[ANIMATE] STEP 1: Calling loadUserSystems()...');
                         await loadUserSystems();
+                        console.log('[ANIMATE] ✅ STEP 1 COMPLETE: loadUserSystems() returned successfully');
                     } catch (err) {
-                        if (DEBUG) console.warn('Error:', err.message);
+                        console.error('[ANIMATE] ❌ STEP 1 FAILED: loadUserSystems() threw error:', err.message, err);
+                        if (DEBUG) console.warn('[ANIMATE] Error during load:', err.message);
                     }
 
+                    // Show the dashboard screen
+                    console.log('[ANIMATE] STEP 2: Showing screen screen-systems-dashboard...');
                     showScreen('screen-systems-dashboard');
+                    console.log('[ANIMATE] ✅ STEP 2 COMPLETE: Dashboard screen shown');
+                    
                     if (DEBUG) {
-                        console.log('Dashboard shown');
+                        console.log('[ANIMATE] Dashboard shown');
                         console.groupEnd();
                     }
+                    
+                    console.log('[ANIMATE] ✅ Animation and redirect complete - resolving promise');
+                    console.log('========== [ANIMATE] DASHBOARD LOADING PHASE COMPLETE ==========\n');
                     resolve();
-                }, 800);
+                }, REDIRECT_DELAY);
             } else {
                 // UPDATE PROGRESS
                 const fillEl = document.getElementById('build-progress-fill');
@@ -1699,7 +1832,8 @@ async function saveSystemData() {
         };
 
         if (DEBUG) console.group('📤 [SAVE] Sending to API');
-        if (DEBUG) console.log('Payload:', payload);
+        console.log('[SAVE] API endpoint:', API_BASE_URL + '/create');
+        console.log('[SAVE] Payload:', JSON.stringify(payload, null, 2));
 
         const response = await fetch(API_BASE_URL + '/create', {
             method: 'POST',
@@ -1714,6 +1848,9 @@ async function saveSystemData() {
         } catch (readErr) {
             throw new Error('Failed to read response');
         }
+
+        console.log('[SAVE] Response status:', response.status);
+        console.log('[SAVE] Response text:', responseText);
 
         let responseData = null;
         if (responseText) {
@@ -1736,9 +1873,13 @@ async function saveSystemData() {
         systemData.systemID = responseData.systemID;
         systemData.userID = responseData.userID;
 
+        console.log('[SAVE] ✅ Got systemID from API:', systemData.systemID);
+
         // SAVE TO LOCALSTORAGE WITH STANDARDIZED KEY
+        console.log('[SAVE] Saving to localStorage with key:', STORAGE_KEY);
         let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        systems.push({
+        
+        const newSystem = {
             systemID: systemData.systemID,
             organizationName: systemData.organizationName,
             organizationType: systemData.organizationType,
@@ -1749,8 +1890,14 @@ async function saveSystemData() {
             riskTypes: systemData.riskTypes,
             status: 'saved',
             createdAt: new Date().toISOString()
-        });
+        };
+        
+        systems.push(newSystem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+        
+        console.log('[SAVE] ✅ Saved to localStorage');
+        console.log('[SAVE] New system object:', JSON.stringify(newSystem, null, 2));
+        console.log('[SAVE] Total systems in storage now:', systems.length);
 
         if (DEBUG) {
             console.log('✅ System ID:', systemData.systemID);
@@ -1767,14 +1914,19 @@ async function saveSystemData() {
             console.groupEnd();
         }
 
+        console.error('[SAVE] ❌ API error:', error.message);
+
         showToast(`⚠️ Saving locally: ${error.message}`, 'warning');
 
         if (!systemData.systemID) {
             systemData.systemID = 'LOCAL-' + Date.now();
         }
 
+        console.log('[SAVE] Using local fallback with ID:', systemData.systemID);
+
         let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        systems.push({
+        
+        const newSystem = {
             systemID: systemData.systemID,
             organizationName: systemData.organizationName,
             organizationType: systemData.organizationType,
@@ -1785,8 +1937,15 @@ async function saveSystemData() {
             riskTypes: systemData.riskTypes,
             status: 'local',
             createdAt: new Date().toISOString()
-        });
+        };
+        
+        systems.push(newSystem);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+
+        console.log('[SAVE] ✅ Saved locally to localStorage');
+        console.log('[SAVE] New system object:', JSON.stringify(newSystem, null, 2));
+        console.log('[SAVE] Total systems in storage now:', systems.length);
+        console.log('[SAVE] localStorage contents:', JSON.stringify(systems, null, 2));
 
         if (DEBUG) {
             console.group('💾 [SAVE] Fallback Success');
