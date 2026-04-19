@@ -125,16 +125,24 @@ async function loadUserSystems() {
     let systems = [];
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
+        if (DEBUG) console.log('Raw localStorage data:', stored);
+        
         if (stored) {
             systems = JSON.parse(stored);
+            if (DEBUG) console.log('✅ Successfully parsed', systems.length, 'systems from localStorage');
+        } else {
+            if (DEBUG) console.warn('⚠️  No data found in localStorage key:', STORAGE_KEY);
         }
     } catch (e) {
-        if (DEBUG) console.error('Corrupted localStorage');
+        if (DEBUG) console.error('❌ Corrupted localStorage:', e.message);
         systems = [];
     }
 
     if (DEBUG) {
-        console.log('Loaded:', systems.length, 'systems');
+        console.log('Final loaded systems count:', systems.length);
+        if (systems.length > 0) {
+            console.table(systems.map(s => ({name: s.organizationName, type: s.organizationType, id: s.systemID})));
+        }
         console.groupEnd();
     }
 
@@ -146,6 +154,7 @@ function debugLocalStorage() {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         console.log('=== LOCAL STORAGE DEBUG ===');
+        console.log('Storage Key:', STORAGE_KEY);
         console.log('Raw localStorage value:', stored);
 
         let debugHtml = '';
@@ -163,7 +172,7 @@ function debugLocalStorage() {
                 debugHtml += `<div style="color: #ff0;">❌ JSON Parse Error: ${parseErr.message}</div>`;
             }
         } else {
-            debugHtml += `<div style="color: #ff0;">⚠️ localStorage['resqai-systems'] is EMPTY or NULL</div>`;
+            debugHtml += `<div style="color: #ff0;">⚠️ localStorage['${STORAGE_KEY}'] is EMPTY or NULL</div>`;
         }
 
         // Update debug panel
