@@ -210,6 +210,10 @@ document.addEventListener('keydown', (e) => {
 
 // Render systems dashboard with list of user's systems
 function renderSystemsDashboard(systems) {
+    if (DEBUG) console.group('🎨 [RENDER] Dashboard');
+    console.log('🎨 [RENDER] Received systems:', systems);
+    console.log('🎨 [RENDER] Systems count:', Array.isArray(systems) ? systems.length : 'NOT AN ARRAY');
+    
     // VALIDATE INPUT
     const container = document.getElementById('systems-list');
     if (!container) {
@@ -275,7 +279,10 @@ function renderSystemsDashboard(systems) {
         }
     });
 
-    if (DEBUG) console.log('🎨 Dashboard render complete');
+    if (DEBUG) {
+        console.log('🎨 Dashboard render complete');
+        console.groupEnd();
+    }
 }
 
 // Show systems dashboard screen
