@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -198,8 +199,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .system-date {
@@ -279,7 +287,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .modal {
@@ -380,6 +390,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- NAVBAR -->
     <div class="navbar">
@@ -400,7 +411,8 @@
             <p class="dashboard-subtitle">Manage and control all your emergency response systems</p>
             <div class="dashboard-actions">
                 <button class="btn-primary" onclick="createNewSystem()">+ Create New System</button>
-                <button class="btn-primary" style="background: rgba(100, 150, 255, 0.8);" onclick="viewAllSystems()">📊 View All Systems</button>
+                <button class="btn-primary" style="background: rgba(100, 150, 255, 0.8);" onclick="viewAllSystems()">📊
+                    View All Systems</button>
             </div>
         </div>
 
@@ -583,4 +595,5 @@
         init();
     </script>
 </body>
+
 </html>

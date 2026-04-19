@@ -16,12 +16,82 @@
     <div class="toast-wrap" id="toast-wrap"></div>
 
     <!-- =====================================================
-     SCREEN 1: LANDING / TYPE SELECTION
+     SCREEN 0: YOUR SYSTEMS DASHBOARD (ENTRY POINT)
      ===================================================== -->
-    <div class="rescue-screen active" id="screen-type-selection">
+    <div class="rescue-screen active" id="screen-systems-dashboard">
         <div class="rescue-header">
             <div class="rescue-logo">ResQAI</div>
-            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit Builder</button>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit</button>
+        </div>
+
+        <div class="rescue-content">
+            <div class="dashboard-container">
+                <div class="dashboard-header">
+                    <h1>Your Rescue Systems</h1>
+                    <p>Manage and access your rescue systems</p>
+                </div>
+
+                <button class="btn-large btn-primary" id="create-system-btn" onclick="goToTypeSelection(); return false;">
+                    ➕ Create New System
+                </button>
+
+                <!-- DEBUG PANEL (Hidden by default - Press Ctrl+D to toggle) -->
+                <div id="debug-panel" style="display: none; background: #1a1a2e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #0f0; border: 1px solid #0f0;">
+                    <div style="margin-bottom: 10px;"><strong>📊 DEBUG INFO (Press Ctrl+D to hide)</strong></div>
+                    <div id="debug-content">Loading...</div>
+                </div>
+
+                <div class="systems-grid" id="systems-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <div class="empty-title">Loading Systems...</div>
+                        <div class="empty-text">Please wait while we load your systems</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 1: SYSTEM CONTROL PANEL
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-system-control-panel">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goBackFromSystemPanel()">← Back</button>
+        </div>
+
+        <div class="rescue-content">
+            <div class="control-panel-container">
+                <div class="panel-header">
+                    <h1>System Control Panel</h1>
+                    <div id="panel-system-info" class="panel-info">
+                        <div class="info-line">
+                            <span class="label">Loading...</span>
+                            <span class="value">Please wait</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-actions">
+                    <button class="btn-large btn-primary" onclick="accessAdminDashboard()">
+                        👨‍💼 Open Admin Panel
+                    </button>
+                    <button class="btn-large btn-secondary" onclick="accessUserDashboard()">
+                        👥 Open User Panel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+     SCREEN 2: LANDING / TYPE SELECTION
+     ===================================================== -->
+    <div class="rescue-screen" id="screen-type-selection">
+        <div class="rescue-header">
+            <div class="rescue-logo">ResQAI</div>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Dashboard</button>
             <div class="selection-inner">
                 <div class="selection-brand">
                     <strong>Build Your Rescue System</strong>
@@ -367,7 +437,7 @@
         <div class="build-container">
             <div class="build-header">
                 <button class="btn-secondary" onclick="goBackToMainPage()"
-                    style="position: absolute; top: 20px; right: 20px;">Exit Builder</button>
+                    style="position: absolute; top: 20px; right: 20px;">Dashboard</button>
                 <div class="build-logo">ResQAI</div>
                 <p>Generating your custom rescue system...</p>
             </div>
@@ -408,7 +478,7 @@
      ===================================================== -->
     <div class="rescue-screen" id="screen-success">
         <div style="text-align: right; padding: 20px;">
-            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit Builder</button>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Dashboard</button>
         </div>
         <div class="success-container">
             <div class="success-icon">✅</div>
@@ -451,7 +521,7 @@
                 <span class="admin-logo">ResQAI</span>
                 <span class="admin-mode">ADMIN PANEL</span>
             </div>
-            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit Builder</button>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Dashboard</button>
         </div>
 
         <div class="admin-content">
@@ -545,7 +615,7 @@
                 <span class="user-logo">ResQAI</span>
                 <span class="user-mode">SAFETY PANEL</span>
             </div>
-            <button class="btn-secondary" onclick="logoutSystem()">← Exit</button>
+            <button class="btn-secondary" onclick="goBackToMainPage()">← Dashboard</button>
         </div>
 
         <div class="user-content">
@@ -605,6 +675,14 @@
     <!-- Scripts -->
     <script src="/modules/rescue-builder/js/templates.js"></script>
     <script src="/modules/rescue-builder/js/builder.js"></script>
+    
+    <!-- Initialize on page load -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load systems dashboard on page load
+            showSystemsDashboard();
+        });
+    </script>
 </body>
 
 </html>

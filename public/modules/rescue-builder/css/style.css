@@ -1254,6 +1254,236 @@ body {
 }
 
 /* =====================================================
+   SYSTEMS DASHBOARD (NEW)
+   ===================================================== */
+
+.dashboard-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+    font-size: 40px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-header p {
+    font-size: 16px;
+    color: #a0a0a0;
+}
+
+.btn-large {
+    padding: 14px 28px;
+    font-size: 16px;
+    width: auto;
+    margin: 0 auto 40px;
+    display: block;
+}
+
+.systems-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+}
+
+.system-card {
+    background: rgba(25, 25, 35, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.system-card:hover {
+    background: rgba(25, 25, 35, 0.8);
+    border-color: rgba(220, 38, 38, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(220, 38, 38, 0.15);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.type-badge {
+    background: rgba(220, 38, 38, 0.15);
+    color: #ff6b6b;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-indicator {
+    font-size: 18px;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.card-location {
+    color: #a0a0a0;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.card-date {
+    color: #666;
+    font-size: 12px;
+}
+
+.card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-small.btn-primary {
+    background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+    color: #fff;
+    width: 100%;
+}
+
+.btn-small.btn-primary:hover {
+    transform: translateY(-2px);
+}
+
+.btn-small.btn-danger {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #ff6b6b;
+}
+
+.btn-small.btn-danger:hover {
+    background: rgba(220, 38, 38, 0.2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+    grid-column: 1 / -1;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #a0a0a0;
+}
+
+.empty-text {
+    font-size: 14px;
+    color: #666;
+}
+
+/* =====================================================
+   SYSTEM CONTROL PANEL (NEW)
+   ===================================================== */
+
+.control-panel-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.panel-header {
+    margin-bottom: 50px;
+}
+
+.panel-header h1 {
+    font-size: 40px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    letter-spacing: -0.5px;
+}
+
+.panel-info {
+    background: rgba(25, 25, 35, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+}
+
+.info-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-line:last-child {
+    border-bottom: none;
+}
+
+.info-line .label {
+    color: #888;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.info-line .value {
+    font-weight: 700;
+    color: #fff;
+}
+
+.panel-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.panel-actions .btn-large {
+    width: 100%;
+    margin: 0;
+    display: block;
+}
+
+/* =====================================================
    RESPONSIVE
    ===================================================== */
 
