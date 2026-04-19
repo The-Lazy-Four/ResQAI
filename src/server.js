@@ -107,11 +107,8 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/nearby', nearbyRoutes);
 app.use('/api/ai', aiRoutes);
-<<<<<<< HEAD
-=======
 app.use('/api/portal', portalRoutes);
 app.use('/api/custom-system', customSystemRoutes);
->>>>>>> 89c86b0 (Integrate MySQL and auth)
 
 // ==================== SERVE FRONTEND ====================
 
