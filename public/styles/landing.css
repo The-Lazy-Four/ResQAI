@@ -1,0 +1,720 @@
+/* ============================================
+   ResQAI — Cinematic Landing Page Styles
+   Pure dark, cinematic, emergency-system feel
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* --- Reset & Base Variables --- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #050505;
+    --bg-secondary: #0a0a0a;
+    --text-primary: rgba(255, 255, 255, 0.9);
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-muted: rgba(255, 255, 255, 0.5);
+    --accent-red: #dc2626;
+    --accent-red-dim: #991b1b;
+    --accent-red-glow: rgba(220, 38, 38, 0.3);
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+html {
+    /* Smooth-scroll breaks frame animation sync — keep it off */
+    scroll-behavior: auto;
+}
+
+body {
+    font-family: var(--font-main);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   1. FULLSCREEN LOADER
+   ============================================ */
+
+#landing-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+}
+
+#landing-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* "Initializing ResQAI System..." text */
+.loader-text {
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    animation: loaderPulse 2s ease-in-out infinite;
+}
+
+@keyframes loaderPulse {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 1; }
+}
+
+/* Thin progress line */
+.loader-progress-line {
+    width: 200px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+    border-radius: 1px;
+}
+
+.loader-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--accent-red);
+    transition: width 0.15s linear;
+    border-radius: 1px;
+}
+
+/* Small status text below progress bar */
+.loader-system-text {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.15);
+    margin-top: 24px;
+}
+
+/* ============================================
+   2. SCROLL SECTION (500vh container)
+   ============================================ */
+
+.scroll-section {
+    position: relative;
+    height: 500vh;
+}
+
+/* Sticky wrapper pins canvas + overlays to viewport */
+.sticky-wrapper {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Scroll-controlled video — fills viewport */
+#scroll-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;  /* don't capture clicks */
+}
+
+/* ============================================
+   3. LEFT GRADIENT OVERLAY (text readability)
+   ============================================ */
+
+.gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(5, 5, 5, 0.92) 0%,
+        rgba(5, 5, 5, 0.65) 30%,
+        rgba(5, 5, 5, 0.25) 55%,
+        transparent 75%
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ============================================
+   4. BRAND MARK (top-left)
+   ============================================ */
+
+.brand-mark {
+    position: absolute;
+    top: 32px;
+    left: 8%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Small red circle logo */
+.brand-logo {
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--accent-red);
+    border-radius: 50%;
+    position: relative;
+}
+
+.brand-logo::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background: var(--accent-red);
+    border-radius: 50%;
+}
+
+.brand-name {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ============================================
+   5. SYSTEM STATUS INDICATORS (top-right)
+   ============================================ */
+
+.system-indicators {
+    position: absolute;
+    top: 30px;
+    right: 32px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: indicatorPulse 2.5s ease-in-out infinite;
+}
+
+.indicator-dot.red {
+    background: var(--accent-red);
+    animation: indicatorPulseRed 2.5s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+    0%, 100% { opacity: 0.5; box-shadow: 0 0 4px rgba(34, 197, 94, 0.2); }
+    50%      { opacity: 1;   box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
+}
+
+@keyframes indicatorPulseRed {
+    0%, 100% { opacity: 0.5; box-shadow: 0 0 4px rgba(220, 38, 38, 0.2); }
+    50%      { opacity: 1;   box-shadow: 0 0 8px rgba(220, 38, 38, 0.5); }
+}
+
+/* ============================================
+   6. PHASE TEXT OVERLAYS
+   Left-aligned, stagger-animated
+   ============================================ */
+
+.phase-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 8%;
+    padding-right: 50%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    pointer-events: none;
+}
+
+.phase-content.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* --- Label (small uppercase) --- */
+.phase-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    transform: translateX(-40px);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0s;
+}
+
+.phase-content.active .phase-label {
+    transform: translateX(0);
+    opacity: 1;
+    transition-delay: 0.1s;
+}
+
+/* --- Heading (large) --- */
+.phase-heading {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 600;
+    line-height: 1.08;
+    color: var(--text-primary);
+    margin-bottom: 22px;
+    max-width: 600px;
+    transform: translateX(-40px);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0s;
+}
+
+.phase-content.active .phase-heading {
+    transform: translateX(0);
+    opacity: 1;
+    transition-delay: 0.2s;
+}
+
+/* --- Description (medium) --- */
+.phase-description {
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    max-width: 420px;
+    transform: translateX(-40px);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0s;
+}
+
+.phase-content.active .phase-description {
+    transform: translateX(0);
+    opacity: 1;
+    transition-delay: 0.35s;
+}
+
+/* --- CTA Button (appears mid & later phases) --- */
+.phase-cta {
+    margin-top: 36px;
+    transform: translateX(-40px);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0s;
+}
+
+.phase-content.active .phase-cta {
+    transform: translateX(0);
+    opacity: 1;
+    transition-delay: 0.5s;
+}
+
+/* Ghost-style CTA button */
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-decoration: none;
+}
+
+.cta-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.cta-button .arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 16px;
+}
+
+.cta-button:hover .arrow {
+    transform: translateX(5px);
+}
+
+/* Red accent variant */
+.cta-button.accent {
+    border-color: var(--accent-red-dim);
+    color: #fff;
+}
+
+.cta-button.accent:hover {
+    background: rgba(220, 38, 38, 0.12);
+    border-color: var(--accent-red);
+    box-shadow: 0 0 30px var(--accent-red-glow);
+}
+
+/* ============================================
+   7. SCROLL PROGRESS DOTS (right side)
+   ============================================ */
+
+.scroll-progress {
+    position: fixed;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+}
+
+.progress-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    transition: all 0.4s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.progress-dot.active {
+    background: var(--accent-red);
+    box-shadow: 0 0 12px var(--accent-red-glow);
+    transform: scale(1.4);
+}
+
+/* ============================================
+   8. FINAL SECTION (after scroll animation)
+   ============================================ */
+
+.final-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 100px 24px;
+    background: var(--bg-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Thin decorative line from top */
+.final-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 100px;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(255, 255, 255, 0.08),
+        transparent
+    );
+}
+
+.final-heading {
+    font-size: clamp(30px, 4vw, 52px);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--text-primary);
+    max-width: 680px;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.final-heading.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.final-subtext {
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin-bottom: 52px;
+    line-height: 1.7;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0.15s;
+}
+
+.final-subtext.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.final-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0.3s;
+}
+
+.final-buttons.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Primary CTA (red fill) */
+.btn-primary-landing {
+    display: inline-block;
+    padding: 16px 40px;
+    background: var(--accent-red);
+    border: 1px solid var(--accent-red);
+    color: #fff;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-decoration: none;
+}
+
+.btn-primary-landing:hover {
+    background: #ef4444;
+    box-shadow: 0 0 40px var(--accent-red-glow);
+    transform: translateY(-2px);
+}
+
+/* Secondary CTA (ghost) */
+.btn-secondary-landing {
+    display: inline-block;
+    padding: 16px 40px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-decoration: none;
+}
+
+.btn-secondary-landing:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   9. PAGE TRANSITION OVERLAY
+   ============================================ */
+
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: 20000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.page-transition.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* ============================================
+   10. RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .phase-content {
+        padding-left: 7%;
+        padding-right: 30%;
+    }
+
+    .phase-heading {
+        font-size: clamp(32px, 5vw, 48px);
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .phase-content {
+        padding-left: 6%;
+        padding-right: 8%;
+        justify-content: flex-end;
+        padding-bottom: 14vh;
+    }
+
+    .phase-heading {
+        font-size: clamp(26px, 7vw, 38px);
+        max-width: 100%;
+    }
+
+    .phase-description {
+        font-size: 15px;
+        max-width: 100%;
+    }
+
+    .phase-label {
+        font-size: 10px;
+        letter-spacing: 2px;
+    }
+
+    /* On mobile, gradient comes from bottom for text readability */
+    .gradient-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(5, 5, 5, 0.95) 0%,
+            rgba(5, 5, 5, 0.7) 30%,
+            rgba(5, 5, 5, 0.2) 60%,
+            transparent 80%
+        );
+    }
+
+    .system-indicators {
+        top: 18px;
+        right: 18px;
+    }
+
+    .brand-mark {
+        top: 18px;
+        left: 6%;
+    }
+
+    .scroll-progress {
+        right: 14px;
+        gap: 10px;
+    }
+
+    .progress-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    .final-heading {
+        font-size: clamp(24px, 6vw, 32px);
+    }
+
+    .final-subtext {
+        font-size: 15px;
+    }
+
+    .final-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-primary-landing,
+    .btn-secondary-landing {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+    .phase-content {
+        padding-left: 5%;
+        padding-right: 5%;
+        padding-bottom: 12vh;
+    }
+
+    .phase-heading {
+        font-size: 26px;
+    }
+
+    .phase-description {
+        font-size: 14px;
+    }
+
+    .indicator {
+        font-size: 8px;
+        letter-spacing: 1px;
+    }
+
+    .indicator-dot {
+        width: 5px;
+        height: 5px;
+    }
+
+    .brand-name {
+        font-size: 10px;
+        letter-spacing: 2px;
+    }
+
+    .cta-button {
+        padding: 12px 24px;
+        font-size: 11px;
+    }
+}

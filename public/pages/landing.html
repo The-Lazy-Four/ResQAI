@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI — AI Crisis Intelligence System</title>
+    <meta name="description"
+        content="AI-powered emergency guidance system with real-time alerts, SOS broadcast, and multi-AI fallback. Built for when every second matters.">
+    <meta name="theme-color" content="#050505">
+
+    <!-- Preload critical font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/landing.css">
+</head>
+
+<body>
+
+    <!-- ============================================
+         FULLSCREEN LOADER
+         ============================================ -->
+    <div id="landing-loader">
+        <div class="loader-text">Initializing ResQAI System...</div>
+        <div class="loader-progress-line">
+            <div class="loader-progress-fill"></div>
+        </div>
+        <div class="loader-system-text">Loading video...</div>
+    </div>
+
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div id="page-transition" class="page-transition"></div>
+
+    <!-- SCROLL PROGRESS DOTS (fixed right side) -->
+    <div class="scroll-progress" id="scroll-progress">
+        <div class="progress-dot" data-phase="1"></div>
+        <div class="progress-dot" data-phase="2"></div>
+        <div class="progress-dot" data-phase="3"></div>
+        <div class="progress-dot" data-phase="4"></div>
+        <div class="progress-dot" data-phase="5"></div>
+        <div class="progress-dot" data-phase="6"></div>
+    </div>
+
+    <!-- ============================================
+         MAIN SCROLL SECTION (500vh tall)
+         ============================================ -->
+    <section class="scroll-section">
+        <div class="sticky-wrapper">
+
+            <!-- Scroll-controlled video (replaces canvas) -->
+            <video
+                id="scroll-video"
+                src="/video/output.mp4"
+                muted
+                playsinline
+                preload="auto"
+            ></video>
+
+            <!-- Left gradient overlay for text readability -->
+            <div class="gradient-overlay"></div>
+
+            <!-- Brand mark — top left -->
+            <div class="brand-mark">
+                <div class="brand-logo"></div>
+                <span class="brand-name">ResQAI</span>
+            </div>
+
+            <!-- System status indicators — top right -->
+            <div class="system-indicators">
+                <div class="indicator">
+                    <span>AI: Active</span>
+                    <span class="indicator-dot"></span>
+                </div>
+                <div class="indicator">
+                    <span>System: Monitoring</span>
+                    <span class="indicator-dot"></span>
+                </div>
+            </div>
+
+            <!-- ========== PHASE 1 — URGENCY ========== -->
+            <div class="phase-content" data-phase="1">
+                <span class="phase-label">ResQAI System</span>
+                <h1 class="phase-heading">When every second matters</h1>
+                <p class="phase-description">
+                    In emergencies, decisions happen in seconds.
+                    ResQAI delivers instant AI-guided actions when it matters most.
+                </p>
+            </div>
+
+            <!-- ========== PHASE 2 — AI INTELLIGENCE ========== -->
+            <div class="phase-content" data-phase="2">
+                <span class="phase-label">Artificial Intelligence</span>
+                <h1 class="phase-heading">AI that thinks before you panic</h1>
+                <p class="phase-description">
+                    Real-time emergency classification and step-by-step guidance
+                    powered by multi-provider AI.
+                </p>
+            </div>
+
+            <!-- ========== PHASE 3 — LOCATION AWARENESS ========== -->
+            <div class="phase-content" data-phase="3">
+                <span class="phase-label">Location Intelligence</span>
+                <h1 class="phase-heading">See danger before it reaches you</h1>
+                <p class="phase-description">
+                    Live incident detection within 5km. Risk levels. Immediate awareness.
+                </p>
+                <div class="phase-cta">
+                    <a href="/pages/index.html" data-navigate="/pages/index.html" class="cta-button">
+                        Enter Platform <span class="arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ========== PHASE 4 — ACTION SYSTEM ========== -->
+            <div class="phase-content" data-phase="4">
+                <span class="phase-label">Emergency Response</span>
+                <h1 class="phase-heading">One tap. Immediate response.</h1>
+                <p class="phase-description">
+                    SOS activation with alarm, location broadcast, and coordinated response.
+                </p>
+                <div class="phase-cta">
+                    <a href="/pages/index.html" data-navigate="/pages/index.html" class="cta-button accent">
+                        Enter Platform <span class="arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ========== PHASE 5 — RELIABILITY ========== -->
+            <div class="phase-content" data-phase="5">
+                <span class="phase-label">System Reliability</span>
+                <h1 class="phase-heading">Built to work. Even when systems fail.</h1>
+                <p class="phase-description">
+                    Offline-ready. Multi-AI fallback. Zero downtime in critical moments.
+                </p>
+            </div>
+
+            <!-- ========== PHASE 6 — FUTURE VISION ========== -->
+            <div class="phase-content" data-phase="6">
+                <span class="phase-label">The Future</span>
+                <h1 class="phase-heading">Not just response. Coordination.</h1>
+                <p class="phase-description">
+                    A unified crisis command system connecting people, data, and action.
+                </p>
+                <div class="phase-cta">
+                    <a href="/pages/index.html" data-navigate="/pages/index.html" class="cta-button accent">
+                        Enter Platform <span class="arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============================================
+         FINAL SECTION (centered, after scroll ends)
+         ============================================ -->
+    <section class="final-section">
+        <h2 class="final-heading">Built for the moments that decide everything.</h2>
+        <p class="final-subtext">ResQAI is not a feature. It's infrastructure for survival.</p>
+        <div class="final-buttons">
+            <a href="/pages/index.html" data-navigate="/pages/index.html" class="btn-primary-landing">
+                Enter Dashboard
+            </a>
+            <a href="/pages/index.html" data-navigate="/pages/index.html" class="btn-secondary-landing">
+                View Live System
+            </a>
+        </div>
+    </section>
+
+    <!-- Scroll Animation Engine -->
+    <script src="/scripts/scroll-animation.js"></script>
+
+</body>
+
+</html>
