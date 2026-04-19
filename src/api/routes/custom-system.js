@@ -10,6 +10,7 @@ import { callAI } from '../utils/aiRouter.js';
 import { verifyToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
+const DEBUG = true;
 
 // ===== CREATE CUSTOM SYSTEM =====
 router.post('/create', optionalAuth, async (req, res) => {
@@ -334,6 +335,118 @@ router.delete('/:systemID', verifyToken, async (req, res) => {
 
     } catch (error) {
         console.error('❌ Error deleting system:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ===== LOG EMERGENCY EVENT =====
+router.post('/log-emergency', optionalAuth, async (req, res) => {
+    try {
+        const { systemID, type, emergencyType, location, timestamp } = req.body;
+
+        if (!systemID || !emergencyType) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        if (DEBUG) console.log(`🚨 [EMERGENCY] SOS triggered in system ${systemID}: ${emergencyType}`);
+
+        // Save emergency event
+        const eventID = 'EV-' + Date.now();
+        
+        try {
+            if (isMySQLAvailable()) {
+                await execute(
+                    `INSERT INTO system_logs (id, system_id, action, details, created_at)
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        eventID,
+                        systemID,
+                        'EMERGENCY_SOS',
+                        JSON.stringify({ emergencyType, location, timestamp }),
+                        new Date().toISOString()
+                    ]
+                );
+            }
+        } catch (dbErr) {
+            console.warn('⚠️ Database logging failed:', dbErr.message);
+        }
+
+        // Emit to admin panel via local storage
+        const adminAlerts = JSON.parse(localStorage.getItem('admin_emergency_alerts') || '[]');
+        adminAlerts.push({
+            id: eventID,
+            systemID,
+            emergencyType,
+            location,
+            timestamp: new Date().toISOString(),
+            status: 'active'
+        });
+        localStorage.setItem('admin_emergency_alerts', JSON.stringify(adminAlerts));
+
+        res.json({
+            success: true,
+            eventID,
+            message: 'Emergency event logged',
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Error logging emergency:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ===== BROADCAST ALERT =====
+router.post('/broadcast-alert', optionalAuth, async (req, res) => {
+    try {
+        const { systemID, message, severity = 'info' } = req.body;
+
+        if (!systemID || !message) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        if (DEBUG) console.log(`📢 [BROADCAST] Alert in system ${systemID}: ${message.substring(0, 50)}...`);
+
+        // Save alert event
+        const alertID = 'ALERT-' + Date.now();
+        
+        try {
+            if (isMySQLAvailable()) {
+                await execute(
+                    `INSERT INTO system_logs (id, system_id, action, details, created_at)
+                     VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        alertID,
+                        systemID,
+                        'ALERT_BROADCAST',
+                        JSON.stringify({ message, severity }),
+                        new Date().toISOString()
+                    ]
+                );
+            }
+        } catch (dbErr) {
+            console.warn('⚠️ Database logging failed:', dbErr.message);
+        }
+
+        // Store in localStorage for user panel
+        const broadcastAlerts = JSON.parse(localStorage.getItem('rescue_broadcast_alerts_' + systemID) || '[]');
+        broadcastAlerts.push({
+            id: alertID,
+            message,
+            severity,
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('rescue_broadcast_alerts_' + systemID, JSON.stringify(broadcastAlerts));
+
+        res.json({
+            success: true,
+            alertID,
+            message: 'Alert broadcast sent',
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Error broadcasting alert:', error);
         res.status(500).json({ error: error.message });
     }
 });
