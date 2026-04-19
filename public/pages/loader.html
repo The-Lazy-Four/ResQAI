@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI Loading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Archivo Black', sans-serif;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* SVG for liquid text fill */
+        .liquid-text-svg {
+            filter: drop-shadow(0 20px 40px rgba(255, 255, 255, 0.1));
+        }
+
+        .text-bg {
+            font-size: 200px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            fill: #1a1a1a;
+            font-family: 'Archivo Black', sans-serif;
+        }
+
+        .text-fill {
+            font-size: 200px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            fill: url(#liquidGradient);
+            font-family: 'Archivo Black', sans-serif;
+        }
+
+        /* Percentage counter */
+        .percentage {
+            position: absolute;
+            bottom: -70px;
+            right: 5%;
+            font-size: 36px;
+            font-weight: 900;
+            color: #555;
+            letter-spacing: -1px;
+            font-family: 'Archivo Black', sans-serif;
+            font-variation-settings: 'wght' 900;
+        }
+
+        .percentage span {
+            color: #777;
+        }
+
+        /* Loading bar underneath */
+        .loading-info {
+            position: absolute;
+            top: 100%;
+            margin-top: 80px;
+            text-align: center;
+        }
+
+        .loading-text {
+            color: #444;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-weight: 400;
+        }
+
+        /* Fade out on complete */
+        .loader-container.complete {
+            animation: zoomOut 0.8s ease-out forwards;
+        }
+
+        @keyframes zoomOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loader-container" id="loaderContainer">
+        <div class="logo-wrapper">
+            <svg class="liquid-text-svg" width="100%" height="280" viewBox="0 0 800 280"
+                preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <!-- Mask for liquid fill with wave -->
+                    <mask id="liquidMask">
+                        <!-- White background -->
+                        <rect width="800" height="280" fill="white" />
+                        <!-- Black wave for masking -->
+                        <path id="wavePath"
+                            d="M 0,200 Q 100,190 200,200 T 400,200 T 600,200 T 800,200 L 800,280 L 0,280 Z"
+                            fill="black" />
+                    </mask>
+
+                    <!-- Gradient for liquid -->
+                    <linearGradient id="liquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#e8e8e8;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Background text (dark grey) -->
+                <text x="400" y="200" text-anchor="middle" class="text-bg">ResQAI</text>
+
+                <!-- Liquid filled text with mask -->
+                <g mask="url(#liquidMask)">
+                    <text x="400" y="200" text-anchor="middle" class="text-fill">ResQAI</text>
+                </g>
+            </svg>
+
+            <div class="percentage">
+                <span id="percentageValue">0</span>%
+            </div>
+        </div>
+
+        <div class="loading-info">
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        class LiquidLoader {
+            constructor() {
+                this.progress = 0;
+                this.targetProgress = 0;
+                this.isComplete = false;
+                this.wavePath = document.getElementById('wavePath');
+                this.percentageValue = document.getElementById('percentageValue');
+                this.loaderContainer = document.getElementById('loaderContainer');
+                this.svgHeight = 280;
+                this.svgWidth = 800;
+                this.animationFrameId = null;
+                this.waveTime = 0;
+                this.waveSpeed = 2;
+                this.waveAmplitude = 10;
+
+                this.init();
+            }
+
+            init() {
+                // Start animation loop
+                this.animateProgress();
+
+                // Simulate loading progress
+                this.simulateLoading();
+
+                // Optional: Auto-complete after demo
+                setTimeout(() => {
+                    if (!this.isComplete) {
+                        this.complete();
+                    }
+                }, 6000);
+            }
+
+            simulateLoading() {
+                const interval = setInterval(() => {
+                    if (this.isComplete) {
+                        clearInterval(interval);
+                        return;
+                    }
+
+                    // Random increment for natural feel
+                    const increment = Math.random() * 12 + 4;
+                    this.targetProgress = Math.min(this.targetProgress + increment, 95);
+                }, 400);
+            }
+
+            animateProgress() {
+                const animate = () => {
+                    // Smooth easing towards target
+                    const diff = this.targetProgress - this.progress;
+                    this.progress += diff * 0.12;
+
+                    // Increment wave time (controls wave speed)
+                    this.waveTime += 0.05;
+
+                    // Update display
+                    this.updateLiquidFill();
+                    this.updatePercentage();
+
+                    this.animationFrameId = requestAnimationFrame(animate);
+                };
+                animate();
+            }
+
+            updateLiquidFill() {
+                // Calculate fill level from bottom to top
+                const fillPercentage = this.progress / 100;
+                const fillHeight = this.svgHeight * fillPercentage;
+                const yPosition = this.svgHeight - fillHeight;
+
+                // Generate wavy path
+                this.generateWavePath(yPosition);
+            }
+
+            generateWavePath(yPosition) {
+                // Create a smooth wave path for the liquid surface
+                const waveLength = this.svgWidth / 2; // Two complete waves
+                let pathData = `M 0,${yPosition}`;
+
+                // Generate wave using sine function for smooth animation
+                const points = 100; // More points = smoother wave
+                for (let i = 0; i <= points; i++) {
+                    const x = (this.svgWidth / points) * i;
+                    const waveOffset = Math.sin((x / waveLength) * Math.PI * 2 + this.waveTime * 2) * this.waveAmplitude;
+                    const y = yPosition + waveOffset;
+
+                    if (i === 0) {
+                        pathData = `M ${x},${y}`;
+                    } else {
+                        pathData += ` L ${x},${y}`;
+                    }
+                }
+
+                // Complete the path to fill the bottom
+                pathData += ` L ${this.svgWidth},${this.svgHeight} L 0,${this.svgHeight} Z`;
+
+                this.wavePath.setAttribute('d', pathData);
+            }
+
+            updatePercentage() {
+                const displayValue = Math.floor(this.progress);
+                this.percentageValue.textContent = displayValue;
+            }
+
+            complete() {
+                this.isComplete = true;
+                this.targetProgress = 100;
+
+                // Wait for final animation
+                setTimeout(() => {
+                    this.loaderContainer.classList.add('complete');
+
+                    // Notify parent window (if in iframe) or redirect
+                    setTimeout(() => {
+                        if (window.parent !== window) {
+                            // Running in iframe - notify parent
+                            window.parent.postMessage('loader-complete', '*');
+                        } else {
+                            // Running standalone - redirect
+                            window.location.href = './index.html';
+                        }
+                    }, 800);
+                }, 300);
+            }
+
+            // Public method to programmatically complete
+            setProgress(percentage) {
+                this.targetProgress = Math.min(Math.max(percentage, 0), 100);
+            }
+
+            forceComplete() {
+                this.complete();
+            }
+        }
+
+        // Initialize loader
+        const loader = new LiquidLoader();
+
+        // Optional: Expose to window for external control
+        window.ResQAILoader = loader;
+    </script>
+</body>
+
+</html>
