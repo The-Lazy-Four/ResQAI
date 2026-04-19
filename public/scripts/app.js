@@ -355,6 +355,112 @@ function loadEcoPlusModule(event) {
 }
 
 /**
+ * Load Custom Rescue System Builder Module
+ */
+function loadCustomRescueBuilder(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    // Check authentication first
+    const authToken = localStorage.getItem('auth-token') || localStorage.getItem('user-session');
+    if (!authToken) {
+        console.log('⚠️  User not authenticated. Redirecting to login...');
+        showToast('⚠️ Please log in to use Custom Rescue Builder', 'error');
+        // For now, allow access - in production redirect to /login.html
+    }
+
+    console.log('🔧 Loading Custom Rescue System Builder...');
+
+    try {
+        // Hide the selection screen
+        const selectionScreen = document.getElementById('selectionScreen');
+        if (selectionScreen) {
+            selectionScreen.classList.remove('active');
+            selectionScreen.classList.add('exit-left');
+        }
+
+        // Create a container for the module
+        const iframeContainer = document.createElement('div');
+        iframeContainer.id = 'rescue-builder-container';
+        iframeContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5100;
+            background: #0a0a0a;
+            animation: fadeInModule 0.5s ease-out;
+        `;
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'rescue-builder-frame';
+        iframe.src = '/modules/rescue-builder/index.html';
+        iframe.title = 'Custom Rescue System Builder';
+        iframe.style.cssText = `
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        `;
+
+        iframe.onload = () => {
+            console.log('✅ Custom Rescue Builder Module Loaded Successfully');
+            showToast('🔧 Custom Rescue Builder Ready', 'success');
+
+            // Log the event
+            if (window.APP_STATE) {
+                window.APP_STATE.lastModuleLoaded = 'rescue-builder';
+                window.APP_STATE.moduleLoadTime = Date.now();
+            }
+        };
+
+        iframe.onerror = (error) => {
+            console.error('❌ Failed to load Custom Rescue Builder:', error);
+            showToast('❌ Failed to load Custom Rescue Builder. Please try again.', 'error');
+
+            // Cleanup on error
+            iframeContainer.remove();
+            const selectionScreen = document.getElementById('selectionScreen');
+            if (selectionScreen) {
+                selectionScreen.classList.add('active');
+                selectionScreen.classList.remove('exit-left');
+            }
+        };
+
+        iframeContainer.appendChild(iframe);
+        document.body.appendChild(iframeContainer);
+
+        // Update APP_STATE
+        window.APP_STATE.mode = 'rescue-builder';
+        window.APP_STATE.timestamp = Date.now();
+        console.log('📊 APP_STATE Updated:', window.APP_STATE);
+
+    } catch (error) {
+        console.error('❌ Error loading Custom Rescue Builder:', error);
+        showToast('❌ Error loading module. Please try again.', 'error');
+    }
+}
+
+/**
+ * Return from Custom Rescue Builder back to ResQAI
+ */
+function goBackFromRescueBuilder() {
+    console.log('← Returning from Rescue Builder to ResQAI Main App');
+    const container = document.getElementById('rescue-builder-container');
+    if (container) {
+        container.remove();
+    }
+    const selectionScreen = document.getElementById('selectionScreen');
+    if (selectionScreen) {
+        selectionScreen.classList.add('active');
+        selectionScreen.classList.remove('exit-left');
+    }
+}
+
+/**
  * Return from EcoPlus module back to ResQAI
  */
 function goBackFromEcoPlus() {
