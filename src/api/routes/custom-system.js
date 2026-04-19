@@ -4,10 +4,10 @@
 
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { query, execute, isMySQLAvailable } from '../db/mysql.js';
-import { getDatabase } from '../db/db.js';
-import { callAI } from '../utils/aiRouter.js';
-import { verifyToken, optionalAuth } from '../middleware/auth.js';
+import { query, execute, isMySQLAvailable } from '../../db/mysql.js';
+import { getDatabase } from '../../db/db.js';
+import { callAI } from '../../utils/aiRouter.js';
+import { verifyToken, optionalAuth } from '../../middleware/auth.js';
 
 const router = express.Router();
 const DEBUG = true;
