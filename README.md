@@ -125,31 +125,31 @@ An **AI-powered emergency response system** that delivers:
 ## 🧠 System Architecture
 
 ```mermaid
-graph TD
+flowchart LR
 
-subgraph CLIENT["🌐 Client Layer"]
+subgraph CLIENT["Client Layer"]
 A1[Rapid Crisis Protocol]
 A2[EcoPlus - Hotel Module]
 A3[SQBitain - Custom Builder]
 A4[Voice + Location APIs]
 end
 
-subgraph API["🚀 Express API Gateway"]
-B1[/api/emergencies]
-B2[/api/ai]
-B3[/api/portal]
-B4[/api/custom-system]
+subgraph API["Express API Gateway"]
+B1["/api/emergencies"]
+B2["/api/ai"]
+B3["/api/portal"]
+B4["/api/custom-system"]
 end
 
-subgraph CORE["⚙️ Core System"]
-C1[AI Router<br/>Gemini → OpenRouter → Groq]
-C2[Domain Logic<br/>SOS • Alerts • Guidance]
-C3[Data Layer<br/>SQLite + MySQL-ready]
+subgraph CORE["Core System"]
+C1["AI Router<br/>Gemini → OpenRouter → Groq"]
+C2["SOS | Alerts | Guidance"]
+C3["SQLite + MySQL-ready"]
 end
 
-subgraph SYSTEM["📊 Runtime"]
+subgraph SYSTEM["Runtime"]
 D1[Operational State]
-D2[Multi-Tenant Isolation<br/>systemID]
+D2["Multi-Tenant Isolation<br/>systemID"]
 end
 
 CLIENT --> API
@@ -189,80 +189,6 @@ CORE --> SYSTEM
 | **Database** | SQLite3 |
 | **Location** | OpenStreetMap Overpass, OpenRouteService, Mapbox |
 | **Voice** | Web Speech API (recognition + synthesis) |
-
----
-
-## 🔁 Multi-AI Fallback System
-
-**Why this matters:** Emergency systems cannot afford downtime.
-
-```
-Request for AI Guidance
-        ↓
-   [Try Gemini]
-        ↓
-   Failed? ↘
-   [Try OpenRouter - Primary Key]
-        ↓
-   Failed? ↘
-   [Try OpenRouter - Secondary Key]
-        ↓
-   Failed? ↘
-   [Try Groq]
-        ↓
-   Failed? ↘
-   [Use Cached Template]
-        ↓
-   ✅ Always responds with guidance
-```
-
-**Configuration:** `AI_PROVIDER_PRIORITY` env variable allows custom priority order.
-
----
-
-## 📊 Example Workflows
-
-### Scenario 1: Form-Based Emergency Report
-```
-User: "Fire in my building!"
-     ↓
-[Auto-capture location via geolocation]
-[AI classifies: FIRE | Severity: HIGH]
-     ↓
-[Parallel Actions]
-├─ Gemini generates: "Evacuate NOW. Use stairs, not elevators..."
-├─ Find safe zones: Hospital (2.3km), Community Center (1.8km)
-└─ Calculate routes: Optimal path + turn-by-turn
-     ↓
-Response: 
-"🚨 IMMEDIATE ACTIONS:
- 1. Evacuate using stairs
- 2. Stay low to avoid smoke
- 3. Don't stop for belongings
- 4. Meet outside at assembly point
- 
- 📍 NEAREST SAFE ZONE (1.8 km):
-    Community Center - Shelter & First Aid
-    ➜ Route: Turn right → Left on 5th Ave"
-```
-
-### Scenario 2: Voice Emergency
-```
-User: [Speaks] "Flood nearby!"
-     ↓
-[Web Speech Recognition: Confidence 0.92]
-[Detected Intent: FLOOD]
-     ↓
-[System triggers immediate actions]
-├─ AI generates flood evacuation guide
-├─ Loads safe zones (within 5km)
-└─ Preloads optimal evacuation route
-     ↓
-System responds (voice + text):
-"🚨 FLOOD ALERT! Move to higher ground.
- ✅ Safe Zone: Hospital (1.8 km away)
- 📍 Directions loading..."
-```
 
 ---
 
@@ -338,11 +264,9 @@ npm start
 
 ## 👥 Team
 
-**Team Leader:**
-- **Snehasis Chakraborty** – Idea Conceptualization & Developer
-
 **Core Team:**
-- **Souvik Dey** – Research Implementation, Lead Backend Developer
+- **Souvik Dey** – Research Implementation, Lead Backend & Frontend Developer
+- **Snehasis Chakraborty** – Idea Conceptualization & Developer
 - **Partha Sarathi Sarkar** – Research, UI Design, Side Developer  
 - **Samrat Chatterjee** – PPT Design Side Developer
 
@@ -356,24 +280,93 @@ ResQAI/
 │   ├── server.js
 │   ├── api/routes/
 │   │   ├── ai.js
+│   │   ├── aicall.js
+│   │   ├── auth.js
+│   │   ├── chat.js
+│   │   ├── classification.js
+│   │   ├── custom-system.js
 │   │   ├── emergency.js
+│   │   ├── nearby.js
 │   │   ├── portal.js
 │   │   └── voice.js
 │   ├── utils/
-│   │   ├── aiRouter.js (Multi-provider logic)
+│   │   ├── aiRouter.js (Multi-provider AI fallback logic)
+│   │   ├── dbManager.js
+│   │   ├── helpers.js
+│   │   ├── languages.js
+│   │   ├── loadEnv.js
 │   │   └── validateEnv.js
-│   └── db/
-│       └── db.js
+│   ├── config/
+│   │   └── index.js
+│   ├── db/
+│   │   ├── db.js (SQLite core)
+│   │   ├── init.js
+│   │   └── mysql.js (MySQL support)
+│   └── middleware/
+│       └── auth.js
 ├── public/
 │   ├── pages/
-│   ├── scripts/modules/
-│   │   ├── nearby.js
-│   │   ├── voice.js
-│   │   └── rapid-portal.js
-│   └── styles/
+│   │   ├── auth.html
+│   │   ├── dashboard.html
+│   │   ├── index.html
+│   │   ├── landing.html
+│   │   └── loader.html
+│   ├── modules/
+│   │   ├── echo-plus/ (Hotel Emergency Module)
+│   │   │   ├── index.html
+│   │   │   ├── wrapper.html
+│   │   │   ├── css/
+│   │   │   │   ├── hotel-safe.css
+│   │   │   │   └── style.css
+│   │   │   └── js/
+│   │   │       ├── ai-safe.js
+│   │   │       ├── aicall.js
+│   │   │       ├── app.js
+│   │   │       ├── chat.js
+│   │   │       ├── config.js
+│   │   │       ├── data.js
+│   │   │       ├── helpers.js
+│   │   │       ├── module.js
+│   │   │       └── utils.js
+│   │   └── rescue-builder/ (SQBitain Custom Builder)
+│   │       ├── index.html
+│   │       ├── README.md
+│   │       ├── css/
+│   │       │   └── style.css
+│   │       └── js/
+│   │           ├── ai-template-generator.js
+│   │           ├── builder.js
+│   │           └── templates.js
+│   ├── scripts/
+│   │   ├── app.js
+│   │   ├── scroll-animation.js
+│   │   └── modules/
+│   │       ├── chatbot.js
+│   │       ├── dashboard.js
+│   │       ├── features.js
+│   │       ├── nearby.js
+│   │       ├── rapid-portal.js
+│   │       └── voice.js
+│   ├── styles/
+│   │   ├── landing.css
+│   │   ├── main.css
+│   │   └── rapid-portal.css
+│   └── video/
 ├── docs/
+│   ├── FEATURES.md
+│   ├── PRODUCTION_DEPLOYMENT.md
+│   ├── README.md
+│   ├── SETUP.md
+│   ├── STRUCTURE.md
 │   └── images/
-└── .env.example
+│       ├── Custom Rescue Builder.png
+│       ├── Hotel Resort Module.png
+│       ├── Landing page.png
+│       ├── Main Page.png
+│       └── Rapid Crisis Protocol Dashboard.png
+├── package.json
+├── .env.example
+└── README.md
 ```
 
 ---
