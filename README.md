@@ -125,18 +125,40 @@ An **AI-powered emergency response system** that delivers:
 ## 1) 🧠 Architecture Diagram
 
 ```mermaid
-graph TD
+graph LR
 
-A[Client Layer] --> B[API Gateway]
-B --> C[AI Router]
-B --> D[Domain Logic]
-B --> E[Database]
+%% CLIENT
+subgraph CLIENT["Client Layer"]
+A1[Rapid Crisis]
+A2[EcoPlus]
+A3[SQBitain]
+A4[Voice + Location]
+end
 
-C --> F[Operational State]
-D --> F
-E --> F
+%% API
+subgraph API["API Gateway"]
+B1["/emergencies"]
+B2["/ai"]
+B3["/portal"]
+B4["/custom-system"]
+end
 
-F --> G[Multi-Tenant Isolation]
+%% CORE
+subgraph CORE["Core System"]
+C1["AI Router<br/>Gemini → OpenRouter → Groq"]
+C2["SOS | Alerts | Guidance"]
+C3["SQLite + MySQL"]
+end
+
+%% SYSTEM
+subgraph SYSTEM["Runtime"]
+D1[Operational State]
+D2["Isolation<br/>systemID"]
+end
+
+CLIENT --> API
+API --> CORE
+CORE --> SYSTEM
 ```
 
 ### 2) Frontend Architecture
@@ -174,79 +196,6 @@ F --> G[Multi-Tenant Isolation]
 
 ---
 
-## 🔁 Multi-AI Fallback System
-
-**Why this matters:** Emergency systems cannot afford downtime.
-
-```
-Request for AI Guidance
-        ↓
-   [Try Gemini]
-        ↓
-   Failed? ↘
-   [Try OpenRouter - Primary Key]
-        ↓
-   Failed? ↘
-   [Try OpenRouter - Secondary Key]
-        ↓
-   Failed? ↘
-   [Try Groq]
-        ↓
-   Failed? ↘
-   [Use Cached Template]
-        ↓
-   ✅ Always responds with guidance
-```
-
-**Configuration:** `AI_PROVIDER_PRIORITY` env variable allows custom priority order.
-
----
-
-## 📊 Example Workflows
-
-### Scenario 1: Form-Based Emergency Report
-```
-User: "Fire in my building!"
-     ↓
-[Auto-capture location via geolocation]
-[AI classifies: FIRE | Severity: HIGH]
-     ↓
-[Parallel Actions]
-├─ Gemini generates: "Evacuate NOW. Use stairs, not elevators..."
-├─ Find safe zones: Hospital (2.3km), Community Center (1.8km)
-└─ Calculate routes: Optimal path + turn-by-turn
-     ↓
-Response: 
-"🚨 IMMEDIATE ACTIONS:
- 1. Evacuate using stairs
- 2. Stay low to avoid smoke
- 3. Don't stop for belongings
- 4. Meet outside at assembly point
- 
- 📍 NEAREST SAFE ZONE (1.8 km):
-    Community Center - Shelter & First Aid
-    ➜ Route: Turn right → Left on 5th Ave"
-```
-
-### Scenario 2: Voice Emergency
-```
-User: [Speaks] "Flood nearby!"
-     ↓
-[Web Speech Recognition: Confidence 0.92]
-[Detected Intent: FLOOD]
-     ↓
-[System triggers immediate actions]
-├─ AI generates flood evacuation guide
-├─ Loads safe zones (within 5km)
-└─ Preloads optimal evacuation route
-     ↓
-System responds (voice + text):
-"🚨 FLOOD ALERT! Move to higher ground.
- ✅ Safe Zone: Hospital (1.8 km away)
- 📍 Directions loading..."
-```
-
----
 
 ## 🏥 Use Case: Hospitality & Guests
 
@@ -320,11 +269,9 @@ npm start
 
 ## 👥 Team
 
-**Team Leader:**
-- **Snehasis Chakraborty** – Idea Conceptualization & Developer
-
 **Core Team:**
-- **Souvik Dey** – Research Implementation, Lead Backend Developer
+- **Souvik Dey** – Research Implementation, Lead Backend & Frontend Developer
+- **Snehasis Chakraborty** – Idea Conceptualization & Developer
 - **Partha Sarathi Sarkar** – Research, UI Design, Side Developer  
 - **Samrat Chatterjee** – PPT Design Side Developer
 
