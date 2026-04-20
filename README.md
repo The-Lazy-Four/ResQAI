@@ -34,47 +34,15 @@ An **AI-powered emergency response system** that delivers:
 
 ---
 
-## 🖼️ Visual Overview
+## 🖼️ Visual System Showcase
 
-### 🚀 Product Walkthrough (Click to Explore)
-
-<table>
-<tr>
-<td align="center">
-<img src="./docs/images/Screenshot%202026-04-18%20091401.png" width="100%"><br>
-<b>Landing Page</b><br>
-<sub>Instant AI-guided emergency response</sub>
-</td>
-
-<td align="center">
-<img src="./docs/images/Screenshot%202026-04-18%20091338.png" width="100%"><br>
-<b>System Selection</b><br>
-<sub>Choose your rescue system</sub>
-</td>
-</tr>
-
-<tr>
-<td align="center">
-<img src="./docs/images/Screenshot%202026-04-18%20091308.png" width="100%"><br>
-<b>Live Crisis Dashboard</b><br>
-<sub>Real-time alerts within 5km</sub>
-</td>
-
-<td align="center">
-<img src="./docs/images/Screenshot%202026-04-18%20091448.png" width="100%"><br>
-<b>Hotel Emergency Module</b><br>
-<sub>Smart safety for every guest</sub>
-</td>
-</tr>
-
-<tr>
-<td align="center" colspan="2">
-<img src="./docs/images/Screenshot%202026-04-18%20091523.png" width="60%"><br>
-<b>Admin Command Center</b><br>
-<sub>Real-time coordination & control</sub>
-</td>
-</tr>
-</table>
+| 🖼️ Screenshot | 📖 Description |
+|---|---|
+| ![Landing Page](docs/images/Landing%20page.png) | **👀 What users see:** cinematic project entry and mission-first introduction.<br>**⚙️ What it does:** routes users into the right rescue flow quickly.<br>**💡 Why it matters:** reduces onboarding friction in time-sensitive scenarios. |
+| ![Main Page](docs/images/Main%20Page.png) | **👀 What users see:** module selection and primary navigation experience.<br>**⚙️ What it does:** gives access to rapid protocol, hotel module, and custom builder paths.<br>**💡 Why it matters:** supports multiple emergency contexts from one platform. |
+| ![Rapid Crisis Protocol Dashboard](docs/images/Rapid%20Crisis%20Protocol%20Dashboard.png) | **👀 What users see:** active dashboard with alerts, incidents, and decision context.<br>**⚙️ What it does:** centralizes monitoring and rapid action workflows.<br>**💡 Why it matters:** provides operational clarity during emergencies. |
+| ![Hotel Resort Module](docs/images/Hotel%20Resort%20Module.png) | **👀 What users see:** hospitality-specific emergency operations interface.<br>**⚙️ What it does:** coordinates guest/admin actions, floor-level guidance, and emergency procedures.<br>**💡 Why it matters:** enables tailored response for hotels and resorts. |
+| ![Custom Rescue Builder](docs/images/Custom%20Rescue%20Builder.png) | **👀 What users see:** no-code rescue system creation interface.<br>**⚙️ What it does:** builds organization-specific emergency systems with admin/user panels.<br>**💡 Why it matters:** makes emergency readiness configurable for any organization. |
 
 ---
 
