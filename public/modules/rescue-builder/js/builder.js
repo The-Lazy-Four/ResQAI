@@ -91,14 +91,6 @@ function getSystemStatus(system) {
 
 // ===== INITIALIZE SYSTEM WITH DEFAULTS =====
 
-function initializeSystemObject(system) {
-    return {
-        ...system,
-        alertsCount: system.alertsCount || 0,
-        lastUpdated: system.lastUpdated || new Date().toISOString(),
-        status: system.status || 'active'
-    };
-}
 
 // ===== AI SYSTEM SUMMARY =====
 
@@ -235,13 +227,9 @@ async function loadUserSystems() {
 
     try {
         const token = getAuthToken();
-        console.log('[LOAD] Token available:', !!token);
-        if (DEBUG) console.log('Token:', !!token);
 
         // TRY API WITH TIMEOUT
         try {
-            console.log('[LOAD] Attempting API call to:', API_BASE_URL + '/user/list');
-
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -256,13 +244,10 @@ async function loadUserSystems() {
 
             clearTimeout(timeoutId);
 
-            console.log('[LOAD] API response status:', response.status);
-
             if (response.ok) {
                 const data = await response.json();
                 const apiSystems = data.systems || [];
 
-                console.log('[LOAD] ✅ API returned:', apiSystems.length, 'systems');
                 if (DEBUG) console.log('✅ API returned:', apiSystems.length, 'systems');
 
                 // IF API RETURNED SYSTEMS, USE THEM
@@ -278,71 +263,46 @@ async function loadUserSystems() {
                         createdAt: s.created_at || s.createdAt
                     }));
 
-                    console.log('[LOAD] After mapping:', mapped.length, 'systems');
                     if (DEBUG) console.log('After mapping:', mapped.length, 'systems');
                     if (DEBUG) console.groupEnd();
 
-                    console.log('[LOAD] Calling renderSystemsDashboard with', mapped.length, 'systems');
                     renderSystemsDashboard(mapped);
                     return;
                 } else {
                     // API returned 0 systems - fall through to localStorage check
-                    console.log('[LOAD] API returned 0 systems, checking localStorage fallback...');
                     throw new Error('API returned 0 systems - checking localStorage');
                 }
             } else {
                 throw new Error(`API ${response.status}`);
             }
         } catch (apiErr) {
-            console.warn('[LOAD] ⚠️ API failed:', apiErr.message);
             if (DEBUG) console.warn('⚠️ API failed:', apiErr.message);
         }
 
     } catch (error) {
-        console.error('[LOAD] Error:', error.message);
         if (DEBUG) console.error('Error:', error.message);
     }
 
     // FALLBACK: Load from localStorage
-    console.log('[LOAD] 📦 Using localStorage fallback');
     if (DEBUG) console.log('📦 Using localStorage fallback');
 
     let systems = [];
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        console.log('[LOAD] localStorage key:', STORAGE_KEY);
-        console.log('[LOAD] localStorage raw value (first 200 chars):', stored ? stored.substring(0, 200) : '(empty)');
 
         if (stored) {
             systems = JSON.parse(stored);
-            console.log('[LOAD] ✅ Parsed localStorage:', systems.length, 'systems');
-
-            // Log each system - HANDLE NEW STRUCTURE (data property)
-            systems.forEach((s, i) => {
-                const orgName = s.name || s.organizationName || (s.data && s.data.organizationName) || 'Unknown';
-                const orgType = s.type || s.organizationType || (s.data && s.data.organizationType) || 'Unknown';
-                console.log(`[LOAD] System ${i + 1}:`, {
-                    systemID: s.systemID,
-                    name: orgName,
-                    type: orgType,
-                    status: s.status
-                });
-            });
-        } else {
-            console.log('[LOAD] localStorage is empty/null');
+            if (DEBUG) console.log('✅ Parsed localStorage:', systems.length, 'systems');
+        } else if (DEBUG) {
+            console.log('localStorage is empty');
         }
     } catch (e) {
-        console.error('[LOAD] ❌ Corrupted localStorage:', e.message);
-        if (DEBUG) console.error('Corrupted localStorage');
+        if (DEBUG) console.error('❌ Corrupted localStorage:', e.message);
         systems = [];
     }
 
-    if (DEBUG) {
-        console.log('Loaded:', systems.length, 'systems');
-        console.groupEnd();
-    }
+    if (DEBUG) console.groupEnd();
 
-    console.log('[LOAD] ✅ Complete - calling renderSystemsDashboard with', systems.length, 'systems');
     renderSystemsDashboard(systems || []);
 }
 
@@ -396,11 +356,19 @@ function toggleDebugPanel() {
     }
 }
 
-// Press F12 to toggle debug (only in development)
+// Consolidated global keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     if (e.key === 'F12') {
         e.preventDefault();
         toggleDebugPanel();
+    } else if (e.key === 'Escape') {
+        // Check if modal is open, else go back
+        const sosOverlay = document.getElementById('sos-guidance-overlay');
+        if (sosOverlay) {
+            sosOverlay.remove();
+        } else if (document.querySelector('.rescue-screen.active')?.id !== 'screen-type-selection') {
+            goBack();
+        }
     }
 });
 
@@ -542,15 +510,6 @@ function openSystemPanel(systemID) {
 }
 
 // Open system user panel
-function openUserPanel(systemID) {
-    console.log('[NAV] Opening user panel for system:', systemID);
-    showToast('👥 User panel - opening system: ' + systemID, 'info');
-    // TODO: Implement user panel view
-    systemData.systemID = systemID;
-    showScreen('screen-system-control-panel');
-    loadSystemIntoPanel(systemID);
-}
-
 // Load system details for control panel
 async function loadSystemIntoPanel(systemID) {
     if (DEBUG) console.group('📂 [LOAD] System into panel');
@@ -1875,31 +1834,40 @@ async function activateSOS() {
 
     showToast('🆘 SOS ACTIVATED - Emergency responders notified', 'error');
 
-    let userLocation = null;
+    // Wrap geolocation in Promise to make it awaitable
+    const getUserLocation = () => new Promise((resolve) => {
+        let userLocation = null;
 
-    // Try to get user location
-    if (navigator.geolocation) {
-        if (DEBUG) console.log('📍 [LOCATION] Requesting geolocation...');
-        console.log('[SOS] Step 2: Requesting location');
+        if (navigator.geolocation) {
+            if (DEBUG) console.log('📍 [LOCATION] Requesting geolocation...');
+            console.log('[SOS] Step 2: Requesting location');
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                userLocation = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    accuracy: position.coords.accuracy
-                };
-                if (DEBUG) console.log('✅ Location obtained:', userLocation);
-                console.log('[SOS] Step 3: Location received');
-            },
-            (error) => {
-                if (DEBUG) console.warn('⚠️ Geolocation failed:', error.message);
-                console.log('[SOS] Step 3: Location denied/error:', error.message);
-                showToast('💡 Enable location for better emergency response', 'warning');
-            },
-            { timeout: 5000, enableHighAccuracy: false }
-        );
-    }
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    if (DEBUG) console.log('✅ Location obtained:', userLocation);
+                    console.log('[SOS] Step 3: Location received');
+                    resolve(userLocation);
+                },
+                (error) => {
+                    if (DEBUG) console.warn('⚠️ Geolocation failed:', error.message);
+                    console.log('[SOS] Step 3: Location denied/error:', error.message);
+                    showToast('💡 Enable location for better emergency response', 'warning');
+                    resolve(null);  // Resolve with null instead of rejecting
+                },
+                { timeout: 5000, enableHighAccuracy: false }
+            );
+        } else {
+            resolve(null);
+        }
+    });
+
+    // Now we can await the location
+    const userLocation = await getUserLocation();
 
     try {
         // Trigger AI guidance for SOS
@@ -2470,15 +2438,3 @@ function initializeModule() {
         timestamp: new Date().toISOString()
     });
 }
-
-// ===== KEYBOARD SHORTCUTS =====
-
-document.addEventListener('keydown', (e) => {
-    // ESC to go back
-    if (e.key === 'Escape') {
-        const activeScreen = document.querySelector('.rescue-screen.active');
-        if (activeScreen.id !== 'screen-type-selection') {
-            goBack();
-        }
-    }
-});
