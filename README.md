@@ -46,48 +46,6 @@ An **AI-powered emergency response system** that delivers:
 
 ---
 
-
-## 🧠 Key Features
-
-### 1. **Multi-Channel Emergency Reporting**
-- **Form-based:** Describe emergency + location
-- **Voice-first:** Say "Fire!" or "Medical emergency!" 
-- **One-tap SOS:** Instant alarm + location broadcast
-
-### 2. **Real-Time AI Evacuation Guidance**
-- Google Gemini generates contextual instructions
-- Immediate action steps ("What do I do RIGHT NOW?")
-- Panic-proof, structured responses
-- Fallback to secondary AI if primary fails
-
-### 3. **Live Crisis Alerts Dashboard**
-- Nearby incidents within 5km radius
-- Color-coded severity (Low/Medium/High)
-- Distance + ETA to each incident
-- Auto-refresh every 60 seconds
-
-### 4. **Smart Safe Zone Discovery**
-- Auto-finds shelters, hospitals, police stations
-- Uses OpenStreetMap live data
-- Enforced 5km max distance (no far-away suggestions)
-- Real-time availability info
-
-### 5. **AI-Guided Evacuation Routes**
-- Optimal path to nearest safe zone
-- Turn-by-turn directions on interactive map
-- Real-time distance & ETA
-- Integration with evacuation guidance
-
-### 6. **Voice Emergency Detection**
-- Detect keywords: fire, flood, medical, earthquake, accident
-- Instant guidance trigger (no form needed)
-- Voice synthesis reads guidance back to user
-- Works in noisy environments
-
----
-
----
-
 ## Full Project Architecture
 
 ## 🧠 System Architecture
