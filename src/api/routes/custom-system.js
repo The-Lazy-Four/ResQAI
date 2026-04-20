@@ -210,6 +210,96 @@ router.get('/admin/all', async (req, res) => {
     }
 });
 
+// ===== GENERATE AI TEMPLATE (for Custom org type) =====
+router.post('/generate-template', optionalAuth, async (req, res) => {
+    try {
+        const { organizationType, customDescription, structure, staff } = req.body;
+
+        if (!customDescription && !organizationType) {
+            return res.status(400).json({ error: 'Missing description or type' });
+        }
+
+        const desc = customDescription || organizationType || 'custom organization';
+
+        const prompt = `You are an emergency management system designer. Generate a JSON configuration template for: "${desc}".
+
+Context:
+- Building: ${structure ? JSON.stringify(structure) : 'Not specified'}
+- Staff count: ${staff ? staff.length : 0}
+
+Return ONLY valid JSON (no markdown, no explanation) with exactly this structure:
+{
+  "name": "Organization Name",
+  "description": "Brief description",
+  "icon": "emoji icon",
+  "dashboardSections": ["section1", "section2", "section3"],
+  "emergencyTypes": [
+    {"id": "type_id", "icon": "emoji", "label": "Display Name", "color": "#hex"}
+  ],
+  "staffRoles": [
+    {"value": "role_id", "label": "Display Name"}
+  ],
+  "featureSections": {
+    "section1": {"title": "emoji Title", "description": "Description", "fields": ["Field1", "Field2"]}
+  },
+  "evacuationSteps": ["Step 1", "Step 2", "Step 3", "Step 4", "Step 5"],
+  "safetyTips": ["Tip 1", "Tip 2", "Tip 3", "Tip 4", "Tip 5"],
+  "riskTypes": ["fire", "medical"]
+}
+
+Include 3-5 emergency types, 3-5 staff roles, 2-4 feature sections, 5 evacuation steps, and 5 safety tips. Make them specific to "${desc}".`;
+
+        if (DEBUG) console.log(`🤖 [TEMPLATE-GEN] Generating template for: ${desc}`);
+
+        const aiResponse = await generateAIResponse(prompt);
+
+        // Extract JSON from AI response (may be wrapped in markdown code blocks)
+        let jsonStr = aiResponse;
+        const jsonMatch = aiResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+            jsonStr = jsonMatch[1].trim();
+        }
+
+        // Try to find JSON object in the response
+        const jsonStart = jsonStr.indexOf('{');
+        const jsonEnd = jsonStr.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+            jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+        }
+
+        let template;
+        try {
+            template = JSON.parse(jsonStr);
+        } catch (parseErr) {
+            console.warn('⚠️ [TEMPLATE-GEN] Failed to parse AI JSON, using fallback');
+            return res.json({
+                success: true,
+                template: null,
+                fallback: true,
+                message: 'AI returned non-JSON, use client-side defaults'
+            });
+        }
+
+        if (DEBUG) console.log('✅ [TEMPLATE-GEN] Template generated successfully');
+
+        res.json({
+            success: true,
+            template,
+            source: 'ai',
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ [TEMPLATE-GEN] Error:', error.message);
+        res.json({
+            success: false,
+            template: null,
+            fallback: true,
+            error: error.message
+        });
+    }
+});
+
 // ===== GENERATE AI GUIDANCE =====
 router.post('/generate-guidance', optionalAuth, async (req, res) => {
     try {
