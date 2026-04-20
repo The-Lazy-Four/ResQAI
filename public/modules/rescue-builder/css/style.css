@@ -1487,6 +1487,85 @@ body {
    RESPONSIVE
    ===================================================== */
 
+/* =====================================================
+   DYNAMIC FEATURE SECTIONS (TEMPLATE SYSTEM)
+   ===================================================== */
+
+.feature-section {
+    background: rgba(25, 25, 35, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.feature-section:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.feature-section-header {
+    margin-bottom: 15px;
+}
+
+.feature-section-header h4 {
+    margin: 0 0 8px 0;
+    color: #fff;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.feature-section-header p {
+    margin: 0;
+    color: #888;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.feature-section-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.feature-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 8px;
+}
+
+.feature-field:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.field-label {
+    color: #aaa;
+}
+
+.field-value {
+    color: #fff;
+    font-weight: 600;
+}
+
+#admin-feature-sections,
+#user-feature-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
 @media (max-width: 768px) {
     .rescue-header {
         padding: 16px 20px;
