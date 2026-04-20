@@ -547,27 +547,45 @@
                     </div>
                 </div>
 
+                <!-- AI SYSTEM SUMMARY -->
+                <div class="admin-card ai-card" id="ai-summary">
+                    <div
+                        style="padding: 16px; background: #3b82f711; border-left: 3px solid #3b82f7; border-radius: 6px;">
+                        <div style="color: #3b82f7; font-weight: 600; margin-bottom: 8px;">🧠 AI System Insight</div>
+                        <div style="color: #888; font-size: 12px;">⏳ Analyzing system readiness...</div>
+                    </div>
+                </div>
+
+                <!-- SMART ACTION BUTTONS -->
+                <div class="admin-card" id="smart-actions" style="grid-column: 1/-1;">
+                    <h3>Quick Actions</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px;">
+                        <button onclick="activateEmergencyMode()"
+                            style="padding: 12px; background: #ef444466; border: 1px solid #ef4444; color: #ff6b6b; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            🚨 Emergency
+                        </button>
+                        <button onclick="sendAlert()"
+                            style="padding: 12px; background: #f9731666; border: 1px solid #f97316; color: #ffb84d; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            📡 Send Alert
+                        </button>
+                        <button onclick="getAIGuidance()"
+                            style="padding: 12px; background: #3b82f766; border: 1px solid #3b82f7; color: #93c5fd; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            🧠 AI Guide
+                        </button>
+                    </div>
+                </div>
+
                 <!-- EMERGENCY TRIGGER -->
                 <div class="admin-card alert-card">
                     <h3>Trigger Emergency</h3>
-                    <div class="emergency-buttons">
-                        <button class="btn-emergency fire-btn" onclick="triggerEmergency('fire')">
-                            <span class="em-icon">🔥</span>
-                            <span class="em-text">Fire</span>
-                        </button>
-                        <button class="btn-emergency medical-btn" onclick="triggerEmergency('medical')">
-                            <span class="em-icon">⚕️</span>
-                            <span class="em-text">Medical</span>
-                        </button>
-                        <button class="btn-emergency intruder-btn" onclick="triggerEmergency('intruder')">
-                            <span class="em-icon">🚨</span>
-                            <span class="em-text">Intruder</span>
-                        </button>
-                        <button class="btn-emergency flood-btn" onclick="triggerEmergency('flood')">
-                            <span class="em-icon">💧</span>
-                            <span class="em-text">Flood</span>
-                        </button>
+                    <div class="emergency-buttons" id="admin-emergency-buttons">
+                        <!-- Populated dynamically by JS based on organization type -->
                     </div>
+                </div>
+
+                <!-- DYNAMIC FEATURE SECTIONS -->
+                <div id="admin-feature-sections" style="display: contents;">
+                    <!-- Populated dynamically by JS based on organization type -->
                 </div>
 
                 <!-- ACTIVE SOS ALERTS -->
@@ -645,6 +663,11 @@
                     <p class="sos-desc">Tap to send emergency signal. Your location will be shared with responders.</p>
                 </div>
 
+                <!-- DYNAMIC USER FEATURE SECTIONS -->
+                <div id="user-feature-sections" style="display: contents;">
+                    <!-- Populated dynamically by JS based on organization type -->
+                </div>
+
                 <!-- AI GUIDANCE -->
                 <div class="user-card guidance-section">
                     <h3>AI Safety Guide</h3>
@@ -684,6 +707,7 @@
 
     <!-- Scripts -->
     <script src="/modules/rescue-builder/js/templates.js"></script>
+    <script src="/modules/rescue-builder/js/ai-template-generator.js"></script>
     <script src="/modules/rescue-builder/js/builder.js"></script>
 
     <!-- Initialize on page load -->
