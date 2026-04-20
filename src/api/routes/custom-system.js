@@ -461,8 +461,8 @@ router.post('/log-emergency', optionalAuth, async (req, res) => {
             console.warn('⚠️ Database logging failed:', dbErr.message);
         }
 
-        // Emit to admin panel via local storage
-        const adminAlerts = JSON.parse(localStorage.getItem('admin_emergency_alerts') || '[]');
+        // ISOLATION FIX: Store alert with systemID scope in localStorage
+        const adminAlerts = JSON.parse(localStorage.getItem(`admin_emergency_alerts_${systemID}`) || '[]');
         adminAlerts.push({
             id: eventID,
             systemID,
@@ -471,7 +471,8 @@ router.post('/log-emergency', optionalAuth, async (req, res) => {
             timestamp: new Date().toISOString(),
             status: 'active'
         });
-        localStorage.setItem('admin_emergency_alerts', JSON.stringify(adminAlerts));
+        localStorage.setItem(`admin_emergency_alerts_${systemID}`, JSON.stringify(adminAlerts));
+        if (DEBUG) console.log(`[ISOLATION] Emergency alert saved for system ${systemID} - Total alerts for this system: ${adminAlerts.length}`);
 
         res.json({
             success: true,
