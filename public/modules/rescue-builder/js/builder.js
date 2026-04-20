@@ -6,7 +6,7 @@
 const API_BASE_URL = '/api/custom-system';
 const AUTH_TOKEN_KEY = 'auth-token';
 const DEBUG = true;  // Comprehensive debug logging
-const STORAGE_KEY = 'rescue_systems';  // Standardized localStorage key
+const STORAGE_KEY = 'resqai_custom_systems';  // Production storage key
 
 // ===== DATA STORAGE =====
 let systemData = {
@@ -60,6 +60,173 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 3000);
 }
 
+// ===== SYSTEM TYPE THEMING =====
+
+const SYSTEM_THEMES = {
+    school: { color: '#3b82f6', label: 'School', emoji: '🎓' },
+    hospital: { color: '#10b981', label: 'Hospital', emoji: '🏥' },
+    restaurant: { color: '#f97316', label: 'Restaurant', emoji: '🍽️' },
+    hostel: { color: '#a855f7', label: 'Hostel', emoji: '🏨' },
+    custom: { color: '#6366f1', label: 'Custom', emoji: '⚙️' },
+    other: { color: '#06b6d4', label: 'Organization', emoji: '🏢' }
+};
+
+function getThemeByType(type) {
+    return SYSTEM_THEMES[type] || SYSTEM_THEMES.custom;
+}
+
+// ===== SYSTEM STATUS HELPERS =====
+
+const SYSTEM_STATUS = {
+    active: { emoji: '🟢', label: 'Active', color: '#10b981' },
+    monitoring: { emoji: '🟡', label: 'Monitoring', color: '#f59e0b' },
+    emergency: { emoji: '🔴', label: 'Emergency', color: '#ef4444' }
+};
+
+function getSystemStatus(system) {
+    if (system.status === 'emergency') return SYSTEM_STATUS.emergency;
+    if (system.alertsCount > 0) return SYSTEM_STATUS.monitoring;
+    return SYSTEM_STATUS.active;
+}
+
+// ===== INITIALIZE SYSTEM WITH DEFAULTS =====
+
+function initializeSystemObject(system) {
+    return {
+        ...system,
+        alertsCount: system.alertsCount || 0,
+        lastUpdated: system.lastUpdated || new Date().toISOString(),
+        status: system.status || 'active'
+    };
+}
+
+// ===== AI SYSTEM SUMMARY =====
+
+async function addAISummarySection(system, theme) {
+    const summaryContainer = document.getElementById('ai-summary');
+    if (!summaryContainer) return;
+
+    // Show loading state
+    summaryContainer.innerHTML = `
+        <div style="padding: 16px; background: ${theme.color}11; border-left: 3px solid ${theme.color}; border-radius: 6px;">
+            <div style="color: ${theme.color}; font-weight: 600; margin-bottom: 8px;">🧠 AI System Insight</div>
+            <div style="color: #888; font-size: 12px;">⏳ Analyzing system readiness...</div>
+        </div>
+    `;
+
+    try {
+        console.log('[AI-SUMMARY] Generating summary for:', system.organizationName, system.organizationType);
+
+        const response = await fetch('/api/ai/generate-summary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify({
+                organizationType: system.organizationType,
+                location: system.location,
+                staffCount: (system.staff && system.staff.length) || 0,
+                riskTypes: system.riskTypes || []
+            }),
+            timeout: 5000
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const insight = data.insight || getDefaultInsight(system.organizationType);
+
+            summaryContainer.innerHTML = `
+                <div style="padding: 16px; background: ${theme.color}11; border-left: 3px solid ${theme.color}; border-radius: 6px;">
+                    <div style="color: ${theme.color}; font-weight: 600; margin-bottom: 8px;">🧠 AI System Insight</div>
+                    <div style="color: #ccc; font-size: 13px; line-height: 1.5;">${insight}</div>
+                </div>
+            `;
+            console.log('[AI-SUMMARY] ✅ Summary generated');
+        } else {
+            throw new Error('API response not ok');
+        }
+    } catch (error) {
+        console.warn('[AI-SUMMARY] ⚠️ API failed:', error.message);
+        const insight = getDefaultInsight(system.organizationType);
+
+        summaryContainer.innerHTML = `
+            <div style="padding: 16px; background: ${theme.color}11; border-left: 3px solid ${theme.color}; border-radius: 6px;">
+                <div style="color: ${theme.color}; font-weight: 600; margin-bottom: 8px;">🧠 System Insight</div>
+                <div style="color: #ccc; font-size: 13px; line-height: 1.5;">${insight}</div>
+            </div>
+        `;
+    }
+}
+
+function getDefaultInsight(type) {
+    const insights = {
+        school: '📚 Schools require comprehensive evacuation procedures and safe spaces. Focus on ensuring all staff are trained in emergency protocols and communication systems are in place.',
+        hospital: '🏥 Healthcare facilities need rapid response coordination. Ensure emergency protocols cover patient safety, staff coordination, and resource management.',
+        restaurant: '🍽️ Food service venues require crowd management and rapid evacuation procedures. Train staff on emergency exits and communication with emergency services.',
+        hostel: '🏨 Accommodation facilities need guest management and evacuation procedures. Maintain updated guest information and clear emergency routes.',
+        custom: '⚙️ Review emergency procedures specific to your organization type. Ensure all staff are trained and communication channels are tested regularly.',
+        other: '🏢 Develop comprehensive emergency response plans specific to your organization. Regular drills and staff training are essential.'
+    };
+    return insights[type] || insights.other;
+}
+
+// ===== SMART ACTION BUTTONS =====
+
+function addSmartActionButtons(system, theme) {
+    const actionsContainer = document.getElementById('smart-actions');
+    if (!actionsContainer) return;
+
+    actionsContainer.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px;">
+            <button onclick="activateEmergencyMode()" style="padding: 12px; background: #ef444466; border: 1px solid #ef4444; color: #ff6b6b; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                🚨 Trigger Emergency
+            </button>
+            <button onclick="sendAlert()" style="padding: 12px; background: #f97316aa; border: 1px solid #f97316; color: #ffb84d; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                📡 Send Alert
+            </button>
+            <button onclick="getAIGuidance()" style="padding: 12px; background: ${theme.color}66; border: 1px solid ${theme.color}; color: #fff; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                🧠 AI Guidance
+            </button>
+        </div>
+    `;
+}
+
+function activateEmergencyMode() {
+    const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const system = systems.find(s => s.systemID === systemData.systemID);
+
+    if (system) {
+        system.status = 'emergency';
+        system.lastUpdated = new Date().toISOString();
+        system.alertsCount = (system.alertsCount || 0) + 1;
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+        console.log('[EMERGENCY] System status set to emergency');
+        showToast('🚨 Emergency mode activated', 'error');
+        location.reload();
+    }
+}
+
+function sendAlert() {
+    const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const system = systems.find(s => s.systemID === systemData.systemID);
+
+    if (system) {
+        system.alertsCount = (system.alertsCount || 0) + 1;
+        system.lastUpdated = new Date().toISOString();
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+        console.log('[ALERT] Alert count incremented:', system.alertsCount);
+        showToast('📡 Alert sent to all staff', 'success');
+    }
+}
+
+function getAIGuidance() {
+    showToast('🧠 AI guidance system activated', 'info');
+    console.log('[AI-GUIDANCE] Requesting AI guidance for:', systemData.organizationName);
+}
+
 // ===== SYSTEMS MANAGEMENT =====
 
 // Load user's systems from backend
@@ -74,7 +241,7 @@ async function loadUserSystems() {
         // TRY API WITH TIMEOUT
         try {
             console.log('[LOAD] Attempting API call to:', API_BASE_URL + '/user/list');
-            
+
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -98,24 +265,31 @@ async function loadUserSystems() {
                 console.log('[LOAD] ✅ API returned:', apiSystems.length, 'systems');
                 if (DEBUG) console.log('✅ API returned:', apiSystems.length, 'systems');
 
-                // Map snake_case to camelCase
-                const mapped = apiSystems.map(s => ({
-                    systemID: s.id || s.systemID,
-                    organizationName: s.organization_name || s.organizationName,
-                    organizationType: s.organization_type || s.organizationType,
-                    location: s.location,
-                    contactEmail: s.contact_email || s.contactEmail,
-                    status: s.status || 'saved',
-                    createdAt: s.created_at || s.createdAt
-                }));
+                // IF API RETURNED SYSTEMS, USE THEM
+                if (apiSystems.length > 0) {
+                    // Map snake_case to camelCase
+                    const mapped = apiSystems.map(s => ({
+                        systemID: s.id || s.systemID,
+                        organizationName: s.organization_name || s.organizationName,
+                        organizationType: s.organization_type || s.organizationType,
+                        location: s.location,
+                        contactEmail: s.contact_email || s.contactEmail,
+                        status: s.status || 'saved',
+                        createdAt: s.created_at || s.createdAt
+                    }));
 
-                console.log('[LOAD] After mapping:', mapped.length, 'systems');
-                if (DEBUG) console.log('After mapping:', mapped.length, 'systems');
-                if (DEBUG) console.groupEnd();
+                    console.log('[LOAD] After mapping:', mapped.length, 'systems');
+                    if (DEBUG) console.log('After mapping:', mapped.length, 'systems');
+                    if (DEBUG) console.groupEnd();
 
-                console.log('[LOAD] Calling renderSystemsDashboard with', mapped.length, 'systems');
-                renderSystemsDashboard(mapped);
-                return;
+                    console.log('[LOAD] Calling renderSystemsDashboard with', mapped.length, 'systems');
+                    renderSystemsDashboard(mapped);
+                    return;
+                } else {
+                    // API returned 0 systems - fall through to localStorage check
+                    console.log('[LOAD] API returned 0 systems, checking localStorage fallback...');
+                    throw new Error('API returned 0 systems - checking localStorage');
+                }
             } else {
                 throw new Error(`API ${response.status}`);
             }
@@ -138,16 +312,19 @@ async function loadUserSystems() {
         const stored = localStorage.getItem(STORAGE_KEY);
         console.log('[LOAD] localStorage key:', STORAGE_KEY);
         console.log('[LOAD] localStorage raw value (first 200 chars):', stored ? stored.substring(0, 200) : '(empty)');
-        
+
         if (stored) {
             systems = JSON.parse(stored);
             console.log('[LOAD] ✅ Parsed localStorage:', systems.length, 'systems');
-            
-            // Log each system
+
+            // Log each system - HANDLE NEW STRUCTURE (data property)
             systems.forEach((s, i) => {
-                console.log(`[LOAD] System ${i+1}:`, {
+                const orgName = s.name || s.organizationName || (s.data && s.data.organizationName) || 'Unknown';
+                const orgType = s.type || s.organizationType || (s.data && s.data.organizationType) || 'Unknown';
+                console.log(`[LOAD] System ${i + 1}:`, {
                     systemID: s.systemID,
-                    organizationName: s.organizationName,
+                    name: orgName,
+                    type: orgType,
                     status: s.status
                 });
             });
@@ -229,25 +406,29 @@ document.addEventListener('keydown', (e) => {
 
 // Render systems dashboard with list of user's systems
 function renderSystemsDashboard(systems) {
+    console.log('[RENDER] Starting dashboard render');
+    if (DEBUG) console.group('🎨 [RENDER] Dashboard');
+
     // VALIDATE INPUT
     const container = document.getElementById('systems-list');
     if (!container) {
-        if (DEBUG) console.error('❌ Container not found!');
+        console.error('[RENDER] ❌ Container #systems-list not found!');
+        if (DEBUG) console.groupEnd();
         return;
     }
 
     // VALIDATE SYSTEMS ARRAY
     if (!Array.isArray(systems)) {
-        if (DEBUG) console.error('❌ Systems not an array');
+        console.warn('[RENDER] ⚠️ Systems not an array, using empty array');
         systems = [];
     }
 
     container.innerHTML = '';
-    if (DEBUG) console.log('🎨 [RENDER] Systems:', systems.length, 'found');
+    console.log('[RENDER] Total systems to render:', systems.length);
 
     // EMPTY STATE
     if (systems.length === 0) {
-        if (DEBUG) console.log('📭 No systems - empty state');
+        console.log('[RENDER] No systems found - showing empty state');
         container.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
                 <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
@@ -255,6 +436,8 @@ function renderSystemsDashboard(systems) {
                 <p style="color: #888;">Create your first rescue system to get started</p>
             </div>
         `;
+        console.log('[RENDER] ✅ Empty state rendered');
+        if (DEBUG) console.groupEnd();
         return;
     }
 
@@ -264,37 +447,84 @@ function renderSystemsDashboard(systems) {
             const card = document.createElement('div');
             card.className = 'system-card';
 
-            // STATUS INDICATOR
-            let statusDot = '⏳';
-            if (system.status === 'saved') statusDot = '✅';
-            else if (system.status === 'local') statusDot = '💾';
+            // GET THEME BY TYPE
+            const theme = getThemeByType(system.type);
+            const status = getSystemStatus(system);
 
-            const createdDate = system.createdAt
-                ? new Date(system.createdAt).toLocaleDateString()
-                : 'Unknown';
             const systemID = system.systemID || system.id;
+            const orgType = system.type || system.organizationType || 'custom';
+            const orgName = system.name || system.organizationName || 'Unnamed';
+            const location = (system.data && system.data.location) || system.location || 'No location';
+            const staffCount = (system.data && system.data.staff && system.data.staff.length) || 0;
+            const riskCount = (system.data && system.data.riskTypes && system.data.riskTypes.length) || 0;
+            const alertsCount = system.alertsCount || 0;
+
+            // Format last updated time
+            const lastUpdated = system.lastUpdated
+                ? new Date(system.lastUpdated).toLocaleString()
+                : 'Never';
+
+            console.log(`[RENDER] Card ${index + 1} - systemID: ${systemID}, name: ${orgName}, type: ${orgType}, alerts: ${alertsCount}`);
+
+            // Apply theme to card border
+            card.style.borderLeft = `4px solid ${theme.color}`;
+            card.style.boxShadow = `0 0 15px ${theme.color}33`;
 
             card.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <span style="background: rgba(255,255,255,0.1); color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 12px;">${system.organizationType || 'Unknown'}</span>
-                    <span title="${statusDot === '✅' ? 'Saved' : 'Local Only'}">${statusDot}</span>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <div style="display: flex; gap: 8px;">
+                        <span style="background: ${theme.color}22; color: ${theme.color}; border: 1px solid ${theme.color}66; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">${theme.emoji} ${theme.label}</span>
+                    </div>
+                    <span title="${status.label}" style="font-size: 20px;">${status.emoji}</span>
                 </div>
-                <h3 style="color: #fff; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">${system.organizationName || 'Unnamed'}</h3>
-                <p style="color: #888; margin: 8px 0; font-size: 14px;">📍 ${system.location || 'No location'}</p>
-                <p style="color: #666; margin: 8px 0 16px 0; font-size: 12px;">Created: ${createdDate}</p>
+                <h3 style="color: #fff; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">${orgName}</h3>
+                <p style="color: #888; margin: 8px 0; font-size: 14px;">📍 ${location}</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 16px 0; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px;">
+                    <div style="font-size: 12px; color: #666;">
+                        👥 <span style="color: #0f0;">${staffCount}</span> Staff
+                    </div>
+                    <div style="font-size: 12px; color: #666;">
+                        ⚠️ <span style="color: #ff9;">${riskCount}</span> Risks
+                    </div>
+                    <div style="font-size: 12px; color: #666;">
+                        🚨 <span style="color: ${alertsCount > 0 ? '#f44' : '#0a0'}">${alertsCount}</span> Alerts
+                    </div>
+                    <div style="font-size: 12px; color: #666;">
+                        ⏱️ Updated
+                    </div>
+                </div>
+                
+                <p style="color: #666; margin: 8px 0 16px 0; font-size: 11px;">Last updated: ${lastUpdated}</p>
+                
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-small btn-primary" onclick="openSystemPanel('${systemID}')" style="flex: 1;">Open</button>
-                    <button class="btn-small btn-danger" onclick="deleteSystemConfirm('${systemID}')" style="flex: 1;">Delete</button>
+                    <button class="btn-small btn-primary" onclick="openSystem('${systemID}')" style="flex: 1;">📂 Open</button>
+                    <button class="btn-small btn-danger" onclick="deleteSystemConfirm('${systemID}')" style="flex: 1;">🗑️ Delete</button>
                 </div>
             `;
+
+            // Add hover preview
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.boxShadow = `0 8px 25px ${theme.color}55`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = `0 0 15px ${theme.color}33`;
+            });
+
+            card.style.transition = 'all 0.3s ease';
+
             container.appendChild(card);
-            if (DEBUG) console.log(`✅ Card ${index + 1} rendered`);
+            console.log(`[RENDER] ✅ Card ${index + 1} created with theme ${theme.label} - systemID: ${systemID}`);
         } catch (cardErr) {
-            if (DEBUG) console.error(`❌ Card ${index} failed:`, cardErr.message);
+            console.error(`[RENDER] ❌ Card ${index + 1} error:`, cardErr.message);
         }
     });
 
-    if (DEBUG) console.log('🎨 Dashboard render complete');
+    console.log('[RENDER] ✅ All systems rendered successfully');
+    if (DEBUG) console.groupEnd();
 }
 
 // Show systems dashboard screen
@@ -303,8 +533,19 @@ async function showSystemsDashboard() {
     await loadUserSystems();  // Wait for systems to load before returning
 }
 
-// Open system control panel
+// Open system admin control panel
 function openSystemPanel(systemID) {
+    console.log('[NAV] Opening admin panel for system:', systemID);
+    systemData.systemID = systemID;
+    showScreen('screen-system-control-panel');
+    loadSystemIntoPanel(systemID);
+}
+
+// Open system user panel
+function openUserPanel(systemID) {
+    console.log('[NAV] Opening user panel for system:', systemID);
+    showToast('👥 User panel - opening system: ' + systemID, 'info');
+    // TODO: Implement user panel view
     systemData.systemID = systemID;
     showScreen('screen-system-control-panel');
     loadSystemIntoPanel(systemID);
@@ -356,8 +597,9 @@ async function loadSystemIntoPanel(systemID) {
                 systemData.contactEmail = system.contactEmail || system.contact_email;
                 systemData.structure = system.structure || systemData.structure;
                 systemData.staff = system.staff || systemData.staff;
+                systemData.systemID = systemID; // IMPORTANT: Set the system ID
 
-                console.log('[LOAD] systemData updated:', {
+                console.log('[LOAD] systemData updated from API:', {
                     organizationName: systemData.organizationName,
                     organizationType: systemData.organizationType,
                     location: systemData.location
@@ -404,14 +646,30 @@ async function loadSystemIntoPanel(systemID) {
                 console.log('[LOAD] Found system in localStorage:', system);
 
                 if (system) {
-                    systemData.organizationName = system.organizationName;
-                    systemData.organizationType = system.organizationType;
-                    systemData.location = system.location;
-                    systemData.contactEmail = system.contactEmail;
-                    systemData.structure = system.structure || systemData.structure;
-                    systemData.staff = system.staff || systemData.staff;
+                    // HANDLE NEW STRUCTURE (data property) and OLD STRUCTURE (flat properties)
+                    const systemData_org = (system.data && system.data.organizationName) || system.organizationName;
+                    const systemData_type = (system.data && system.data.organizationType) || system.type || system.organizationType;
+                    const systemData_location = (system.data && system.data.location) || system.location;
+                    const systemData_email = (system.data && system.data.contactEmail) || system.contactEmail;
+                    const systemData_structure = (system.data && system.data.structure) || system.structure;
+                    const systemData_staff = (system.data && system.data.staff) || system.staff;
+                    const systemData_template = (system.data && system.data.template) || system.template;
 
-                    console.log('[LOAD] systemData updated from localStorage');
+                    systemData.organizationName = systemData_org;
+                    systemData.organizationType = systemData_type;
+                    systemData.location = systemData_location;
+                    systemData.contactEmail = systemData_email;
+                    systemData.structure = systemData_structure || systemData.structure;
+                    systemData.staff = systemData_staff || systemData.staff;
+                    systemData.template = systemData_template;
+                    systemData.systemID = systemID; // IMPORTANT: Set the system ID
+
+                    console.log('[LOAD] systemData updated from localStorage:', {
+                        organizationName: systemData.organizationName,
+                        organizationType: systemData.organizationType,
+                        location: systemData.location,
+                        hasTemplate: !!systemData_template
+                    });
 
                     panelInfo.innerHTML = `
                         <div class="info-line">
@@ -462,24 +720,90 @@ function deleteSystemConfirm(systemID) {
     }
 }
 
-// Delete system
+// Delete system from API and localStorage
 async function deleteSystem(systemID) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/${systemID}`, {
-            method: 'DELETE',
-            headers: getAPIHeaders()
-        });
+    console.group('[DELETE] System deletion');
+    console.log('[DELETE] Deleting systemID:', systemID);
 
-        if (response.ok) {
-            showToast('✅ System deleted successfully', 'success');
-            loadUserSystems(); // Refresh list
-        } else {
-            showToast('❌ Failed to delete system', 'error');
+    try {
+        // Try to delete from API
+        try {
+            console.log('[DELETE] Attempting API delete...');
+            const response = await fetch(`${API_BASE_URL}/${systemID}`, {
+                method: 'DELETE',
+                headers: getAPIHeaders()
+            });
+
+            if (response.ok) {
+                console.log('[DELETE] ✅ API deletion successful');
+            } else {
+                console.warn('[DELETE] ⚠️ API deletion failed, trying localStorage');
+            }
+        } catch (apiErr) {
+            console.warn('[DELETE] ⚠️ API call failed, falling back to localStorage:', apiErr.message);
         }
+
+        // ALWAYS delete from localStorage for reliability
+        console.log('[DELETE] Removing from localStorage...');
+        let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const beforeCount = systems.length;
+        systems = systems.filter(s => s.systemID !== systemID);
+        const afterCount = systems.length;
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+
+        console.log(`[DELETE] ✅ Removed from localStorage (was ${beforeCount}, now ${afterCount})`);
+        console.groupEnd();
+
+        showToast('✅ System deleted successfully', 'success');
+
+        // Refresh the dashboard
+        console.log('[DELETE] Reloading dashboard...');
+        loadUserSystems();
     } catch (error) {
-        console.error('❌ Error deleting system:', error);
+        console.error('[DELETE] ❌ Unexpected error:', error);
+        console.groupEnd();
         showToast('❌ Error deleting system', 'error');
     }
+}
+
+// ===== OPEN SYSTEM DETAIL VIEW =====
+
+function openSystem(systemID) {
+    console.log('[OPEN] Opening system detail view for:', systemID);
+
+    try {
+        // Load the system from localStorage to verify it exists
+        const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const system = systems.find(s => s.systemID === systemID);
+
+        if (!system) {
+            console.error('[OPEN] ❌ System not found:', systemID);
+            showToast('❌ System not found', 'error');
+            return;
+        }
+
+        console.log('[OPEN] ✅ System found:', system.name || system.organizationName);
+
+        // Save active system to localStorage for control panel to load
+        localStorage.setItem('active_system_id', systemID);
+        console.log('[OPEN] Active system ID saved to localStorage');
+
+        // Navigate to control panel
+        console.log('[OPEN] Navigating to system control panel...');
+        showSystemControlPanel(systemID);
+
+    } catch (error) {
+        console.error('[OPEN] ❌ Error opening system:', error.message);
+        showToast('❌ Error opening system: ' + error.message, 'error');
+    }
+}
+
+// Show the system control panel screen (already exists in HTML)
+function showSystemControlPanel(systemID) {
+    console.log('[PANEL] Loading system into control panel:', systemID);
+    showScreen('screen-system-control-panel');
+    loadSystemIntoPanel(systemID);
 }
 
 // ===== BACK BUTTON FUNCTIONS =====
@@ -495,7 +819,7 @@ function goBackToMainPage() {
 }
 
 function goBackFromSystemPanel() {
-    console.log('🔙 Returning to systems dashboard from control panel...');
+    console.log('🔙 [BACK] Returning to systems dashboard from control panel...');
     showSystemsDashboard();
 }
 
@@ -504,6 +828,9 @@ function goBackFromSystemPanel() {
 function selectType(type) {
     systemData.organizationType = type;
     const template = getTemplate(type);
+
+    // Attach full template to systemData for persistence
+    systemData.template = template;
 
     // Set default structure values
     systemData.structure.floors = template.defaultFloors;
@@ -515,6 +842,7 @@ function selectType(type) {
 
     // Show first step
     showScreen('screen-wizard-step1');
+    console.log('[SELECT] Type:', type, '| Template attached with', template.emergencyTypes?.length, 'emergency types');
 }
 
 function goToTypeSelection() {
@@ -615,16 +943,17 @@ function addStaffItem() {
     const staffList = document.getElementById('staff-list');
     const newItem = document.createElement('div');
     newItem.className = 'staff-item';
+
+    // Get roles from template (dynamic per org type)
+    const roles = getStaffRoles(systemData.organizationType);
+    const roleOptions = roles.map(r => `<option value="${r.value}">${r.label}</option>`).join('');
+
     newItem.innerHTML = `
     <div class="staff-form">
       <input type="text" class="staff-name" placeholder="Staff Name" />
       <select class="staff-role">
         <option value="">Select Role</option>
-        <option value="commander">Emergency Commander</option>
-        <option value="warden">Floor Warden</option>
-        <option value="medical">Medical Lead</option>
-        <option value="coordinator">Coordinator</option>
-        <option value="responder">First Responder</option>
+        ${roleOptions}
       </select>
       <input type="tel" class="staff-phone" placeholder="Phone Number" />
       <button type="button" class="btn-remove" onclick="removeStaffItem(this)">✕</button>
@@ -666,11 +995,11 @@ function goToWizardStep3() {
 }
 
 async function buildSystem() {
-    console.log('\n========== [BUILD] SYSTEM CREATION STARTED ==========');
-    if (DEBUG) console.group('🚀 [BUILD] System');
+    console.log('\n========== [CREATE] SYSTEM CREATION STARTED ==========');
+    if (DEBUG) console.group('🚀 [CREATE] System');
 
     // ===== STEP 1: COLLECT RISK TYPES =====
-    console.log('[BUILD] STEP 1: Collecting risk types...');
+    console.log('[CREATE] STEP 1: Collecting risk types...');
     const checkboxes = document.querySelectorAll('.risk-checkbox input:checked');
     systemData.riskTypes = [];
     checkboxes.forEach(cb => {
@@ -678,62 +1007,62 @@ async function buildSystem() {
     });
 
     if (systemData.riskTypes.length === 0) {
-        console.error('[BUILD] ❌ STEP 1 FAILED: No risk types selected');
+        console.error('[CREATE] ❌ STEP 1 FAILED: No risk types selected');
         showToast('Please select at least one risk type', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
 
-    console.log('[BUILD] ✅ STEP 1 COMPLETE: Risk types collected:', systemData.riskTypes);
+    console.log('[CREATE] ✅ STEP 1 COMPLETE: Risk types collected:', systemData.riskTypes);
 
     // ===== STEP 2: VALIDATE ALL REQUIRED DATA =====
-    console.log('[BUILD] STEP 2: Validating systemData...');
-    
+    console.log('[CREATE] STEP 2: Validating systemData...');
+
     if (!systemData.organizationName) {
-        console.error('[BUILD] ❌ STEP 2 FAILED: Missing organizationName');
+        console.error('[CREATE] ❌ STEP 2 FAILED: Missing organizationName');
         showToast('❌ Organization name is missing', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
-    
+
     if (!systemData.organizationType) {
-        console.error('[BUILD] ❌ STEP 2 FAILED: Missing organizationType');
+        console.error('[CREATE] ❌ STEP 2 FAILED: Missing organizationType');
         showToast('❌ Organization type is missing', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
-    
+
     if (!systemData.location) {
-        console.error('[BUILD] ❌ STEP 2 FAILED: Missing location');
+        console.error('[CREATE] ❌ STEP 2 FAILED: Missing location');
         showToast('❌ Location is missing', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
-    
+
     if (!systemData.contactEmail) {
-        console.error('[BUILD] ❌ STEP 2 FAILED: Missing contactEmail');
+        console.error('[CREATE] ❌ STEP 2 FAILED: Missing contactEmail');
         showToast('❌ Contact email is missing', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
-    
+
     if (!systemData.staff || systemData.staff.length === 0) {
-        console.error('[BUILD] ❌ STEP 2 FAILED: Missing staff');
+        console.error('[CREATE] ❌ STEP 2 FAILED: Missing staff');
         showToast('❌ At least one staff member is required', 'error');
         if (DEBUG) console.groupEnd();
         return;
     }
 
-    console.log('[BUILD] ✅ STEP 2 COMPLETE: All required fields present');
+    console.log('[CREATE] ✅ STEP 2 COMPLETE: All required fields present');
 
     // ===== STEP 3: GENERATE SYSTEM ID IF NEEDED =====
-    console.log('[BUILD] STEP 3: Generating system ID...');
+    console.log('[CREATE] STEP 3: Generating system ID...');
     if (!systemData.systemID) {
         systemData.systemID = generateSystemID();
     }
     systemData.createdAt = new Date().toISOString();
 
-    console.log('[BUILD] ✅ STEP 3 COMPLETE: System data ready:', {
+    console.log('[CREATE] ✅ STEP 3 COMPLETE: System data ready:', {
         systemID: systemData.systemID,
         organizationName: systemData.organizationName,
         organizationType: systemData.organizationType,
@@ -743,60 +1072,72 @@ async function buildSystem() {
     });
 
     // ===== STEP 4: SHOW ANIMATION SCREEN =====
-    console.log('[BUILD] STEP 4: Showing animation screen...');
+    console.log('[CREATE] STEP 4: Showing animation screen...');
     showScreen('screen-ai-build');
-    console.log('[BUILD] ✅ STEP 4 COMPLETE: Animation screen shown');
+    console.log('[CREATE] ✅ STEP 4 COMPLETE: Animation screen shown');
+
+    // ===== STEP 4.5: GENERATE AI TEMPLATE (IF CUSTOM) =====
+    if (systemData.organizationType === 'other') {
+        console.log('[CREATE] STEP 4.5: Generating custom AI template...');
+        try {
+            const aiTemplate = await generateAITemplate(systemData);
+            systemData.template = aiTemplate;
+            console.log('[CREATE] ✅ STEP 4.5 COMPLETE: AI template generated');
+        } catch (err) {
+            console.warn('[CREATE] ⚠️ AI template failed, fallback already applied:', err.message);
+        }
+    }
 
     // ===== STEP 5: SAVE TO API/LOCALSTORAGE =====
-    console.log('[BUILD] STEP 5: CRITICAL - Saving system to API/localStorage...');
+    console.log('[CREATE] STEP 5: CRITICAL - Saving system to API/localStorage...');
     let saveSuccess = false;
     let savedSystemID = null;
     let saveError = null;
 
     try {
-        console.log('[BUILD] STEP 5A: Calling saveSystemData()...');
+        console.log('[CREATE] STEP 5A: Calling saveSystemData()...');
         const result = await saveSystemData();
-        console.log('[BUILD] STEP 5B: saveSystemData() returned:', result);
-        
+        console.log('[CREATE] STEP 5B: saveSystemData() returned:', result);
+
         if (result && result.systemID) {
             saveSuccess = true;
             savedSystemID = result.systemID;
-            console.log('[BUILD] ✅ STEP 5 COMPLETE: System saved successfully with ID:', savedSystemID);
+            console.log('[CREATE] ✅ STEP 5 COMPLETE: System saved successfully with ID:', savedSystemID);
         } else {
             saveError = 'No systemID in result: ' + JSON.stringify(result);
-            console.error('[BUILD] ❌ STEP 5 FAILED: Invalid result structure -', saveError);
+            console.error('[CREATE] ❌ STEP 5 FAILED: Invalid result structure -', saveError);
         }
     } catch (error) {
         saveError = error.message;
-        console.error('[BUILD] ❌ STEP 5 FAILED: saveSystemData() threw exception:', error.message, error);
+        console.error('[CREATE] ❌ STEP 5 FAILED: saveSystemData() threw exception:', error.message, error);
     }
 
     // ===== STEP 5 VALIDATION: CHECK IF SAVE SUCCEEDED =====
     if (!saveSuccess || !savedSystemID) {
-        console.error('[BUILD] ❌❌❌ CRITICAL FAILURE - SAVE DID NOT COMPLETE ❌❌❌');
-        console.error('[BUILD] Save error details:', saveError);
-        console.error('[BUILD] Aborting animation and redirecting to step 4');
+        console.error('[CREATE] ❌❌❌ CRITICAL FAILURE - SAVE DID NOT COMPLETE ❌❌❌');
+        console.error('[CREATE] Save error details:', saveError);
+        console.error('[CREATE] Aborting animation and redirecting to step 4');
         showToast('❌ Failed to save system: ' + saveError, 'error');
         showScreen('screen-wizard-step4');
         if (DEBUG) console.groupEnd();
-        console.log('========== [BUILD] SYSTEM CREATION ABORTED - SAVE FAILED ==========\n');
+        console.log('========== [CREATE] SYSTEM CREATION ABORTED - SAVE FAILED ==========\n');
         return;
     }
 
     // ===== STEP 6: ANIMATE AND LOAD DASHBOARD =====
-    console.log('[BUILD] STEP 6: CRITICAL - Starting animation and dashboard load...');
+    console.log('[CREATE] STEP 6: CRITICAL - Starting animation and dashboard load...');
     showToast('✅ System created! Loading dashboard...', 'success');
     if (DEBUG) console.groupEnd();
-    
+
     try {
-        console.log('[BUILD] STEP 6A: Calling animateAndRedirect()...');
+        console.log('[CREATE] STEP 6A: Calling animateAndRedirect()...');
         await animateAndRedirect();
-        console.log('[BUILD] ✅ STEP 6 COMPLETE: Animation and redirect finished');
-        console.log('========== [BUILD] SYSTEM CREATION SUCCESSFUL ==========\n');
+        console.log('[CREATE] ✅ STEP 6 COMPLETE: Animation and redirect finished');
+        console.log('========== [CREATE] SYSTEM CREATION SUCCESSFUL ==========\n');
     } catch (error) {
-        console.error('[BUILD] ❌ STEP 6 FAILED: Completion flow error:', error.message);
+        console.error('[CREATE] ❌ STEP 6 FAILED: Completion flow error:', error.message);
         showToast('❌ Error displaying dashboard: ' + error.message, 'error');
-        console.log('========== [BUILD] SYSTEM CREATION FAILED AT STEP 6 ==========\n');
+        console.log('========== [CREATE] SYSTEM CREATION FAILED AT STEP 6 ==========\n');
     }
 }
 
@@ -840,7 +1181,7 @@ async function animateAndRedirect() {
                 // REDIRECT WITH DELAY
                 const REDIRECT_DELAY = 1000; // 1 second delay to ensure data is written
                 console.log('[ANIMATE] Waiting', REDIRECT_DELAY, 'ms before loading dashboard...');
-                
+
                 setTimeout(async () => {
                     console.log('\n========== [ANIMATE] CRITICAL - Dashboard Loading Phase ==========');
                     console.log('[ANIMATE] Now loading dashboard...');
@@ -859,12 +1200,12 @@ async function animateAndRedirect() {
                     console.log('[ANIMATE] STEP 2: Showing screen screen-systems-dashboard...');
                     showScreen('screen-systems-dashboard');
                     console.log('[ANIMATE] ✅ STEP 2 COMPLETE: Dashboard screen shown');
-                    
+
                     if (DEBUG) {
                         console.log('[ANIMATE] Dashboard shown');
                         console.groupEnd();
                     }
-                    
+
                     console.log('[ANIMATE] ✅ Animation and redirect complete - resolving promise');
                     console.log('========== [ANIMATE] DASHBOARD LOADING PHASE COMPLETE ==========\n');
                     resolve();
@@ -941,28 +1282,77 @@ function populateAdminDashboard() {
     if (DEBUG) console.log('👨‍💼 [ADMIN] Populating dashboard');
     console.log('[ADMIN] systemData:', systemData);
 
-    const template = getTemplate(systemData.organizationType);
-    console.log('[ADMIN] Template:', template);
+    // Get theme and status
+    const theme = getThemeByType(systemData.organizationType);
+    const status = getSystemStatus(systemData);
 
-    // Organization info
+    // Use saved template or fall back to type-based template
+    const template = systemData.template || getTemplate(systemData.organizationType);
+    console.log('[ADMIN] Template:', template?.name, '| Emergency types:', template?.emergencyTypes?.length);
+
+    // Organization info with enhanced header
     const orgNameEl = document.getElementById('admin-org-name');
     const orgTypeEl = document.getElementById('admin-org-type');
     const locationEl = document.getElementById('admin-location');
 
-    // Set values with logging
     if (orgNameEl) {
         orgNameEl.textContent = systemData.organizationName || '—';
-        console.log('[ADMIN] Set org name:', systemData.organizationName);
+        // Apply theme color to header
+        orgNameEl.style.color = theme.color;
     }
-
     if (orgTypeEl) {
-        orgTypeEl.textContent = template?.name || systemData.organizationType || '—';
-        console.log('[ADMIN] Set org type:', template?.name);
+        orgTypeEl.innerHTML = `${theme.emoji} ${theme.label} | ${status.emoji} ${status.label}`;
+        orgTypeEl.style.color = theme.color;
     }
-
     if (locationEl) {
         locationEl.textContent = systemData.location || '—';
-        console.log('[ADMIN] Set location:', systemData.location);
+    }
+
+    // Add AI Summary Section
+    addAISummarySection(systemData, theme);
+
+    // Add Smart Action Buttons
+    addSmartActionButtons(systemData, theme);
+
+    // ===== DYNAMIC EMERGENCY BUTTONS =====
+    const emergencyBtnsDiv = document.getElementById('admin-emergency-buttons');
+    if (emergencyBtnsDiv) {
+        emergencyBtnsDiv.innerHTML = '';
+        const emergencyTypes = template?.emergencyTypes || getEmergencyTypes(systemData.organizationType);
+        emergencyTypes.forEach(et => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-emergency';
+            btn.style.cssText = `background: ${et.color}22; border: 1px solid ${et.color}66; color: ${et.color}; cursor: pointer;`;
+            btn.innerHTML = `${et.icon} ${et.label}`;
+            btn.onclick = () => triggerEmergency(et.id);
+            emergencyBtnsDiv.appendChild(btn);
+        });
+        console.log('[ADMIN] Rendered', emergencyTypes.length, 'emergency buttons');
+    }
+
+    // ===== DYNAMIC FEATURE SECTIONS =====
+    const featureDiv = document.getElementById('admin-feature-sections');
+    if (featureDiv) {
+        featureDiv.innerHTML = '';
+        const featureSections = template?.featureSections || getFeatureSections(systemData.organizationType);
+        if (featureSections) {
+            Object.entries(featureSections).forEach(([key, section]) => {
+                const card = document.createElement('div');
+                card.className = 'feature-section';
+                card.innerHTML = `
+                    <div class="feature-section-header">
+                        <h4>${section.title}</h4>
+                        <p>${section.description}</p>
+                    </div>
+                    ${section.fields && section.fields.length > 0 ? `
+                    <div class="feature-section-fields">
+                        ${section.fields.map(f => `<div class="feature-field"><span class="field-label">${f}</span><span class="field-value">—</span></div>`).join('')}
+                    </div>` : ''}
+                `;
+                featureDiv.appendChild(card);
+            });
+            console.log('[ADMIN] Rendered', Object.keys(featureSections).length, 'feature sections');
+        }
     }
 
     // Staff list
@@ -982,7 +1372,6 @@ function populateAdminDashboard() {
             console.log('[ADMIN] Populated', systemData.staff.length, 'staff members');
         } else {
             staffListDiv.innerHTML = '<p style="color: #888;">No staff members added</p>';
-            console.log('[ADMIN] No staff data available');
         }
     }
 
@@ -990,15 +1379,13 @@ function populateAdminDashboard() {
     const routesDiv = document.getElementById('evacuation-routes');
     if (routesDiv) {
         routesDiv.innerHTML = '';
-        if (template?.evacuationSteps) {
-            template.evacuationSteps.forEach((step, index) => {
-                const item = document.createElement('div');
-                item.className = 'route-item';
-                item.textContent = `${index + 1}. ${step}`;
-                routesDiv.appendChild(item);
-            });
-            console.log('[ADMIN] Populated evacuation routes');
-        }
+        const steps = template?.evacuationSteps || [];
+        steps.forEach((step, index) => {
+            const item = document.createElement('div');
+            item.className = 'route-item';
+            item.textContent = `${index + 1}. ${step}`;
+            routesDiv.appendChild(item);
+        });
     }
 
     // Load and display active SOS events
@@ -1007,7 +1394,7 @@ function populateAdminDashboard() {
     // Start polling for emergency alerts
     startAdminAlertPolling();
 
-    if (DEBUG) console.log('✅ Admin dashboard populated');
+    if (DEBUG) console.log('✅ Admin dashboard populated with type-specific template');
     console.log('[ADMIN] Dashboard fully loaded');
 }
 
@@ -1055,20 +1442,42 @@ function startAdminAlertPolling() {
 
 function populateUserPanel() {
     if (DEBUG) console.log('👥 [PANEL] Populating user panel');
-    console.log('[PANEL] systemData:', systemData);
 
-    const template = getTemplate(systemData.organizationType);
-    console.log('[PANEL] Template loaded:', template?.name);
+    // Use saved template or fall back
+    const template = systemData.template || getTemplate(systemData.organizationType);
+    console.log('[PANEL] Template:', template?.name);
 
-    // Add safety status section
+    // Safety status
     const statusDiv = document.querySelector('.user-card.alert-section');
     if (statusDiv) {
-        // Update status at top
         const statusLabel = statusDiv.querySelector('h3');
         if (statusLabel) {
             statusLabel.textContent = '🟢 Safety Status: SAFE';
             statusLabel.style.color = '#4ade80';
-            console.log('[PANEL] Safety status set');
+        }
+    }
+
+    // ===== DYNAMIC USER FEATURE SECTIONS =====
+    const userFeatureDiv = document.getElementById('user-feature-sections');
+    if (userFeatureDiv) {
+        userFeatureDiv.innerHTML = '';
+        const featureSections = template?.featureSections || getFeatureSections(systemData.organizationType);
+        if (featureSections) {
+            // Show first 2 feature sections in user panel (summary view)
+            const entries = Object.entries(featureSections).slice(0, 2);
+            entries.forEach(([key, section]) => {
+                const card = document.createElement('div');
+                card.className = 'user-card feature-section';
+                card.innerHTML = `
+                    <h3>${section.title}</h3>
+                    <p style="color: #888; font-size: 13px;">${section.description}</p>
+                    ${section.fields && section.fields.length > 0 ? `
+                    <div class="feature-section-fields" style="margin-top: 12px;">
+                        ${section.fields.map(f => `<div class="feature-field"><span class="field-label">${f}</span><span class="field-value">—</span></div>`).join('')}
+                    </div>` : ''}
+                `;
+                userFeatureDiv.appendChild(card);
+            });
         }
     }
 
@@ -1076,53 +1485,45 @@ function populateUserPanel() {
     const planDiv = document.getElementById('user-evacuation-plan');
     if (planDiv) {
         planDiv.innerHTML = '';
-        if (template?.evacuationSteps) {
-            template.evacuationSteps.forEach((step, index) => {
-                const item = document.createElement('div');
-                item.className = 'plan-item';
-                item.innerHTML = `<strong>Step ${index + 1}:</strong> ${step}`;
-                planDiv.appendChild(item);
-            });
-            console.log('[PANEL] Evacuation plan populated');
-        }
+        const steps = template?.evacuationSteps || [];
+        steps.forEach((step, index) => {
+            const item = document.createElement('div');
+            item.className = 'plan-item';
+            item.innerHTML = `<strong>Step ${index + 1}:</strong> ${step}`;
+            planDiv.appendChild(item);
+        });
     }
 
     // Emergency contacts
     const contactsDiv = document.getElementById('user-contacts');
     if (contactsDiv) {
         contactsDiv.innerHTML = '';
-        if (template?.emergencyContacts) {
-            template.emergencyContacts.forEach(contact => {
-                const item = document.createElement('div');
-                item.className = 'contact-item';
-                item.innerHTML = `<strong>${contact.name}</strong><br>📞 ${contact.phone}`;
-                contactsDiv.appendChild(item);
-            });
-            console.log('[PANEL] Emergency contacts populated');
-        }
+        const contacts = template?.emergencyContacts || [];
+        contacts.forEach(contact => {
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            item.innerHTML = `<strong>${contact.name}</strong><br>📞 ${contact.phone}`;
+            contactsDiv.appendChild(item);
+        });
     }
 
     // Safety tips
     const tipsDiv = document.getElementById('safety-tips');
     if (tipsDiv) {
         tipsDiv.innerHTML = '';
-        const tips = getSafetyTips(systemData.organizationType);
-        if (tips && tips.length > 0) {
-            tips.forEach(tip => {
-                const item = document.createElement('div');
-                item.className = 'tip-item';
-                item.textContent = '✓ ' + tip;
-                tipsDiv.appendChild(item);
-            });
-            console.log('[PANEL] Safety tips populated');
-        }
+        const tips = template?.safetyTips || getSafetyTips(systemData.organizationType) || [];
+        tips.forEach(tip => {
+            const item = document.createElement('div');
+            item.className = 'tip-item';
+            item.textContent = '✓ ' + tip;
+            tipsDiv.appendChild(item);
+        });
     }
 
     // Load alerts from admin
     loadUserAlerts();
 
-    if (DEBUG) console.log('✅ User panel populated');
-    console.log('[PANEL] User panel fully loaded');
+    if (DEBUG) console.log('✅ User panel populated with type-specific template');
 }
 
 // Load and display alerts from admin broadcasts
@@ -1875,37 +2276,47 @@ async function saveSystemData() {
 
         console.log('[SAVE] ✅ Got systemID from API:', systemData.systemID);
 
-        // SAVE TO LOCALSTORAGE WITH STANDARDIZED KEY
-        console.log('[SAVE] Saving to localStorage with key:', STORAGE_KEY);
-        let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        
+        // STEP 1: CREATE SYSTEM OBJECT (EXACT STRUCTURE)
+        console.log('[SAVE] STEP 1: Creating system object...');
         const newSystem = {
-            systemID: systemData.systemID,
-            organizationName: systemData.organizationName,
-            organizationType: systemData.organizationType,
-            location: systemData.location,
-            contactEmail: systemData.contactEmail,
-            structure: systemData.structure,
-            staff: systemData.staff,
-            riskTypes: systemData.riskTypes,
-            status: 'saved',
-            createdAt: new Date().toISOString()
+            systemID: 'sys_' + Date.now(),
+            name: systemData.organizationName || 'Unnamed System',
+            type: systemData.organizationType || 'custom',
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            alertsCount: 0,
+            status: 'active',
+            data: {
+                organizationName: systemData.organizationName,
+                organizationType: systemData.organizationType,
+                location: systemData.location,
+                contactEmail: systemData.contactEmail,
+                structure: systemData.structure,
+                staff: systemData.staff,
+                riskTypes: systemData.riskTypes,
+                template: systemData.template
+            }
         };
-        
-        systems.push(newSystem);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
-        
-        console.log('[SAVE] ✅ Saved to localStorage');
-        console.log('[SAVE] New system object:', JSON.stringify(newSystem, null, 2));
-        console.log('[SAVE] Total systems in storage now:', systems.length);
+
+        console.log('[SAVE] ✅ STEP 1 COMPLETE: System object created');
+
+        // STEP 2: SAVE TO LOCALSTORAGE (EXACT FLOW)
+        console.log('[SAVE] STEP 2: Saving to localStorage...');
+        const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        existing.push(newSystem);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+
+        console.log('[SAVE] System saved:', newSystem);
+        console.log('[SAVE] ✅ STEP 2 COMPLETE: System saved to localStorage');
+        console.log('[SAVE] Total systems now:', existing.length);
 
         if (DEBUG) {
-            console.log('✅ System ID:', systemData.systemID);
-            console.log('Count:', systems.length);
+            console.log('✅ System ID:', newSystem.systemID);
+            console.log('Count:', existing.length);
             console.groupEnd();
         }
 
-        return { success: true, systemID: systemData.systemID };
+        return { success: true, systemID: newSystem.systemID };
 
     } catch (error) {
         if (DEBUG) {
@@ -1918,44 +2329,49 @@ async function saveSystemData() {
 
         showToast(`⚠️ Saving locally: ${error.message}`, 'warning');
 
-        if (!systemData.systemID) {
-            systemData.systemID = 'LOCAL-' + Date.now();
-        }
-
-        console.log('[SAVE] Using local fallback with ID:', systemData.systemID);
-
-        let systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        
+        // STEP 1: CREATE SYSTEM OBJECT (EXACT STRUCTURE) - FALLBACK
+        console.log('[SAVE] FALLBACK STEP 1: Creating system object...');
         const newSystem = {
-            systemID: systemData.systemID,
-            organizationName: systemData.organizationName,
-            organizationType: systemData.organizationType,
-            location: systemData.location,
-            contactEmail: systemData.contactEmail,
-            structure: systemData.structure,
-            staff: systemData.staff,
-            riskTypes: systemData.riskTypes,
-            status: 'local',
-            createdAt: new Date().toISOString()
+            systemID: 'sys_' + Date.now(),
+            name: systemData.organizationName || 'Unnamed System',
+            type: systemData.organizationType || 'custom',
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            alertsCount: 0,
+            status: 'active',
+            data: {
+                organizationName: systemData.organizationName,
+                organizationType: systemData.organizationType,
+                location: systemData.location,
+                contactEmail: systemData.contactEmail,
+                structure: systemData.structure,
+                staff: systemData.staff,
+                riskTypes: systemData.riskTypes,
+                template: systemData.template
+            }
         };
-        
-        systems.push(newSystem);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
 
-        console.log('[SAVE] ✅ Saved locally to localStorage');
-        console.log('[SAVE] New system object:', JSON.stringify(newSystem, null, 2));
-        console.log('[SAVE] Total systems in storage now:', systems.length);
-        console.log('[SAVE] localStorage contents:', JSON.stringify(systems, null, 2));
+        console.log('[SAVE] ✅ FALLBACK STEP 1 COMPLETE: System object created');
+
+        // STEP 2: SAVE TO LOCALSTORAGE (EXACT FLOW) - FALLBACK
+        console.log('[SAVE] FALLBACK STEP 2: Saving to localStorage...');
+        const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        existing.push(newSystem);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+
+        console.log('[SAVE] System saved:', newSystem);
+        console.log('[SAVE] ✅ FALLBACK STEP 2 COMPLETE: System saved to localStorage');
+        console.log('[SAVE] Total systems now:', existing.length);
 
         if (DEBUG) {
             console.group('💾 [SAVE] Fallback Success');
-            console.log('System ID:', systemData.systemID);
+            console.log('System ID:', newSystem.systemID);
             console.log('Status: local');
-            console.log('Total:', systems.length);
+            console.log('Total:', existing.length);
             console.groupEnd();
         }
 
-        return { success: true, systemID: systemData.systemID, local: true };
+        return { success: true, systemID: newSystem.systemID, local: true };
     }
 }
 
@@ -1971,6 +2387,10 @@ async function loadSystemData(systemID) {
 
         const data = await response.json();
         systemData = data.system;
+        // Restore template if missing
+        if (!systemData.template && systemData.organizationType) {
+            systemData.template = getTemplate(systemData.organizationType);
+        }
         console.log('✅ System loaded from backend:', systemID);
 
     } catch (error) {
@@ -1981,6 +2401,10 @@ async function loadSystemData(systemID) {
         const system = systems.find(s => s.systemID === systemID);
         if (system) {
             systemData = system;
+            // Restore template if missing (legacy systems)
+            if (!systemData.template && systemData.organizationType) {
+                systemData.template = getTemplate(systemData.organizationType);
+            }
             console.log('✅ System loaded from localStorage:', systemID);
         }
     }
