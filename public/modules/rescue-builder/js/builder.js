@@ -1366,11 +1366,11 @@ function displayActiveSOS() {
             if (DEBUG) console.log('[SOS DISPLAY] No system selected, skipping SOS display');
             return;
         }
-        
+
         const sosEvents = JSON.parse(localStorage.getItem(`rescue_sos_events_${currentSystemID}`) || '[]');
         const activeSOSList = document.getElementById('active-sos-list');
         const activeEvents = sosEvents.filter(e => e.status === 'active' && e.systemID === currentSystemID);
-        
+
         if (DEBUG) console.log(`[SOS ISOLATION] System ${currentSystemID}: Found ${activeEvents.length} active SOS events`);
 
         if (activeSOSList && activeEvents.length > 0) {
@@ -2194,7 +2194,7 @@ async function logSOSEvent(sosPayload) {
             console.error('[SOS LOG] ERROR: systemID missing from payload');
             return;
         }
-        
+
         const systemID = sosPayload.systemID;
         const sosEvents = JSON.parse(localStorage.getItem(`rescue_sos_events_${systemID}`) || '[]');
         sosEvents.push({
