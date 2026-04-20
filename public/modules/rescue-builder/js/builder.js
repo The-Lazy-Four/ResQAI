@@ -1883,50 +1883,58 @@ async function activateSOS() {
             timestamp: new Date().toISOString()
         };
 
-        // Try AI-based guidance
+        // Try AI-based guidance with improved prompt
         try {
             const response = await fetch('/api/ai/emergency-guidance', {
                 method: 'POST',
                 headers: getAPIHeaders(),
                 body: JSON.stringify({
                     emergencyType: 'sos',
-                    description: `User activated SOS in ${systemData.organizationType} system`,
+                    description: `Critical SOS activated in ${systemData.organizationType} system at ${systemData.location || 'unknown location'}`,
                     severity: 'critical',
-                    guestContext: {
-                        location: userLocation,
-                        organizationType: systemData.organizationType
-                    },
-                    language: 'en'
+                    organizationType: systemData.organizationType,
+                    location: systemData.location,
+                    userLocation: userLocation,
+                    staffCount: systemData.staff?.length || 0,
+                    language: 'en',
+                    includeSteps: true,
+                    format: 'structured'
                 })
             });
 
             if (response.ok) {
                 const data = await response.json();
-                const guidance = data.guidance;
-                if (DEBUG) console.log('✅ AI guidance received');
-                console.log('[SOS] Step 5: AI response received');
+                const guidance = data.guidance || data.response || '';
 
-                // Display guidance clearly
-                displaySOSGuidance(guidance);
-                console.log('[SOS] Step 6: Guidance displayed');
+                if (guidance && guidance.trim().length > 0) {
+                    if (DEBUG) console.log('✅ AI guidance received');
+                    console.log('[SOS] Step 5: AI response received');
 
-                // Try voice synthesis
-                if ('speechSynthesis' in window) {
-                    speakSOSGuidance(guidance);
-                    console.log('[SOS] Step 7: Voice triggered');
+                    // Display guidance clearly
+                    displaySOSGuidance(guidance);
+                    console.log('[SOS] Step 6: Guidance displayed');
+
+                    // Try voice synthesis
+                    if ('speechSynthesis' in window) {
+                        speakSOSGuidance(guidance);
+                        console.log('[SOS] Step 7: Voice triggered');
+                    }
+                } else {
+                    throw new Error('AI returned empty guidance');
                 }
             } else {
                 throw new Error(`AI response ${response.status}`);
             }
         } catch (aiErr) {
             if (DEBUG) console.warn('⚠️ AI guidance failed, using fallback:', aiErr.message);
-            console.log('[SOS] Step 5: AI failed, using fallback');
+            if (DEBUG) console.log('[SOS] Step 5: AI failed, using enhanced fallback');
             const fallbackGuidance = getFallbackSOSGuidance();
             displaySOSGuidance(fallbackGuidance);
-            console.log('[SOS] Step 6: Fallback displayed');
+            if (DEBUG) console.log('[SOS] Step 6: Fallback displayed');
             if ('speechSynthesis' in window) {
-                speakSOSGuidance(fallbackGuidance);
-                console.log('[SOS] Step 7: Voice triggered (fallback)');
+                // Speak only first 500 characters to avoid long audio
+                speakSOSGuidance(fallbackGuidance.substring(0, 500));
+                if (DEBUG) console.log('[SOS] Step 7: Voice triggered (fallback)');
             }
         }
 
@@ -1952,29 +1960,41 @@ function displaySOSGuidance(guidance) {
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: 100vh;
         background: rgba(0, 0, 0, 0.7);
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         z-index: 10000;
+        overflow-y: auto;
+        padding: 20px 0;
     `;
 
     const sosCard = document.createElement('div');
     sosCard.style.cssText = `
         background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
         color: white;
-        padding: 30px;
+        padding: 40px;
         border-radius: 16px;
-        max-width: 500px;
+        max-width: 700px;
+        width: 90%;
         text-align: center;
         box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        margin: 20px auto;
+        max-height: 90vh;
+        overflow-y: auto;
     `;
+
+    // Clean up asterisks and markdown formatting from guidance
+    let cleanGuidance = guidance
+        .replace(/\*\*/g, '')  // Remove ** markdown
+        .replace(/^\s*-\s/gm, '')  // Remove bullet points
+        .trim();
 
     sosCard.innerHTML = `
         <h1 style="font-size: 48px; margin: 0 0 20px 0;">🆘</h1>
         <h2 style="color: #fff; margin: 0 0 20px 0; font-size: 24px;">EMERGENCY PROTOCOL ACTIVE</h2>
-        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left; white-space: pre-wrap; font-size: 14px; max-height: 300px; overflow-y: auto;">${guidance}</div>
+        <div style="background: rgba(0,0,0,0.2); padding: 30px; border-radius: 8px; margin: 20px 0; text-align: left; white-space: pre-wrap; font-size: 13px; line-height: 1.8; overflow-y: auto;">${cleanGuidance}</div>
         <button onclick="document.getElementById('sos-guidance-overlay')?.remove()" style="
             background: white;
             color: #ff6b6b;
@@ -1984,6 +2004,7 @@ function displaySOSGuidance(guidance) {
             cursor: pointer;
             font-weight: bold;
             font-size: 16px;
+            margin-top: 15px;
         ">Dismiss</button>
     `;
 
@@ -2032,22 +2053,125 @@ function speakSOSGuidance(guidance) {
 
 // Fallback SOS guidance with emergency numbers
 function getFallbackSOSGuidance() {
-    const guidance = `EMERGENCY PROTOCOL ACTIVATED
+    const orgType = systemData.organizationType || 'general';
 
-STEP 1: Move to safe location
-STEP 2: Call emergency services
+    const guidanceByType = {
+        school: `IMMEDIATE ACTION
+Immediately deploy hotel security and a first responder team to locate the guest who activated the SOS. Prioritize pinpointing their location using the hotel's tracking system.
+
+STEPS
+1. Locate Guest - Access the hotel's system to determine the precise room or area where the SOS was activated.
+2. Dispatch Team - Send a security and/or first aid trained staff member directly to the identified location with a first aid kit and AED.
+3. Assess Situation - Evaluate guest condition, provide immediate assistance if trained, contact emergency services if needed.
+4. Document Event - Record the incident with timestamp and actions taken.
 
 EMERGENCY NUMBERS:
 🚒 Fire: 101
 🚔 Police: 100
 🚑 Medical: 108 or 112
 
-STEP 3: Wait for responders
-STEP 4: Follow instructions from authorities
+KEY REMINDERS:
+• Keep guest informed of help arrival
+• Provide basic comfort measures
+• Do not move guest unless in immediate danger
+• Stay with guest until help arrives
 
-Your location has been shared with emergency services.`;
+Your location has been shared with emergency services.`,
 
-    return guidance;
+        hospital: `IMMEDIATE ACTION
+Activate emergency response protocol immediately. Locate patient and assess medical condition. Alert nearest medical staff.
+
+STEPS
+1. Locate Patient - Use hospital system to identify exact location of SOS activation.
+2. Dispatch Medical Team - Send trained medical personnel with emergency equipment to the location.
+3. Assess Condition - Perform medical evaluation, initiate emergency care procedures.
+4. Alert Services - Contact emergency services if external support needed.
+5. Document Incident - Record patient ID, incident time, actions taken, and treatment provided.
+
+EMERGENCY NUMBERS:
+🚒 Fire: 101
+🚔 Police: 100
+🚑 Medical: 108 or 112
+
+KEY REMINDERS:
+• Ensure patient safety and privacy
+• Follow hospital emergency protocols
+• Provide immediate medical assessment
+• Keep communication lines open
+
+Your location has been shared with emergency services.`,
+
+        restaurant: `IMMEDIATE ACTION
+Immediately dispatch staff to locate guest. Assess situation and ensure guest safety.
+
+STEPS
+1. Locate Guest - Determine guest location using restaurant layout or table number.
+2. Assess Situation - Check for medical, security, or other emergency needs.
+3. Provide Assistance - Offer immediate help or summon specialized responders.
+4. Contact Services - Call emergency services if needed.
+5. Support Guest - Provide comfort and information until help arrives.
+
+EMERGENCY NUMBERS:
+🚒 Fire: 101
+🚔 Police: 100
+🚑 Medical: 108 or 112
+
+KEY REMINDERS:
+• Remain calm and professional
+• Ensure guest privacy
+• Keep other guests informed if needed
+• Document the incident
+
+Your location has been shared with emergency services.`,
+
+        hostel: `IMMEDIATE ACTION
+Locate guest immediately and assess emergency type. Mobilize staff to provide assistance.
+
+STEPS
+1. Locate Guest - Find guest in their room or common area using room directory.
+2. Assess Emergency - Determine if medical, security, or other type of emergency.
+3. Provide First Aid - Offer immediate assistance if trained and guest willing.
+4. Contact Services - Call emergency services if needed.
+5. Notify Staff - Alert other staff members as appropriate.
+
+EMERGENCY NUMBERS:
+🚒 Fire: 101
+🚔 Police: 100
+🚑 Medical: 108 or 112
+
+KEY REMINDERS:
+• Prioritize guest safety
+• Respect guest privacy
+• Provide comfort and reassurance
+• Document incident details
+
+Your location has been shared with emergency services.`,
+
+        general: `IMMEDIATE ACTION
+Move to safe location and call emergency services immediately.
+
+STEPS
+1. Safety First - Move to a safe location away from danger.
+2. Call Emergency - Dial 100 (Police) or 108/112 (Medical) depending on situation.
+3. Provide Location - Tell responders your exact location and emergency type.
+4. Stay Calm - Provide clear information about the situation.
+5. Follow Directions - Wait for responders and follow their instructions.
+
+EMERGENCY NUMBERS:
+🚒 Fire: 101
+🚔 Police: 100
+🚑 Medical: 108 or 112
+
+KEY REMINDERS:
+• Remain calm and focused
+• Help others if safe to do so
+• Gather information for responders
+• Do not move injured persons
+
+Your location has been shared with emergency services.`
+    };
+
+    return guidanceByType[orgType] || guidanceByType.general;
 }
 
 // Log SOS event to backend for admin notification
