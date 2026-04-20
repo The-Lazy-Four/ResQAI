@@ -493,9 +493,12 @@ body {
 }
 
 .staff-name::placeholder,
-.staff-phone::placeholder,
-.staff-role {
+.staff-phone::placeholder {
     color: #666;
+}
+
+.staff-role {
+    color: #ccc;
 }
 
 .btn-remove {
