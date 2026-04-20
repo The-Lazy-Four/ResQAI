@@ -145,8 +145,11 @@ body {
 .selection-brand {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 40px;
+    text-align: center;
 }
 
 .selection-brand strong {
@@ -370,6 +373,11 @@ body {
     resize: vertical;
     min-height: 100px;
     font-family: inherit;
+}
+
+option {
+    background-color: #1a1a2e;
+    color: #ffffff;
 }
 
 /* =====================================================
@@ -1576,6 +1584,7 @@ body {
 
     .rescue-content {
         padding: 20px 10px;
+        align-items: flex-start;
     }
 
     .selection-inner {
@@ -1626,6 +1635,10 @@ body {
 }
 
 @media (max-width: 480px) {
+    .selection-brand strong {
+        font-size: 20px;
+    }
+
     .selection-header h1 {
         font-size: 24px;
     }
