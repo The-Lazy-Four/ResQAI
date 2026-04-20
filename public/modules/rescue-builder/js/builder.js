@@ -1360,12 +1360,22 @@ function populateAdminDashboard() {
 // Display active SOS events
 function displayActiveSOS() {
     try {
-        const sosEvents = JSON.parse(localStorage.getItem('rescue_sos_events') || '[]');
+        // ISOLATION FIX: Only show SOS events for current system
+        const currentSystemID = systemData?.systemID || localStorage.getItem('active_system_id');
+        if (!currentSystemID) {
+            if (DEBUG) console.log('[SOS DISPLAY] No system selected, skipping SOS display');
+            return;
+        }
+        
+        const sosEvents = JSON.parse(localStorage.getItem(`rescue_sos_events_${currentSystemID}`) || '[]');
         const activeSOSList = document.getElementById('active-sos-list');
+        const activeEvents = sosEvents.filter(e => e.status === 'active' && e.systemID === currentSystemID);
+        
+        if (DEBUG) console.log(`[SOS ISOLATION] System ${currentSystemID}: Found ${activeEvents.length} active SOS events`);
 
-        if (activeSOSList && sosEvents.length > 0) {
+        if (activeSOSList && activeEvents.length > 0) {
             activeSOSList.innerHTML = '';
-            sosEvents.filter(e => e.status === 'active').forEach(event => {
+            activeEvents.forEach(event => {
                 const item = document.createElement('div');
                 item.className = 'sos-alert-item';
                 item.style.cssText = 'background: rgba(255,107,107,0.1); border-left: 4px solid #ff6b6b; padding: 12px; margin: 8px 0; border-radius: 4px;';
@@ -1882,6 +1892,8 @@ async function activateSOS() {
             location: userLocation,
             timestamp: new Date().toISOString()
         };
+        if (DEBUG) console.log(`[SOS ISOLATION] SOS activated for systemID: ${sosPayload.systemID} (${systemData.organizationType})`);
+        console.log('[SOS PAYLOAD]', sosPayload);
 
         // Try AI-based guidance with improved prompt
         try {
@@ -2177,14 +2189,22 @@ Your location has been shared with emergency services.`
 // Log SOS event to backend for admin notification
 async function logSOSEvent(sosPayload) {
     try {
-        // Save to localStorage for admin panel polling
-        const sosEvents = JSON.parse(localStorage.getItem('rescue_sos_events') || '[]');
+        // ISOLATION FIX: Save to systemID-scoped localStorage key
+        if (!sosPayload.systemID) {
+            console.error('[SOS LOG] ERROR: systemID missing from payload');
+            return;
+        }
+        
+        const systemID = sosPayload.systemID;
+        const sosEvents = JSON.parse(localStorage.getItem(`rescue_sos_events_${systemID}`) || '[]');
         sosEvents.push({
             ...sosPayload,
             id: 'SOS-' + Date.now(),
             status: 'active'
         });
-        localStorage.setItem('rescue_sos_events', JSON.stringify(sosEvents));
+        localStorage.setItem(`rescue_sos_events_${systemID}`, JSON.stringify(sosEvents));
+        if (DEBUG) console.log(`[SOS ISOLATION] Event saved for system ${systemID} - Total events for this system: ${sosEvents.length}`);
+        console.log(`[SOS LOG] Event saved for system ${systemID}`);
 
         if (DEBUG) console.log('✅ SOS event logged locally');
 
