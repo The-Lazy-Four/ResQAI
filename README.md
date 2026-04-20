@@ -118,44 +118,48 @@ An **AI-powered emergency response system** that delivers:
 
 ---
 
-## 🏗️ System Architecture
+---
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        USER LAYER                                │
-│  [ Web Dashboard ]  [ Emergency Form ]  [ Voice Input ]          │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │ HTTP/JSON
-┌─────────────────────▼───────────────────────────────────────────┐
-│                   API GATEWAY (Express.js)                       │
-│  /api/emergency/classify  /api/portal/safe-zones                 │
-│  /api/ai/guidance         /api/portal/evacuation-route          │
-│  /api/nearby              /api/voice/process                    │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-        ┌─────────────┴──────────────┬──────────────┐
-        │                            │              │
-┌───────▼──────────────┐    ┌────────▼────────┐   │
-│   AI ROUTER          │    │  SAFE ZONE      │   │
-│ (Multi-Provider)     │    │  ENGINE         │   │
-│                      │    │                 │   │
-│ • Gemini (Primary)   │    │ • Overpass API  │   │
-│ • OpenRouter (2nd)   │    │ • OSM Data      │   │
-│ • Groq (3rd)         │    │ • Distance      │   │
-│ • Cached Fallback    │    │   Filtering     │   │
-└──────────────────────┘    └─────────────────┘   │
-                                                   │
-        ┌──────────────────────────────────────────▼───────┐
-        │           EXTERNAL SERVICES                      │
-        │  • OpenStreetMap (Map data)                     │
-        │  • OpenRouteService / Mapbox (Routing)         │
-        │  • Google Geolocation (User location)          │
-        └──────────────────────────────────────────────────┘
+## Full Project Architecture
 
-DATABASE: SQLite3 (Emergencies, Incidents, Safe Zones, Users)
+## 1) 🧠 Architecture Diagram
+
+```mermaid
+graph TD
+
+A[Client Layer] --> B[API Gateway]
+B --> C[AI Router]
+B --> D[Domain Logic]
+B --> E[Database]
+
+C --> F[Operational State]
+D --> F
+E --> F
+
+F --> G[Multi-Tenant Isolation]
 ```
+
+### 2) Frontend Architecture
+
+| Frontend Area | Purpose | Key Files |
+|---|---|---|
+| App Entry + Navigation | Entry flow, module selection, transitions | public/pages/landing.html, public/pages/index.html, public/scripts/app.js |
+| Rapid Crisis Protocol | Incident reporting, dashboard, nearby alerts, chat/voice UX | public/scripts/modules/dashboard.js, public/scripts/modules/nearby.js, public/scripts/modules/chatbot.js, public/scripts/modules/voice.js |
+| EcoPlus Module | Hotel/resort emergency workflows (guest + admin) | public/modules/echo-plus/index.html, public/modules/echo-plus/js/app.js, public/modules/echo-plus/js/module.js, public/modules/echo-plus/js/ai-safe.js |
+| SQBitain (Custom Builder) | Multi-step rescue system builder with admin/user panels | public/modules/rescue-builder/index.html, public/modules/rescue-builder/js/builder.js, public/modules/rescue-builder/js/templates.js |
+
+### 3) Backend Architecture
+
+| Layer | Responsibility | Key Files |
+|---|---|---|
+| Server Bootstrap | Env loading, middleware, route mounting, static serving | src/server.js |
+| API Routes | Business endpoints by domain | src/api/routes/*.js |
+| AI Router | Provider fallback, retries/timeouts, emergency-safe fallback text | src/utils/aiRouter.js |
+| Configuration + Validation | Environment and AI status checks | src/utils/validateEnv.js, src/config/index.js |
+| Data Access | SQLite core with MySQL support path | src/db/db.js, src/db/mysql.js, src/db/init.js |
 
 ---
+
 
 ## ⚙️ Tech Stack
 
