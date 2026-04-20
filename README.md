@@ -1,7 +1,7 @@
 # ResQAI
 ### AI-Powered Emergency Response System
 An AI-first, multi-module emergency platform for real-time crisis detection, SOS escalation, and coordinated response.
-
+> *When every second matters. Instant AI guidance. Safe zones. Evacuation routes. In any emergency.*
 ---
 
 ## Project Summary
