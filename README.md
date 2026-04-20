@@ -64,18 +64,17 @@ Create -> Build -> Save -> Card -> Open -> Admin/User -> SOS -> AI Response
 
 ---
 
-## Team Members
+---
 
-**Team Name:** The Lazy Four
+## 👥 Team
 
-| Member | Role | Responsibility |
-|---|---|---|
-| Member 1 | Project Lead | System architecture, integration, final delivery |
-| Member 2 | Backend + AI | API routes, AI router, fallback orchestration |
-| Member 3 | Frontend + UX | Dashboards, module UI flows, interactions |
-| Member 4 | Testing + Demo Ops | Validation, scenario testing, hackathon demo pipeline |
+**Team Leader:**
+- **Snehasis Chakraborty** – Idea Conceptualization & Developer
 
-Note: Replace placeholder member labels with actual names before final submission.
+**Core Team:**
+- **Souvik Dey** – Research Implementation, Lead Backend Developer
+- **Partha Sarathi Sarkar** – Research, UI Design, Side Developer  
+- **Samrat Chatterjee** – PPT Design Side Developer
 
 ---
 
