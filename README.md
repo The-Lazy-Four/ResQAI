@@ -125,31 +125,31 @@ An **AI-powered emergency response system** that delivers:
 ## 🧠 System Architecture
 
 ```mermaid
-graph TD
+flowchart LR
 
-subgraph CLIENT["🌐 Client Layer"]
+subgraph CLIENT["Client Layer"]
 A1[Rapid Crisis Protocol]
 A2[EcoPlus - Hotel Module]
 A3[SQBitain - Custom Builder]
 A4[Voice + Location APIs]
 end
 
-subgraph API["🚀 Express API Gateway"]
-B1[/api/emergencies]
-B2[/api/ai]
-B3[/api/portal]
-B4[/api/custom-system]
+subgraph API["Express API Gateway"]
+B1["/api/emergencies"]
+B2["/api/ai"]
+B3["/api/portal"]
+B4["/api/custom-system"]
 end
 
-subgraph CORE["⚙️ Core System"]
-C1[AI Router<br/>Gemini → OpenRouter → Groq]
-C2[Domain Logic<br/>SOS • Alerts • Guidance]
-C3[Data Layer<br/>SQLite + MySQL-ready]
+subgraph CORE["Core System"]
+C1["AI Router<br/>Gemini → OpenRouter → Groq"]
+C2["SOS | Alerts | Guidance"]
+C3["SQLite + MySQL-ready"]
 end
 
-subgraph SYSTEM["📊 Runtime"]
+subgraph SYSTEM["Runtime"]
 D1[Operational State]
-D2[Multi-Tenant Isolation<br/>systemID]
+D2["Multi-Tenant Isolation<br/>systemID"]
 end
 
 CLIENT --> API
