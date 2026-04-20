@@ -1,30 +1,51 @@
-# ResQAI - Development Setup Guide
+# 🚀 ResQAI Setup Guide
 
-## 🚀 Quick Start (5 minutes)
+Complete guide for setting up and running ResQAI locally.
 
-### Prerequisites
-- Node.js v16+ ([Download](https://nodejs.org/))
-- npm or yarn
-- Git
-- Code editor (VS Code recommended)
+---
 
-### Steps
+## ⚡ Quick Start (5 minutes)
+
+### Linux/macOS
 
 ```bash
-# 1. Clone/Pull the repository
-cd "d:\Development\Projects\Rapid Crisis Response"
+# 1. Clone repository
+git clone https://github.com/The-Lazy-Four/ResQAI.git
+cd ResQAI
 
 # 2. Install dependencies
 npm install
 
-# 3. Create .env file
+# 3. Setup environment
 cp .env.example .env
 
-# 4. Add Gemini API Key
-# Edit .env and add your Google Gemini API key:
-# GEMINI_API_KEY=your_key_here
+# 4. Add API keys to .env (see below)
+# Edit .env with your text editor
 
-# 5. Start the server
+# 5. Start server
+npm start
+
+# 6. Open browser
+# Visit http://localhost:3000
+```
+
+### Windows (PowerShell)
+
+```powershell
+# 1. Clone repository
+git clone https://github.com/The-Lazy-Four/ResQAI.git
+cd ResQAI
+
+# 2. Install dependencies
+npm install
+
+# 3. Setup environment
+Copy-Item .env.example .env
+
+# 4. Edit .env with your API keys
+notepad .env
+
+# 5. Start server
 npm start
 
 # 6. Open browser
@@ -33,471 +54,587 @@ npm start
 
 ---
 
-## 📋 Prerequisites Checklist
+## 📋 Prerequisites
 
-### Windows
+### System Requirements
 
-#### Install Node.js
-- [ ] Download from https://nodejs.org/ (LTS version)
-- [ ] Install with default settings
-- [ ] Verify: `node --version` (should be v16+)
+- **Node.js**: v16 or higher
+- **npm**: v7 or higher
+- **Git**: v2.20 or higher
+- **RAM**: 512 MB minimum
+- **Disk**: 500 MB available
 
-#### Install Git
-- [ ] Download from https://git-scm.com/
-- [ ] Install with default settings
-
-#### Verify Installation
-```powershell
-node --version      # v16.x.x or higher
-npm --version       # 7.x.x or higher
-git --version       # 2.x.x or higher
-```
-
-### macOS
+### Installation Verification
 
 ```bash
-# Using Homebrew (if not installed: /bin/bash -c "$(curl -fsSL...)")
+# Check versions
+node --version        # Should be v16+
+npm --version         # Should be v7+
+git --version         # Should be v2.20+
+```
+
+### Platform-Specific Setup
+
+#### Windows
+
+1. **Install Node.js**
+   - Download from https://nodejs.org/ (LTS version)
+   - Run installer with default settings
+   - Restart terminal/PowerShell
+
+2. **Install Git**
+   - Download from https://git-scm.com/
+   - Run installer with default settings
+
+3. **Verify Installation**
+   ```powershell
+   node --version
+   npm --version
+   git --version
+   ```
+
+#### macOS
+
+```bash
+# Install using Homebrew
 brew install node git
 
+# Or download directly
+# Node: https://nodejs.org/
+# Git: https://git-scm.com/
+
 # Verify
 node --version
 npm --version
 ```
 
-### Linux (Ubuntu/Debian)
+#### Linux (Ubuntu/Debian)
 
 ```bash
+# Update package manager
 sudo apt update
-sudo apt install nodejs npm git
+
+# Install Node.js (v16+)
+curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+sudo apt install nodejs
+
+# Install Git
+sudo apt install git
 
 # Verify
 node --version
 npm --version
+git --version
 ```
+
+#### Linux (Other Distributions)
+
+See: https://nodejs.org/en/download/package-manager/
 
 ---
 
-## 🔧 Environment Setup
+## 🔧 Environment Configuration
 
-### Step 1: Create `.env` file
+### Step 1: Copy Environment Template
 
 ```bash
-cd d:\Development\Projects\Rapid Crisis Response
 cp .env.example .env
 ```
 
-### Step 2: Edit `.env`
+This creates `.env` in your project root directory.
+
+### Step 2: Get Required API Keys
+
+#### Gemini API Key (Primary AI Provider)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or select existing)
+3. Navigate to **APIs & Services** → **Credentials**
+4. Click **Create Credentials** → **API Key**
+5. Copy the generated key
+6. (Optional) Restrict key to **Generative Language API**
+
+#### OpenRouter API Key (Secondary - Optional)
+
+1. Go to [OpenRouter.ai](https://openrouter.ai/)
+2. Sign up or log in
+3. Go to **Settings** → **Keys**
+4. Create a new API key
+5. Copy the key
+
+#### Groq API Key (Tertiary - Optional)
+
+1. Go to [Groq Console](https://console.groq.com/)
+2. Sign up or log in
+3. Create API key in settings
+4. Copy the key
+
+### Step 3: Edit .env File
 
 ```env
-# Server Configuration
+# =============================
+# SERVER CONFIGURATION
+# =============================
 PORT=3000
 NODE_ENV=development
 
-# Database
+# =============================
+# DATABASE
+# =============================
 DB_PATH=./emergencies.db
+# For MySQL (production):
+# DB_TYPE=mysql
+# DB_HOST=localhost
+# DB_USER=resqai_user
+# DB_PASSWORD=your_password
+# DB_NAME=resqai_db
 
-# AI Services - GET KEY FROM: https://console.cloud.google.com/
-GEMINI_API_KEY=your_gemini_api_key_here
+# =============================
+# AI SERVICES
+# =============================
+# PRIMARY: Google Gemini
+GEMINI_API_KEY=<your-gemini-api-key>
+GEMINI_MODEL=gemini-2.5-flash
 
-# Default Location (New Delhi, India)
-DEFAULT_LAT=28.7041
+# SECONDARY: OpenRouter (optional)
+OPENROUTER_API_KEY=<your-openrouter-api-key>
+OPENROUTER_MODEL=meta-llama/llama-3-8b-instruct
+
+# TERTIARY: Groq (optional)
+GROQ_API_KEY=<your-groq-api-key>
+GROQ_MODEL=mixtral-8x7b-32768
+
+# =============================
+# TIMEOUTS & RETRY
+# =============================
+AI_TIMEOUT=30000        # 30 seconds
+AI_RETRY_ATTEMPTS=3
+
+# =============================
+# SECURITY
+# =============================
+JWT_SECRET=your-secret-key-change-this
+JWT_EXPIRY=7d           # 7 days
+
+# =============================
+# LOGGING
+# =============================
+LOG_LEVEL=info
+ENABLE_AI_LOGGING=true
+
+# =============================
+# LOCATION DEFAULTS (Optional)
+# =============================
+DEFAULT_LAT=28.7041     # New Delhi
 DEFAULT_LNG=77.1025
 ```
 
-### Step 3: Get Gemini API Key
+### Step 4: Verify Configuration
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project
-3. Enable **Generative Language API**
-4. Create an API key (not OAuth)
-5. Copy the key to `.env`
+```bash
+# Check if server starts
+npm start
+
+# Should output:
+# Server running on http://localhost:3000
+# Database initialized
+# AI providers ready
+```
 
 ---
 
-## 📦 Dependencies
+## 📦 Installation
 
-### Check current dependencies:
-```bash
-npm list
-```
+### Install Node Dependencies
 
-### Main packages:
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `express` | ^4.18.x | Web framework |
-| `cors` | ^2.8.x | CORS middleware |
-| `dotenv` | ^16.x | Environment variables |
-| `sqlite3` | ^5.x | Database |
-
-### Install dependencies:
 ```bash
 npm install
 ```
+
+**What gets installed**:
+- express (web framework)
+- @google/generative-ai (Gemini)
+- groq-sdk (Groq provider)
+- sqlite3 (database)
+- dotenv (environment variables)
+- cors (CORS middleware)
+- And 20+ other dependencies
+
+### Installation Troubleshooting
+
+**Error: "npm: command not found"**
+- Node.js not installed or not in PATH
+- Solution: Reinstall Node.js, restart terminal
+
+**Error: "sqlite3 build failed"**
+- Missing build tools
+- Linux: `sudo apt install build-essential python3`
+- macOS: Install Xcode Command Line Tools
+
+**Error: Module not found**
+- Incomplete installation
+- Solution: `rm -rf node_modules package-lock.json && npm install`
 
 ---
 
 ## 🎮 Running the Application
 
-### Development Mode
+### Development Server
 
 ```bash
 npm start
 ```
 
-**Output**:
+**Expected Output**:
 ```
-╔═════════════════════════════════════════╗
-║         🚨 ResQAI Backend Running 🚨    ║
-╠═════════════════════════════════════════╣
-║  Server: http://localhost:3000            ║
-║  API:    http://localhost:3000/api      ║
-║  Health: http://localhost:3000/api/health║
-╚═════════════════════════════════════════╝
+╔════════════════════════════════════════╗
+║        ResQAI Emergency Response       ║
+║        Server Initialization           ║
+╚════════════════════════════════════════╝
+
+✓ Server running on http://localhost:3000
+✓ Database initialized (emergencies.db)
+✓ API routes mounted:
+  - /api/emergencies
+  - /api/classification
+  - /api/chat
+  - /api/voice
+  - /api/nearby
+  - /api/ai
+  - /api/portal
+  - /api/custom-system
+✓ AI providers ready:
+  - Gemini: active
+  - OpenRouter: ready
+  - Groq: ready
+  - Free AI: available
+
+Press Ctrl+C to stop server
 ```
 
-### Access in Browser
-- **Dashboard**: http://localhost:3000
-- **API Health**: http://localhost:3000/api/health
-- **Loader only**: http://localhost:3000/pages/loader.html
+### Access the Application
+
+**Open browser to**: http://localhost:3000
+
+**Landing Page**: Select your rescue system
+1. **Personal Rescue AI** → Main dashboard
+2. **Hotel/Resort System** → EcoPlus module
+3. **Custom Rescue Builder** → SQBitain module
+
+### Monitor Server Logs
+
+**Real-time logs**:
+```bash
+# Default: Shows info level
+npm start
+
+# With debugging:
+DEBUG=* npm start
+
+# Tail logs only:
+npm start 2>&1 | grep -E "✓|✗|error|warn"
+```
 
 ---
 
-## 🧪 Testing Features
+## 🧪 Testing the Installation
 
-### 1. Test Loader Animation
-```
-URL: http://localhost:3000/pages/loader.html
-Expected: Liquid fill animates 0-100%, then redirects to index.html
-```
+### Test 1: API Health Check
 
-### 2. Test Selection Screen
-```
-URL: http://localhost:3000
-Steps:
-1. Wait for loader to complete (6 seconds or click "100%")
-2. Selection screen slides in with 3 cards
-3. Cards animate with stagger effect
-4. Hover over cards - scale & glow effect
-```
-
-### 3. Test Dashboard
-```
-Steps:
-1. Click "Personal Rescue AI" card
-2. Selection screen slides left
-3. Dashboard fades in
-4. Check all tabs work (Dashboard, Report, Chat, Nearby, Map)
-```
-
-### 4. Test Chatbot
-```
-Steps:
-1. Click "AI Assistant" tab
-2. Send a message (e.g., "help with fire")
-3. Check: /api/chat endpoint returns AI response
-4. Verify multi-language dropdown works
-```
-
-### 5. Test Map Feature
-```
-Steps:
-1. Click "Nearby Alerts" tab
-2. Allow location permission
-3. Map loads with your location
-4. Nearby incidents appear as markers
-5. Click markers for details
-```
-
-### 6. Test API Endpoints
 ```bash
-# Health check
-curl http://localhost:3000/api/health
+curl http://localhost:3000/api/ai/health
+```
 
-# Chat endpoint
-curl -X POST http://localhost:3000/api/chat \
+**Expected Response** (200 OK):
+```json
+{
+  "status": "healthy",
+  "providers": {
+    "gemini": "active",
+    "openrouter": "ready",
+    "groq": "ready",
+    "free_ai": "available"
+  }
+}
+```
+
+### Test 2: Create Emergency
+
+```bash
+curl -X POST http://localhost:3000/api/emergencies \
   -H "Content-Type: application/json" \
-  -d '{"message":"fire safety","language":"en"}'
+  -d '{
+    "description": "Fire in building",
+    "location": "123 Main St",
+    "severity": "high"
+  }'
+```
 
-# Nearby incidents
-curl "http://localhost:3000/api/nearby?lat=28.7&lng=77.1&radius=5"
+**Expected Response** (201 Created):
+```json
+{
+  "id": "emergency-uuid-123",
+  "description": "Fire in building",
+  "classified_type": "fire",
+  "confidence_score": 0.95,
+  "status": "pending"
+}
+```
 
-# Classification
+### Test 3: Classify Emergency
+
+```bash
 curl -X POST http://localhost:3000/api/classification \
   -H "Content-Type: application/json" \
-  -d '{"type":"fire","location":"Delhi"}'
+  -d '{
+    "description": "I see flames",
+    "language": "en"
+  }'
+```
+
+**Expected Response** (200 OK):
+```json
+{
+  "type": "fire",
+  "confidence": 0.98,
+  "immediate_actions": ["Evacuate immediately", "Call 101"],
+  "step_by_step": [...]
+}
+```
+
+### Test 4: Chat Message
+
+```bash
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "What do I do in a fire?",
+    "language": "en"
+  }'
+```
+
+**Expected Response** (200 OK):
+```json
+{
+  "user_message": "What do I do in a fire?",
+  "bot_response": "In case of fire: 1) Stay calm 2) Call 101...",
+  "timestamp": "2026-04-20T10:30:00Z"
+}
 ```
 
 ---
 
-## 🔍 Debugging
+## 📂 Project Structure After Setup
 
-### Enable Console Logging
-In `src/server.js`, logging is already enabled. You'll see:
 ```
-✅ [API] Incoming POST /api/chat
-✅ [DB] Query executed in 125ms
-❌ [ERROR] CORS blocked from localhost:5500
-```
-
-### Check Database
-```bash
-# Install sqlite3 CLI
-npm install -g sqlite3
-
-# Open database
-sqlite3 emergencies.db
-
-# List tables
-.tables
-
-# Query incidents
-SELECT * FROM incidents LIMIT 10;
-```
-
-### Browser DevTools
-```javascript
-// In browser console (F12)
-
-// Check API call
-fetch('/api/chat', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ message: 'test', language: 'en' })
-}).then(r => r.json()).then(console.log)
-
-// Check local storage
-localStorage.getItem('selectedLanguage')
-
-// Check if module loaded
-typeof chatbot !== 'undefined'
+ResQAI/
+├── src/
+│   ├── server.js                 # Express entry point
+│   ├── api/routes/               # API endpoints
+│   ├── utils/                    # AI router, helpers
+│   ├── middleware/               # Authentication
+│   ├── db/                       # Database layer
+│   └── config/                   # Configuration
+├── public/                       # Frontend
+│   ├── pages/                    # HTML pages
+│   ├── modules/                  # EcoPlus, SQBitain
+│   ├── scripts/                  # JavaScript
+│   └── styles/                   # CSS
+├── docs/                         # Documentation
+├── node_modules/                 # Dependencies
+├── emergencies.db                # SQLite database (created on first run)
+├── .env                          # Environment variables (YOUR FILE)
+├── .env.example                  # Template (do not edit)
+├── package.json                  # Dependencies list
+├── package-lock.json             # Lock file
+├── README.md                      # Project README
+└── .git/                         # Git repository
 ```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Port 3000 Already in Use
+### Issue: "Cannot find module '@google/generative-ai'"
+
+**Cause**: Dependencies not installed
+
+**Solution**:
 ```bash
-# Kill process on port 3000
-# Windows
-netstat -ano | findstr :3000
-taskkill /PID <PID> /F
-
-# macOS/Linux
-lsof -i :3000
-kill -9 <PID>
-
-# Or change port in .env
-PORT=3001
-npm start
-```
-
-### GEMINI_API_KEY Not Working
-```bash
-# Check if key is set
-node -e "console.log(process.env.GEMINI_API_KEY)"
-
-# If empty:
-# 1. Verify .env file exists
-# 2. Check key is not in quotes
-# 3. Check key is valid (test on Google Cloud Console)
-# 4. Restart server
-npm start
-```
-
-### Database Locked Error
-```bash
-# SQLite database is locked (concurrent access)
-# Solution: 
-rm emergencies.db
-npm start
-# Database will recreate on first query
-```
-
-### Module Not Found Error
-```bash
-# If: Error: Cannot find module 'express'
-# Solution:
-rm -rf node_modules
+rm -rf node_modules package-lock.json
 npm install
+```
+
+### Issue: "ENOENT: no such file or directory, open '.env'"
+
+**Cause**: .env file not created
+
+**Solution**:
+```bash
+cp .env.example .env
+# Then edit .env with your API keys
+```
+
+### Issue: "Error: GEMINI_API_KEY is not set"
+
+**Cause**: Missing API key in .env
+
+**Solution**:
+1. Add your API key to .env
+2. Ensure no quotes: `GEMINI_API_KEY=key-here` (not `"key-here"`)
+3. Restart server: `Ctrl+C` then `npm start`
+
+### Issue: "Port 3000 already in use"
+
+**Cause**: Another process using port 3000
+
+**Solutions**:
+```bash
+# Option 1: Use different port
+PORT=3001 npm start
+
+# Option 2: Kill process on port 3000
+# Linux/macOS:
+lsof -ti:3000 | xargs kill -9
+
+# Windows PowerShell:
+Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process
+```
+
+### Issue: "AI provider timeout"
+
+**Cause**: Slow network or provider unavailable
+
+**Solution**:
+1. Check internet connection
+2. Verify API key is valid
+3. Increase timeout in .env: `AI_TIMEOUT=60000`
+4. Check provider status page (Gemini, Groq, etc.)
+
+### Issue: "Database locked"
+
+**Cause**: Multiple processes accessing SQLite
+
+**Solution**:
+1. Use only one instance of npm start
+2. Check for other node processes: `ps aux | grep node`
+3. Close them: `killall node`
+
+---
+
+## 🔄 Updating Code
+
+### Pull Latest Changes
+
+```bash
+git pull origin main
+npm install  # In case dependencies changed
 npm start
 ```
 
-### CSS/JS Not Loading
-```
-Symptom: Page looks broken, console shows 404 errors
-Cause: File paths incorrect after reorganization
+### Database Migration
 
-Check these paths:
-- HTML: <link href="../styles/main.css">
-- JS: <script src="../scripts/app.js">
-- API: /api/chat (not /api/chat.js)
+If .env.example changed:
+```bash
+cp .env.example .env.new
+# Compare .env and .env.new
+diff .env .env.new
+# Manually merge changes if needed
 ```
 
 ---
 
-## 📁 File Structure After Setup
+## 📱 Testing Different Modules
 
-```
-d:\Development\Projects\Rapid Crisis Response\
-├── node_modules/              ← Created after npm install
-├── public/
-│   ├── pages/                 ← HTML files
-│   ├── styles/                ← CSS files
-│   ├── scripts/               ← JavaScript modules
-│   └── assets/                ← Images, icons
-├── src/
-│   ├── api/routes/            ← API endpoints
-│   ├── db/                    ← Database
-│   └── server.js              ← Express server
-├── docs/                      ← Documentation
-├── .env                       ← Environment variables (created)
-├── emergencies.db             ← SQLite database (created on first run)
-├── package.json               ← Dependencies
-└── README.md                  ← Project readme
-```
+### Rapid Crisis Protocol
+1. Visit http://localhost:3000/
+2. Click "Personal Rescue AI"
+3. Explore Dashboard, Report, Chat, Nearby tabs
+
+### EcoPlus (Hotel Module)
+1. Visit http://localhost:3000/public/modules/echo-plus/
+2. Test guest and admin interfaces
+3. Try emergency activation
+
+### SQBitain (Custom Builder)
+1. Visit http://localhost:3000/public/modules/rescue-builder/
+2. Create new rescue system
+3. Test with different organization types
 
 ---
 
-## 🔄 Development Workflow
+## 🔒 Production Deployment
 
-### 1. Start server
-```bash
-npm start
-```
+For production setup, see:
+- [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md)
 
-### 2. Edit files
-- Backend: `src/**/*.js` → Restart server
-- Frontend: `public/scripts/**/*.js` → Reload browser
-- Styles: `public/styles/main.css` → Ctrl+Shift+R (hard refresh)
-
-### 3. Check console
-```bash
-# Terminal shows server logs
-# Browser DevTools (F12) shows client logs
-```
-
-### 4. Test API endpoints
-```bash
-# Use curl, Postman, or browser DevTools
-curl -X POST http://localhost:3000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"test"}'
-```
-
-### 5. Commit changes
-```bash
-git status
-git add .
-git commit -m "feat: add new feature"
-git push origin main
-```
+Key changes:
+- Switch to MySQL
+- Set `NODE_ENV=production`
+- Use strong `JWT_SECRET`
+- Enable HTTPS/SSL
+- Configure CORS properly
+- Set up monitoring
 
 ---
 
-## 📈 Performance Tips
+## 📚 Additional Resources
 
-### Enable Caching
-```javascript
-// In server.js
-app.use(express.static(path.join(__dirname, '../public'), {
-    maxAge: '1d'
-}));
-```
-
-### Optimize Bundle Size
-```bash
-# Check bundle size
-npm run analyze
-
-# Minify CSS/JS
-npm install -g terser
-```
-
-### Database Optimization
-```sql
--- In SQLite
-CREATE INDEX idx_incident_location ON incidents(latitude, longitude);
-CREATE INDEX idx_incident_type ON incidents(type);
-```
+- **API Reference**: See [API.md](./API.md)
+- **Architecture**: See [ARCHITECTURE.md](./ARCHITECTURE.md)
+- **Modules**: See [MODULES.md](./MODULES.md)
+- **AI System**: See [AI_SYSTEM.md](./AI_SYSTEM.md)
+- **Data Flow**: See [DATA_FLOW.md](./DATA_FLOW.md)
 
 ---
 
-## 🚀 Deployment Preparation
+## ✅ Verification Checklist
 
-### Pre-deployment Checklist
-- [ ] Remove `.env` from git (add to `.gitignore`)
-- [ ] Update `NODE_ENV=production` in `.env`
-- [ ] Test all endpoints on localhost
-- [ ] Check for console errors/warnings
-- [ ] Minify CSS/JS for production
-- [ ] Test on different devices
-- [ ] Verify API rate limits
-- [ ] Set up database backup
+Before deploying:
 
-### Deploy to Heroku
-```bash
-# Install Heroku CLI
-npm install -g heroku
-
-# Login
-heroku login
-
-# Create app
-heroku create resqai-app
-
-# Set environment variables
-heroku config:set GEMINI_API_KEY=your_key
-heroku config:set NODE_ENV=production
-
-# Deploy
-git push heroku main
-
-# Check logs
-heroku logs --tail
-```
-
-### Deploy to Vercel (Frontend only)
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-vercel --prod
-```
+- [ ] Node.js v16+ installed
+- [ ] Dependencies installed (`npm install` successful)
+- [ ] .env file created with all required keys
+- [ ] At least one AI provider key configured
+- [ ] Server starts without errors (`npm start`)
+- [ ] Health check responds: `curl http://localhost:3000/api/ai/health`
+- [ ] API endpoints working (test classification, chat)
+- [ ] Frontend loads at http://localhost:3000
+- [ ] Database initialized (emergencies.db created)
+- [ ] No console errors in browser DevTools
 
 ---
 
-## 📚 Useful Commands
+## 🎯 Next Steps
 
-```bash
-# Development
-npm start              # Start server
-npm run dev            # With auto-reload (if configured)
+After setup:
 
-# Testing
-npm test               # Run tests (if configured)
-npm run build          # Build for production
+1. **Explore Features**
+   - Try SOS emergency activation
+   - Test chatbot with questions
+   - View incident maps
 
-# Database
-npm run db:init        # Initialize database
-npm run db:reset       # Reset database
+2. **Read Documentation**
+   - Review [OVERVIEW.md](./OVERVIEW.md) for system overview
+   - Check [ARCHITECTURE.md](./ARCHITECTURE.md) for technical details
 
-# Utilities
-npm list               # Show all dependencies
-npm update             # Update all packages
-npm outdated           # Check for updates
-```
+3. **Customize**
+   - Modify prompts in `src/utils/aiRouter.js`
+   - Add custom organizations to builder
+   - Configure language-specific helplines
+
+4. **Integrate**
+   - Connect real emergency services APIs
+   - Add user authentication backend
+   - Integrate with actual mapping services
 
 ---
 
-## 🔗 Useful Links
+**Setup Complete!** 🎉
 
-- **Express.js Docs**: https://expressjs.com/
-- **Google Gemini API**: https://ai.google.dev/
-- **Leaflet.js Docs**: https://leafletjs.com/
-- **SQLite3 Docs**: https://www.sqlite.org/
+For questions or issues, check troubleshooting above or review API documentation.
+
+**Your emergency response system is ready to use.**
 - **Node.js Docs**: https://nodejs.org/docs/
 
 ---
