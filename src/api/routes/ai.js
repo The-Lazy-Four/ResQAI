@@ -3,7 +3,7 @@
 // ============================================
 
 import express from 'express';
-import { generateAIResponse, getLastAIUsageReport, testGroqProvider } from '../../utils/aiRouter.js';
+import { generateAIResponse, generateImageAnalysis, getLastAIUsageReport, testGroqProvider } from '../../utils/aiRouter.js';
 import { getAIStatus } from '../../utils/validateEnv.js';
 
 const router = express.Router();
@@ -329,6 +329,173 @@ router.post('/test-groq', async (req, res) => {
                 errorDetails: error.message
             },
             message: 'Groq provider test failed - Please check API key and model configuration'
+        });
+    }
+});
+
+// ==================== POST LAYOUT ANALYSIS ====================
+
+router.post('/analyze-layout', async (req, res) => {
+    try {
+        const { imageBase64, mimeType, description } = req.body;
+
+        if (!imageBase64 || !mimeType) {
+            return res.status(400).json({
+                error: 'Missing required fields: imageBase64, mimeType'
+            });
+        }
+
+        console.log('🖼️ [LAYOUT] Analyzing building layout image...');
+        console.log(`   MimeType: ${mimeType}`);
+        console.log(`   Description: ${description || 'None'}`);
+        console.log(`   Image size: ${Math.round(imageBase64.length / 1024)}KB`);
+
+        const prompt = buildLayoutAnalysisPrompt(description);
+
+        const rawResponse = await generateImageAnalysis(imageBase64, mimeType, prompt);
+        console.log('✅ [LAYOUT] Raw AI response received');
+
+        // Parse JSON from response
+        let analysis;
+        try {
+            let jsonStr = rawResponse;
+            // Extract JSON from potential markdown code blocks
+            const jsonMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+            if (jsonMatch) {
+                jsonStr = jsonMatch[1].trim();
+            }
+            analysis = JSON.parse(jsonStr);
+        } catch (parseError) {
+            console.warn('⚠️ [LAYOUT] JSON parse failed, attempting extraction...');
+            const jsonStart = rawResponse.indexOf('{');
+            const jsonEnd = rawResponse.lastIndexOf('}');
+            if (jsonStart !== -1 && jsonEnd !== -1) {
+                try {
+                    analysis = JSON.parse(rawResponse.substring(jsonStart, jsonEnd + 1));
+                } catch (e) {
+                    throw new Error('Could not parse AI response as JSON');
+                }
+            } else {
+                throw new Error('AI response does not contain valid JSON');
+            }
+        }
+
+        // Check for error response (non-building image)
+        if (analysis.error) {
+            return res.status(400).json({
+                error: analysis.error,
+                message: 'The uploaded image does not appear to be a building layout'
+            });
+        }
+
+        console.log('✅ [LAYOUT] Analysis parsed successfully');
+        console.log(`   Safety Score: ${analysis.overallSafetyScore}/10`);
+        console.log(`   Exits found: ${analysis.exits?.length || 0}`);
+        console.log(`   Risk zones: ${analysis.highRiskZones?.length || 0}`);
+
+        res.json({
+            success: true,
+            analysis,
+            timestamp: new Date().toISOString(),
+            provider: 'ResQAI-Vision-Analysis'
+        });
+
+    } catch (error) {
+        console.error('❌ [LAYOUT] Analysis failed:', error.message);
+        res.status(500).json({
+            error: 'Layout analysis failed',
+            message: error.message,
+            fallback: true
+        });
+    }
+});
+
+// ==================== HELPER: LAYOUT ANALYSIS PROMPT ====================
+
+function buildLayoutAnalysisPrompt(description) {
+    let prompt = `You are an emergency safety expert and building layout analyst. 
+A user has uploaded a floor plan or building layout image for their 
+organization's emergency rescue system.
+
+Analyze this layout image carefully and provide a structured emergency 
+safety analysis. Consider the following:
+
+1. EXITS: Identify all visible doors, emergency exits, windows that 
+   could serve as exits, and stairwells. Note their approximate 
+   location (e.g., "North wall", "Ground floor east side").
+
+2. HIGH-RISK ZONES: Identify areas that could be dangerous during 
+   emergencies — narrow corridors, dead ends, areas far from exits, 
+   potential fire hazard zones, blocked pathways.
+
+3. EVACUATION ROUTES: Suggest the best 2-3 primary evacuation paths 
+   from different zones of the building to the nearest exit. Be 
+   specific about direction and path.
+
+4. ASSEMBLY POINTS: Recommend where people should gather after 
+   evacuating — must be away from building, accessible, and spacious.
+
+5. EQUIPMENT PLACEMENT: Suggest optimal locations for fire 
+   extinguishers, first aid kits, and emergency alarms based on 
+   the layout.
+
+6. SAFETY RECOMMENDATIONS: Give 3-5 specific actionable improvements 
+   this organization should make to their layout or emergency 
+   preparedness based on what you see.
+
+If the image is not a building layout or floor plan, respond with:
+{ "error": "Not a valid building layout" }
+
+Respond ONLY in this exact JSON format, no extra text:
+{
+  "exits": [
+    { "location": "string", "type": "string", "notes": "string" }
+  ],
+  "highRiskZones": [
+    { "location": "string", "risk": "string", "severity": "high|medium|low" }
+  ],
+  "evacuationRoutes": [
+    { "from": "string", "to": "string", "path": "string", "priority": "primary|secondary" }
+  ],
+  "assemblyPoints": [
+    { "location": "string", "capacity": "string", "notes": "string" }
+  ],
+  "equipmentPlacement": [
+    { "equipment": "string", "location": "string", "reason": "string" }
+  ],
+  "recommendations": [
+    { "priority": "high|medium|low", "action": "string", "reason": "string" }
+  ],
+  "overallSafetyScore": "number (1-10)",
+  "summary": "2-3 sentence overall assessment"
+}`;
+
+    if (description) {
+        prompt += `\n\nAdditional context from the user: ${description}`;
+    }
+
+    return prompt;
+}
+
+// ==================== POST GENERATE SUMMARY ====================
+
+router.post('/generate-summary', async (req, res) => {
+    try {
+        const { organizationType, location, staffCount, riskTypes } = req.body;
+
+        const prompt = `Provide a brief 2-3 sentence safety insight for a ${organizationType || 'organization'} located at ${location || 'unknown location'} with ${staffCount || 0} staff members. Risk types: ${(riskTypes || []).join(', ') || 'general'}. Focus on emergency preparedness and actionable advice. Keep it concise.`;
+
+        const insight = await generateAIResponse(prompt, 'en');
+
+        res.json({
+            success: true,
+            insight: insight.substring(0, 300)
+        });
+    } catch (error) {
+        console.error('❌ Error in generate-summary:', error.message);
+        res.status(500).json({
+            error: 'Failed to generate summary',
+            message: error.message
         });
     }
 });
