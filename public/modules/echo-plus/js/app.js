@@ -424,16 +424,12 @@ function setGuestStatus(type, title, message) {
   const statusTitle = $('gdash-status-title');
   const statusMsg = $('gdash-status-msg');
   
-  if (statusCard) {
-    statusCard.classList.remove('normal', 'danger', 'warning', 'alert');
-    statusCard.classList.add(type);
-  }
+  if (statusCard) statusCard.className = 'status-card ' + type;
   if (statusTitle) statusTitle.innerHTML = title;
   if (statusMsg) statusMsg.textContent = message;
 
   renderNearbyStaff(); // Update nearby staff list whenever status changes
 }
-
 
 // ============================================================
 // ADMIN LOGIN
@@ -629,23 +625,27 @@ function repeatInstruction() {
 // AI REAL-TIME VOICE CALL
 // ============================================================
 function startAICall() {
-  if (state.aiCallActive) return; 
+  if (state.aiCallActive) return; // Prevent multiple calls
   if (!window.ResQAICall) {
-    console.error("ResQAICall class not found");
+    console.error("ResQAICall class not found from aicall.js");
     return;
   }
   
-  // UI Toggling
-  const standby = $('ai-standby-content');
-  const activeUI = $('ai-active-call-ui');
-  const transcript = $('gdash-call-transcript');
+  const callBtn = $('guest-speak-btn');
+  const endBtn = $('guest-end-call-btn');
+  const gdash = $('gdash-instruction');
+  const aiThink = $('ai-think-guest');
 
-  if (standby) standby.style.display = 'none';
-  if (activeUI) activeUI.style.display = 'flex';
+  if (callBtn) {
+    callBtn.style.display = 'none';
+  }
+  if (endBtn) {
+    endBtn.style.display = 'inline-flex';
+  }
   
-  if (transcript) {
-    transcript.textContent = 'Connecting to ResQ AI...';
-    transcript.style.color = 'var(--text2)';
+  if (gdash) {
+    gdash.textContent = 'Connecting to ResQ AI...';
+    gdash.style.color = 'var(--echo-accent)';
   }
 
   state.aiCallActive = true;
@@ -653,7 +653,7 @@ function startAICall() {
   state.aiCallSystem = new window.ResQAICall({
     lang: state.lang || 'en',
     incident: state.currentEmergency, 
-    guestName: state.guestName || "Guest",
+    guestName: state.guestObj ? state.guestObj.name : "Guest",
     instructionSteps: state.instructionSteps || [],
     position: state.guestObj ? { floor: state.guestObj.floor, room: state.guestObj.roomNumber, zone: state.guestObj.zone } : { floor: 1, room: "000", zone: "Unknown" },
     onStatus: (status) => {
@@ -661,13 +661,25 @@ function startAICall() {
         const aiThink = $('ai-think-guest');
         if (!stat) return;
         
-        stat.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-        if (aiThink) aiThink.style.display = (status === 'thinking') ? 'inline-flex' : 'none';
+        if (status === 'listening') {
+            stat.textContent = "Listening...";
+            if (aiThink) aiThink.style.display = 'none';
+        } else if (status === 'thinking') {
+            stat.textContent = "Thinking...";
+            if (aiThink) aiThink.style.display = 'inline-flex';
+        } else if (status === 'speaking') {
+            stat.textContent = "Speaking...";
+            if (aiThink) aiThink.style.display = 'none';
+        } else if (status === 'connected') {
+            stat.textContent = "Ready for input";
+            if (aiThink) aiThink.style.display = 'none';
+        } else {
+            stat.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
     },
     onTranscript: (speaker, text) => {
-        if (!transcript) return;
-        transcript.textContent = `${speaker}: ${text}`;
-        transcript.scrollTop = transcript.scrollHeight;
+        if (!gdash) return;
+        gdash.textContent = `${speaker}: ${text}`;
     },
     onAlertAdmin: (msg) => {
         if (typeof window.receiveAdminAlert === 'function') {
@@ -676,25 +688,15 @@ function startAICall() {
     },
     onEnd: (history) => {
       state.aiCallActive = false;
-      if (standby) standby.style.display = 'block';
-      if (activeUI) activeUI.style.display = 'none';
-      if ($('aicall-duration')) $('aicall-duration').textContent = "00:00";
+      if (callBtn) callBtn.style.display = 'inline-flex';
+      if (endBtn) endBtn.style.display = 'none';
+      if (gdash) {
+        gdash.textContent = state.currentEmergency ? 'Call Ended. AI Assistance Available' : 'No emergency active. Have a pleasant stay.';
+        gdash.style.color = '';
+      }
+      if (aiThink) aiThink.style.display = 'none';
     }
   });
-
-  // Duration Timer Update
-  const durationEl = $('aicall-duration');
-  if (durationEl) {
-      const timer = setInterval(() => {
-          if (!state.aiCallActive) {
-              clearInterval(timer);
-              return;
-          }
-          if (state.aiCallSystem) {
-              durationEl.textContent = state.aiCallSystem.getCallDuration();
-          }
-      }, 1000);
-  }
 
   state.aiCallSystem.start();
 }

@@ -279,10 +279,31 @@
                         <div class="upload-box">
                             <div class="upload-icon">📸</div>
                             <p>Upload your organization layout image</p>
-                            <p class="upload-hint">AI will analyze the image to understand your structure</p>
-                            <input type="file" id="layout-image" accept="image/*" />
+                            <p class="upload-hint">AI will analyze the image to understand your structure (JPG, PNG, PDF)</p>
+                            <input type="file" id="layout-image" accept="image/jpeg,image/png,image/jpg,application/pdf" />
                             <div class="upload-preview" id="upload-preview"></div>
                         </div>
+
+                        <!-- ANALYZE BUTTON (shown after image upload) -->
+                        <button type="button" id="btn-analyze-layout"
+                            style="display: none; width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 20px; transition: all 0.3s; font-family: inherit;"
+                            onclick="analyzeLayout()">
+                            🔍 Analyze Layout with AI
+                        </button>
+
+                        <!-- AI ANALYSIS LOADING STATE -->
+                        <div id="layout-analysis-loading"
+                            style="display: none; text-align: center; padding: 30px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; margin-bottom: 20px;">
+                            <div style="font-size: 40px; margin-bottom: 12px; animation: pulse 1.5s infinite;">🔍</div>
+                            <p style="color: #a78bfa; font-weight: 600; font-size: 15px;">AI is analyzing your layout...</p>
+                            <p style="color: #666; font-size: 13px; margin-top: 8px;">This may take a few seconds</p>
+                        </div>
+
+                        <!-- AI ANALYSIS RESULTS -->
+                        <div id="layout-analysis-results" style="display: none; margin-bottom: 20px;"></div>
+
+                        <!-- MANUAL FALLBACK FORM (shown if AI fails) -->
+                        <div id="layout-manual-fallback" style="display: none; margin-bottom: 20px;"></div>
 
                         <div class="form-group">
                             <label for="image-notes">Describe your layout (optional)</label>
@@ -529,6 +550,7 @@
         </div>
 
         <div class="admin-content">
+            <div id="admin-map-stage" class="panel-map-stage" style="display: none;"></div>
             <div class="admin-grid">
                 <!-- ORGANIZATION INFO -->
                 <div class="admin-card">
@@ -649,6 +671,7 @@
         </div>
 
         <div class="user-content">
+            <div id="user-map-stage" class="panel-map-stage" style="display: none;"></div>
             <div class="user-grid">
                 <!-- ACTIVE ALERTS -->
                 <div class="user-card alert-section">

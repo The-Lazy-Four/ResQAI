@@ -181,176 +181,243 @@
       </div>
     </div>
 
-    <div class="guest-dash-body" id="guest-dash-body">
-      <!-- GUEST PROFILE FLOATING HEADER -->
-      <div class="guest-profile-floating">
-        <div class="profile-inner">
+    <div class="guest-dash-body">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- Guest card -->
+        <div class="guest-info-card">
           <div class="guest-avatar" id="gdash-avatar">GU</div>
-          <div class="profile-text">
-            <div class="p-name" id="gdash-guestname">Guest Name</div>
-            <div class="p-room" id="gdash-room-detail">Room — Floor —</div>
-            <div id="gdash-zone" style="display:none"></div>
+          <div>
+            <div class="guest-detail-name" id="gdash-guestname">Guest Name</div>
+            <div class="guest-detail-room" id="gdash-room-detail">Room — Floor —</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px" id="gdash-zone">Zone</div>
           </div>
-
-          <div class="profile-status">
-            <div class="status-label">Safety Status</div>
-            <div class="status-value safe" id="gdash-emerg-status">CLEAR</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MAIN APP LAYOUT WRAPPER -->
-      <div class="guest-app-layout">
-        
-        <!-- STATUS ROW -->
-        <div class="dash-row status-row-wrap">
-          <div class="status-card-premium" id="gdash-status-card">
-            <div class="status-indicator">
-              <div class="status-dot-large"></div>
-              <div class="status-title" id="gdash-status-title">All Systems Normal</div>
-            </div>
-            <div class="status-message" id="gdash-status-msg">Welcome. No active emergencies detected in your immediate zone.</div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Emergency</div>
+            <div style="font-size:14px;font-weight:700;color:var(--medical)" id="gdash-emerg-status">Clear</div>
           </div>
         </div>
 
-        <!-- TICKER ROW (Live Alerts) -->
-        <div class="dash-row alert-ticker-row">
-          <div class="alert-ticker">
-            <div class="ticker-label">LIVE ALERTS <span class="notif-badge" id="guest-notif-count">0</span></div>
-            <div class="ticker-feed" id="guest-notif-feed">
-               <div class="ticker-item">Standing by for system updates...</div>
-            </div>
+        <!-- Status card -->
+        <div class="status-card normal" id="gdash-status-card">
+          <div class="status-indicator">
+            <div class="status-dot-large"></div>
+            <div class="status-title" id="gdash-status-title">✅ All Clear</div>
           </div>
+          <div class="status-message" id="gdash-status-msg">No active emergencies. Enjoy your stay.</div>
         </div>
 
-        <!-- DASHBOARD GRID -->
-        <div class="guest-grid-tiles">
-          <!-- AI ASSISTANCE TILE -->
-          <div class="dash-tile ai-tile instruction-card" id="ai-tile-container">
-            <div class="tile-label">
-              <span class="ai-sparkle">✦</span> AI Assistance
-              <span class="ai-dots" id="ai-think-guest" style="display:none">
-                <span></span><span></span><span></span>
-              </span>
-            </div>
-            
-            <!-- STANDBY CONTENT -->
-            <div id="ai-standby-content">
-              <div class="tile-content" id="gdash-instruction">
-                Operational. Standing by. In case of emergency, follow voice commands.
-              </div>
-              <div class="tile-actions">
-                <button class="vbtn-glass" id="guest-speak-btn" onclick="startAICall()">🔊 Start Call</button>
-              </div>
-            </div>
-
-            <!-- ACTIVE CALL UI -->
-            <div id="ai-active-call-ui" style="display:none;">
-              <div class="call-overlay-inner">
-                <div class="call-wave-container">
-                  <div class="wave"></div>
-                  <div class="wave"></div>
-                  <div class="wave"></div>
-                </div>
-                <div class="call-status-wrap">
-                  <div class="call-status-label" id="aicall-status">Connecting...</div>
-                  <div class="call-duration" id="aicall-duration">00:00</div>
-                </div>
-              </div>
-              <div class="call-transcript-preview" id="gdash-call-transcript">
-                Listening for your request...
-              </div>
-              <div class="tile-actions">
-                <button class="vbtn-glass stop-btn" onclick="endAICall()">■ End Call</button>
-              </div>
-            </div>
+        <!-- Floor Map -->
+        <div class="map-card">
+          <div class="map-header">
+            <div class="map-title">Floor Plan — Your Location</div>
+            <div style="font-size:11px;color:var(--text3)">★ = Your Room</div>
           </div>
-
-
-          <!-- MAP TILE -->
-          <div class="dash-tile map-tile-compact">
-            <div class="tile-label">📍 Live Map</div>
-            <div class="mini-map-container" style="position: relative;">
-               <svg id="guest-map-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" style="width:100%; border-radius: 8px; background: rgba(0,0,0,0.2);"></svg>
-               <div class="map-overlay-controls">
-                 <button class="map-zoom-btn" onclick="zoomMap()" title="Zoom Map">🔍</button>
-               </div>
+          <svg id="guest-map-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg"
+            style="width:100%;display:block"></svg>
+          <div class="map-legend">
+            <div class="legend-i">
+              <div class="legend-sq" style="background:#ff4d4d"></div>Danger
             </div>
-            <div class="map-legend-compact">
-              <span class="leg-pt leg-danger"></span> Danger
-              <span class="leg-pt leg-safe"></span> Exit
-              <span class="leg-pt leg-you"></span> You
+            <div class="legend-i">
+              <div class="legend-sq" style="background:#00d97e"></div>Safe Exit
             </div>
-          </div>
-
-          <!-- SOS GRID TILE -->
-          <div class="dash-tile sos-tile">
-            <div class="tile-label">🚨 SOS Report</div>
-            <div class="sos-grid">
-               <button class="sos-btn fire" onclick="guestTriggerEmergency('fire')"><span class="icon">🔥</span> Fire</button>
-               <button class="sos-btn med" onclick="guestTriggerEmergency('medical')"><span class="icon">🏥</span> Med</button>
-               <button class="sos-btn quake" onclick="guestTriggerEmergency('earthquake')"><span class="icon">🌍</span> Quake</button>
-               <button class="sos-btn sec" onclick="guestTriggerEmergency('suspicious')"><span class="icon">⚠️</span> Sec</button>
+            <div class="legend-i">
+              <div class="legend-sq" style="background:#4f8ef7"></div>Evac Route
             </div>
-          </div>
-
-          <!-- CHAT HUB TILE -->
-          <div class="dash-tile chat-tile-compact panel-card">
-            <div class="tile-label">💬 Chat Hub</div>
-            <div id="chat-feed-guest" class="chat-main-feed mini-feed"></div>
-            <div class="chat-input-row">
-               <button class="vbtn-glass-sq" id="chat-mic-guest" onclick="startVoiceRecording('guest')">🎤</button>
-               <input id="chat-input-guest" class="chat-mini-input" onkeydown="chatInputKeydown(event,'guest','guest')" type="text" placeholder="Staff..." />
-               <button class="mini-send-btn" onclick="chatSend('guest','guest')">➤</button>
-            </div>
-            <div style="display:none"><input type="file" id="chat-img-guest" onchange="handleImageUpload(event,'guest')" /></div>
-          </div>
-        </div>
-
-        <!-- NEARBY STAFF SECTION -->
-        <div class="dash-row staff-row">
-          <div class="staff-card-modern">
-            <div class="tile-label">👥 Nearby Responders</div>
-            <div id="nearby-staff-container" class="nearby-staff-list-horizontal">
-               <div class="staff-placeholder">Scanning for nearest personnel...</div>
+            <div class="legend-i">
+              <div class="legend-sq" style="background:#4f8ef7;opacity:0.5"></div>Your Room ★
             </div>
           </div>
         </div>
 
-        <!-- COLLAPSIBLE INFO SECTION -->
-        <div class="dash-row info-row">
-           <div class="collapsible-info-card">
-              <div class="info-header" onclick="toggleInfo()">
-                 <span>📋 Escape Plans & Contacts</span>
-                 <span id="info-arrow">▼</span>
-              </div>
-              <div class="info-body" id="info-body-content" style="display:none;">
-                  <div class="plan-split">
-                    <div class="plan-col">
-                      <div class="plan-label">Evacuation</div>
-                      <div class="plan-item">🚶 East Wing: Use Stairwell B</div>
-                      <div class="plan-item">🚶 West Wing: Use Stairwell A</div>
-                    </div>
-                    <div class="plan-col">
-                      <div class="plan-label">Emergency Desk</div>
-                      <div class="contact-grid">
-                         <div class="c-item">🔥 101</div>
-                         <div class="c-item">🚑 108</div>
-                         <div class="c-item">🛎 0</div>
-                      </div>
-                    </div>
+        <!-- AI Instruction -->
+        <div class="instruction-card">
+          <div class="instruction-label">
+            ⬡ AI Guidance
+            <span class="ai-dots" id="ai-think-guest" style="display:none">
+              <span></span><span></span><span></span>
+            </span>
+          </div>
+          <div class="instruction-text" id="gdash-instruction">
+            No emergency active. Have a pleasant stay. In case of emergency, follow voice instructions.
+          </div>
+          <div class="voice-controls">
+            <button class="vbtn vbtn-primary" id="guest-speak-btn" onclick="startAICall()">🔊 Call AI</button>
+            <button class="vbtn vbtn-secondary" id="guest-end-call-btn" onclick="endAICall()" style="display:none">■ End Call</button>
+            <button class="vbtn vbtn-secondary" onclick="window.speechSynthesis.cancel()">■ Stop</button>
+          </div>
+        </div>
+
+        <!-- CHAT HUB PANEL (GUEST) - MOVED TO MAIN AREA -->
+        <div class="panel-card chat-main-container">
+          <div class="panel-header chat-main-header">
+            <div class="panel-title"><span class="chat-icon-sparkle">💬</span> Emergency Communication Hub</div>
+            <div class="chat-status-indicator">
+              <span class="pulse-dot"></span> Secure Connection Active
+            </div>
+          </div>
+          
+          <div class="chat-layout">
+            <!-- Sidebar for targets -->
+            <div class="chat-targets-side">
+              <div class="target-label">Send Message To:</div>
+              <button id="ctarget-all-guest" onclick="setChatTarget('all','guest')" class="target-btn active">
+                <span class="t-icon">👥</span>
+                <span class="t-text">Everyone</span>
+              </button>
+              <button id="ctarget-admin-guest" onclick="setChatTarget('admin','guest')" class="target-btn">
+                <span class="t-icon">🛡️</span>
+                <span class="t-text">Security / Admin</span>
+              </button>
+              <button id="ctarget-staff-guest" onclick="setChatTarget('staff','guest')" class="target-btn">
+                <span class="t-icon">👷</span>
+                <span class="t-text">Hotel Staff</span>
+              </button>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="chat-content-area">
+              <div id="chat-feed-guest" class="chat-feed chat-main-feed"></div>
+              
+              <div class="chat-controls-area">
+                <div class="chat-input-wrapper">
+                  <input id="chat-input-guest" class="chat-main-input" onkeydown="chatInputKeydown(event,'guest','guest')" type="text" placeholder="Type your message here..." />
+                  <div class="chat-input-actions">
+                    <button id="chat-mic-guest" onclick="startVoiceRecording('guest')" title="Voice Message" class="chat-action-btn">🎤</button>
+                    <label title="Upload Image" class="chat-action-btn">
+                      📷 <input type="file" accept="image/*" onchange="handleImageUpload(event,'guest')" style="display:none;"/>
+                    </label>
                   </div>
+                </div>
+                <button class="chat-send-btn" onclick="chatSend('guest','guest')">
+                  <span>Send</span>
+                  <span class="btn-arrow">➤</span>
+                </button>
               </div>
-           </div>
+              
+              <div class="chat-emergency-footer">
+                <button class="emergency-alert-btn" onclick="chatSend('guest','guest',true)">
+                  🚨 BROADCAST EMERGENCY ALERT TO ALL STAFF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-panel">
+        <!-- Nearby Staff (NEW) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Nearby Responders</div>
+          </div>
+          <div id="nearby-staff-container" class="nearby-staff-list" style="padding:12px; display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:12px; color:var(--text3); text-align:center; padding:10px;">Finding nearby staff...</div>
+          </div>
         </div>
 
+        <!-- Alerts -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Live Alerts</div>
+            <div class="panel-badge green" id="guest-notif-count">0</div>
+          </div>
+          <div class="notif-feed" id="guest-notif-feed">
+            <div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">No alerts</div>
+          </div>
+        </div>
+
+        <!-- Emergency Trigger (New) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title" style="color:var(--echo-fire); font-size: 14px; font-weight: 800;">🆘 Report Emergency</div>
+          </div>
+          <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="trigger-btn fire-btn" style="padding: 10px; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" onclick="guestTriggerEmergency('fire')">
+              <span style="font-size: 20px;">🔥</span>
+              <span>Fire</span>
+            </button>
+            <button class="trigger-btn medical-btn" style="padding: 10px; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" onclick="guestTriggerEmergency('medical')">
+              <span style="font-size: 20px;">🏥</span>
+              <span>Medical</span>
+            </button>
+            <button class="trigger-btn quake-btn" style="padding: 10px; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" onclick="guestTriggerEmergency('earthquake')">
+              <span style="font-size: 20px;">🌍</span>
+              <span>Quake</span>
+            </button>
+            <button class="trigger-btn suspect-btn" style="padding: 10px; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px;" onclick="guestTriggerEmergency('suspicious')">
+              <span style="font-size: 20px;">⚠️</span>
+              <span>Security</span>
+            </button>
+          </div>
+          <div style="padding: 0 12px 12px; font-size: 10px; color: var(--echo-text3); text-align: center;">AI will guide you automatically upon selection.</div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Emergency Contacts</div>
+          </div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass);border-radius:var(--r3);font-size:13px">
+              <span>🔥 Fire Brigade</span><span style="color:var(--fire);font-weight:700">101</span>
+            </div>
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass);border-radius:var(--r3);font-size:13px">
+              <span>🚑 Ambulance</span><span style="color:var(--medical);font-weight:700">108</span>
+            </div>
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass);border-radius:var(--r3);font-size:13px">
+              <span>🚔 Police</span><span style="color:var(--blue);font-weight:700">100</span>
+            </div>
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--glass);border-radius:var(--r3);font-size:13px">
+              <span>🛎 Reception</span><span style="color:var(--text2);font-weight:700">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Escape plan -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Evacuation Plan</div>
+          </div>
+          <div style="padding:12px;font-size:13px;color:var(--text2);line-height:1.7">
+            <div style="margin-bottom:8px">🚶 <strong style="color:var(--text)">Primary:</strong> East Stairwell → Exit A</div>
+            <div style="margin-bottom:8px">🚶 <strong style="color:var(--text)">Secondary:</strong> West Stairwell → Exit B</div>
+            <div style="margin-bottom:8px">⛔ <strong style="color:var(--fire)">Never:</strong> Use elevators in emergency</div>
+            <div style="padding:10px;background:var(--quake-dim);border-radius:6px;border:1px solid rgba(255,184,0,0.2);font-size:12px;color:var(--quake);margin-top:8px">
+              ⬟ Assembly Point: Front Lawn, 50m from main gate
+            </div>
+          </div>
+        </div>
+
+        <!-- AI CALL SYSTEM (NEW) -->
+        <div class="panel-card aicall-card" id="aicall-panel">
+          <div class="panel-header">
+            <div class="panel-title" style="color:var(--blue); display: flex; align-items: center; gap: 6px;">
+              <span class="aicall-pulse-icon"></span> AI Assist Call
+            </div>
+            <div id="aicall-timer" style="font-size: 11px; font-weight: 700; color: var(--text3);">00:00</div>
+          </div>
+          <div class="aicall-body">
+            <div id="aicall-status" class="aicall-status">Ready for assistance</div>
+            <div id="aicall-transcript-box" class="aicall-transcript-box">
+              <div class="aicall-placeholder">AI will start voice guidance upon emergency...</div>
+            </div>
+            <div class="aicall-controls">
+              <button id="aicall-btn" class="aicall-main-btn" onclick="toggleAICall()">
+                <span id="aicall-btn-icon">📞</span>
+                <span id="aicall-btn-text">Start AI Call</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-
-      </div>
-    </div>
-
   </div>
     </div>
   </div>

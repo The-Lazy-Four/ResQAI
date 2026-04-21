@@ -56,48 +56,5 @@ function initAdminStatus() {
     }
 }
 
-/**
- * Toggle the information section on Guest Dashboard
- */
-function toggleInfo() {
-    const content = document.getElementById('info-body-content');
-    const arrow = document.getElementById('info-arrow');
-    
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        content.classList.add('expanded');
-        arrow.textContent = '▲';
-    } else {
-        content.style.display = 'none';
-        content.classList.remove('expanded');
-        arrow.textContent = '▼';
-    }
-}
-
-/**
- * Placeholder for map zoom functionality
- */
-function zoomMap() {
-    const svg = document.getElementById('guest-map-svg');
-    const currentScale = svg.style.transform || 'scale(1)';
-    
-    if (currentScale === 'scale(1.5)') {
-        svg.style.transform = 'scale(1)';
-        svg.style.cursor = 'zoom-in';
-    } else {
-        svg.style.transform = 'scale(1.5)';
-        svg.style.cursor = 'zoom-out';
-    }
-    
-    svg.style.transition = 'transform 0.3s ease';
-}
-
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    initAdminStatus();
-    
-    // Set initial cursor for map
-    const svg = document.getElementById('guest-map-svg');
-    if (svg) svg.style.cursor = 'zoom-in';
-});
-
+document.addEventListener('DOMContentLoaded', initAdminStatus);

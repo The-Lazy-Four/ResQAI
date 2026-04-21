@@ -172,7 +172,6 @@ window.ResQAICall = class AICallSystem {
         }
 
         this.conversation.push({ role: "assistant", content: responseText });
-        this.conversation.push({ role: "assistant", content: responseText });
         this.onTranscript("AI", responseText);
         
         // Start listening concurrently allowing user to barge in while AI speaks!
@@ -183,40 +182,35 @@ window.ResQAICall = class AICallSystem {
     }
 
     async _callAI(userMessage) {
+        const conf = window.ECHO_CONFIG?.aiCall || {};
         const pos = this.currentPosition;
         const type = this.incident?.type || "other";
         
-        const mapContext = `Hotel layout: L-shaped building with North Wing and South Wing. 
-North Wing: Rooms 101-110. South Wing: Rooms 111-120.
-Stairwell A: North end of North Wing. Stairwell B: South end of South Wing.
-Central Lobby: Intersection of North and South wings.
-Assembly Point: Open area 50m West of the Central Lobby entrance.`;
-
         let hotelArchitecture = "";
         if (this.lang === 'hi') {
-            hotelArchitecture = `होटल इको रिज़ॉर्ट मानचित्र: उत्तर विंग (North Wing) और दक्षिण विंग (South Wing)। उत्तर विंग छोर पर Stairwell A है, दक्षिण विंग छोर पर Stairwell B। आग के दौरान लिफ्ट का उपयोग न करें।`;
+            hotelArchitecture = `होटल इको रिज़ॉर्ट वास्तुकला: 5 मंजिल। मंजिल 1 लॉबी / मुख्य निकास है। उत्तर और दक्षिण सिरों पर सीढ़ियाँ हैं। लिफ्ट केंद्रीय हैं। आग/भूकंप के दौरान लिफ्ट का उपयोग न करें।`;
         } else if (this.lang === 'bn') {
-            hotelArchitecture = `হোটেল ইকো রিসর্ট মানচিত্র: উত্তর উইং (North Wing) এবং দক্ষিণ উইং (South Wing)। উত্তর উইং-এর শেষে Stairwell A, দক্ষিণ উইং-এর শেষে Stairwell B। আগুনের সময় লিফট ব্যবহার করবেন না।`;
+            hotelArchitecture = `হোটেল ইকো রিসর্ট আর্কিটেকচার: ৫ তলা। তলা ১ লবি/প্রধান প্রস্থান। উত্তর ও দক্ষিণ প্রান্তে সিঁড়ি রয়েছে। লিফটগুলো কেন্দ্রে অবস্থিত। আগুন/ভূমিকম্পের সময় লিফট ব্যবহার করবেন না।`;
         } else {
-            hotelArchitecture = mapContext + `\nAlways refer to these map zones for navigation. Never use elevators.`;
+            hotelArchitecture = `Hotel Echo Resort Architecture: 5 Floors. Floor 1 is the lobby/main exit. North and South ends have stairwells. Elevators are central. Do NOT use elevators during fire/quake.`;
         }
 
         const stepsContext = (this.instructionSteps && this.instructionSteps.length > 0) 
-            ? `Initial AI-generated guidance steps for this guest: ${this.instructionSteps.join(', ')}.`
+            ? `Current evacuation steps to guide the guest through: ${this.instructionSteps.join(', ')}.`
             : "";
 
-        const systemPrompt = `You are "Rescue AI," a high-performance emergency concierge. 
-SPEED IS CRITICAL. BE EXTREMELY BLUNT AND CONCISE.
-Guest: ${this.guestName}. Location: Floor ${pos.floor}, Room ${pos.room} (${pos.zone} Wing). Emergency: ${type}.
+        const systemPrompt = `You are "Rescue AI," a warm, professional, and highly conversational emergency concierge.
+Context: Guest: ${this.guestName}. Location: Floor ${pos.floor}, Room ${pos.room}. Emergency: ${type}.
 ${stepsContext}
-Architecture Context: ${hotelArchitecture}
+Architecture: ${hotelArchitecture}
 
 Interaction Rules:
-- MAX 10-15 WORDS PER RESPONSE.
-- Use the map terminology (Wing, Stairwell A/B).
-- Guide them immediately to the Assembly Point.
+- Be conversational and empathetic. Avoid robotic, numbered lists.
+- Keep responses concise (1-2 sentences).
+- If the guest reports progress, acknowledge it warmly and provide the next step.
+- If the guest is in danger, be firm, clear, and direct.
+- If the guest asks to alert security or staff, include "[ALERT_ADMIN: <message>]" in your response.
 - Language: ${this.lang}.`;
-
 
         try {
             const response = await fetch('/api/chat', {
