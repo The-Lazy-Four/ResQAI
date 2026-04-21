@@ -23,8 +23,13 @@ let systemData = {
     staff: [],
     riskTypes: [],
     systemID: "",
+    layoutAnalysis: null,
     createdAt: new Date().toISOString()
 };
+
+// ===== LAYOUT ANALYSIS STATE =====
+let layoutImageBase64 = null;
+let layoutImageMimeType = null;
 
 // ===== UTILITY FUNCTIONS =====
 
@@ -37,6 +42,144 @@ function getAPIHeaders() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAuthToken()}`
     };
+}
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getAnalysisCollection(analysis, key) {
+    return analysis && Array.isArray(analysis[key]) ? analysis[key] : [];
+}
+
+function getLayoutAsset(structure) {
+    const source = structure || systemData.structure;
+    if (!source || !source.layoutAsset || !source.layoutAsset.base64 || !source.layoutAsset.mimeType) {
+        return null;
+    }
+
+    return source.layoutAsset;
+}
+
+function getCacheSafeStructure(structure) {
+    const source = structure && typeof structure === 'object' ? structure : {};
+    const safeStructure = JSON.parse(JSON.stringify(source));
+
+    if (safeStructure.layoutAsset && safeStructure.layoutAsset.base64) {
+        safeStructure.layoutAsset = {
+            mimeType: safeStructure.layoutAsset.mimeType || '',
+            fileName: safeStructure.layoutAsset.fileName || '',
+            savedToBackend: true
+        };
+    }
+
+    return safeStructure;
+}
+
+function syncLayoutAssetFromStructure(structure) {
+    const asset = getLayoutAsset(structure);
+    layoutImageBase64 = asset ? asset.base64 : null;
+    layoutImageMimeType = asset ? asset.mimeType : null;
+}
+
+function getCurrentLayoutDataUrl() {
+    const asset = getLayoutAsset();
+
+    if (asset) {
+        return `data:${asset.mimeType};base64,${asset.base64}`;
+    }
+
+    if (layoutImageBase64 && layoutImageMimeType) {
+        return `data:${layoutImageMimeType};base64,${layoutImageBase64}`;
+    }
+
+    return null;
+}
+
+function updateCachedSystemRecord() {
+    try {
+        const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let updated = false;
+
+        systems.forEach(system => {
+            const storedID = system.systemID || system.id;
+            if (storedID !== systemData.systemID) return;
+
+            if (!system.data || typeof system.data !== 'object') {
+                system.data = {};
+            }
+
+            system.systemID = storedID;
+            system.name = systemData.organizationName || system.name;
+            system.type = systemData.organizationType || system.type;
+            system.location = systemData.location || system.location;
+            system.contactEmail = systemData.contactEmail || system.contactEmail;
+            system.status = systemData.status || system.status || 'active';
+            system.lastUpdated = new Date().toISOString();
+            system.layoutAnalysis = systemData.layoutAnalysis || null;
+
+            system.data.organizationName = systemData.organizationName;
+            system.data.organizationType = systemData.organizationType;
+            system.data.location = systemData.location;
+            system.data.contactEmail = systemData.contactEmail;
+            system.data.structure = getCacheSafeStructure(systemData.structure);
+            system.data.staff = systemData.staff;
+            system.data.riskTypes = systemData.riskTypes;
+            system.data.template = systemData.template;
+            system.data.layoutAnalysis = systemData.layoutAnalysis || null;
+
+            updated = true;
+        });
+
+        if (updated) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+        }
+
+        return updated;
+    } catch (error) {
+        console.warn('[CACHE] Failed to update local system cache:', error.message);
+        return false;
+    }
+}
+
+async function persistLayoutAnalysis() {
+    updateCachedSystemRecord();
+
+    if (!systemData.systemID || !getAuthToken()) {
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/${systemData.systemID}`, {
+            method: 'PATCH',
+            headers: getAPIHeaders(),
+            body: JSON.stringify({
+                organizationName: systemData.organizationName,
+                organizationType: systemData.organizationType,
+                location: systemData.location,
+                contactEmail: systemData.contactEmail,
+                structure: systemData.structure,
+                staff: systemData.staff,
+                riskTypes: systemData.riskTypes,
+                status: systemData.status || 'active',
+                layoutAnalysis: systemData.layoutAnalysis
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.warn('[LAYOUT-AI] Failed to persist layout analysis:', error.message);
+        return false;
+    }
 }
 
 // ===== UI HELPER FUNCTIONS =====
@@ -58,6 +201,32 @@ function showToast(message, type = 'info') {
     toast.textContent = message;
     document.getElementById('toast-wrap').appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
+}
+
+function getAdminAIGuidanceCard() {
+    const cards = Array.from(document.querySelectorAll('#screen-admin-dashboard .admin-card.ai-card'));
+    return cards.find(function (card) {
+        const heading = card.querySelector('h3');
+        return heading && heading.textContent.indexOf('AI Guidance Engine') !== -1;
+    }) || cards[cards.length - 1] || null;
+}
+
+function getCurrentMapStage() {
+    const userScreen = document.getElementById('screen-user-panel');
+    if (userScreen && userScreen.classList.contains('active')) {
+        return document.getElementById('user-map-stage');
+    }
+
+    const adminScreen = document.getElementById('screen-admin-dashboard');
+    if (adminScreen && adminScreen.classList.contains('active')) {
+        return document.getElementById('admin-map-stage');
+    }
+
+    return document.getElementById('admin-map-stage') || document.getElementById('user-map-stage');
+}
+
+function getUserGuidanceCard() {
+    return document.querySelector('#screen-user-panel .user-card.guidance-section');
 }
 
 // ===== SYSTEM TYPE THEMING =====
@@ -182,6 +351,434 @@ function addSmartActionButtons(system, theme) {
             </button>
         </div>
     `;
+}
+
+// ===== MAP ANALYSIS RESCUE GUIDE =====
+
+function renderGuideRows(items, formatter, emptyText) {
+    if (!items.length) {
+        return `<div style="color:#888;font-size:12px;line-height:1.6;">${escapeHtml(emptyText)}</div>`;
+    }
+
+    return items.map(function (item, index) {
+        return `<div style="padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;color:#d4d4d8;font-size:12px;line-height:1.6;">${formatter(item, index)}</div>`;
+    }).join('');
+}
+
+function renderGuidePanel(title, color, items, formatter, emptyText) {
+    return `
+        <div style="background:${color}12;border:1px solid ${color}33;border-radius:14px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;">
+                <h4 style="color:${color};font-size:14px;margin:0;">${escapeHtml(title)}</h4>
+                <span style="color:${color};font-size:11px;font-weight:700;background:${color}22;border:1px solid ${color}33;padding:4px 8px;border-radius:999px;">${items.length}</span>
+            </div>
+            <div style="display:grid;gap:10px;">
+                ${renderGuideRows(items, formatter, emptyText)}
+            </div>
+        </div>
+    `;
+}
+
+function getAdminRouteLabel(route, index) {
+    const from = route && route.from ? escapeHtml(route.from) : `Zone ${index + 1}`;
+    const to = route && route.to ? escapeHtml(route.to) : 'safe exit';
+    const notes = route && route.notes ? ` <span style="color:#94a3b8;">(${escapeHtml(route.notes)})</span>` : '';
+    return `${from} -> ${to}${notes}`;
+}
+
+function getRecommendationLabel(rec) {
+    const priority = rec && rec.priority ? escapeHtml(rec.priority).toUpperCase() : 'MEDIUM';
+    const action = rec && rec.action ? escapeHtml(rec.action) : 'Review map safety setup';
+    return `<span style="color:#c4b5fd;font-weight:700;">[${priority}]</span> ${action}`;
+}
+
+function getUserEvacuationSteps(analysis, template) {
+    const steps = [];
+    const routes = getAnalysisCollection(analysis, 'evacuationRoutes');
+    const exits = getAnalysisCollection(analysis, 'exits');
+    const assemblyPoints = getAnalysisCollection(analysis, 'assemblyPoints');
+
+    routes.forEach(function (route, index) {
+        const from = route && route.from ? String(route.from) : `your area ${index + 1}`;
+        const to = route && route.to ? String(route.to) : 'the nearest safe exit';
+        steps.push(`Move from ${from} to ${to}.`);
+    });
+
+    if (!steps.length && exits.length) {
+        steps.push(`Use the nearest marked exit: ${String(exits[0].location || exits[0].type || 'Main exit')}.`);
+    }
+
+    if (!steps.length && template && Array.isArray(template.evacuationSteps)) {
+        template.evacuationSteps.forEach(function (step) {
+            if (steps.length < 4 && step) {
+                steps.push(String(step));
+            }
+        });
+    }
+
+    if (assemblyPoints.length) {
+        steps.push(`After exiting, continue to ${String(assemblyPoints[0].location || 'the designated assembly point')}.`);
+    }
+
+    if (!steps.length) {
+        steps.push('Follow staff instructions and the posted evacuation signs.');
+    }
+
+    return steps.slice(0, 5);
+}
+
+function closeMapPreviewPanel() {
+    ['admin-map-stage', 'user-map-stage'].forEach(function (id) {
+        const stage = document.getElementById(id);
+        if (!stage) return;
+        stage.innerHTML = '';
+        stage.style.display = 'none';
+    });
+}
+
+function openMapPreview() {
+    const dataUrl = getCurrentLayoutDataUrl();
+    const asset = getLayoutAsset();
+    const mimeType = asset ? asset.mimeType : layoutImageMimeType;
+    const stage = getCurrentMapStage();
+
+    if (!stage) {
+        showToast('Map preview area is unavailable on this screen.', 'warning');
+        return;
+    }
+
+    if (!dataUrl || !mimeType) {
+        showToast('Saved map file is not available for this system yet.', 'warning');
+        return;
+    }
+
+    const mapBody = mimeType === 'application/pdf'
+        ? `<iframe src="${dataUrl}" title="Saved Floor Map" style="width:100%;height:72vh;border:none;border-radius:18px;background:#0b1220;"></iframe>`
+        : `<img src="${dataUrl}" alt="Saved Floor Map" style="width:100%;max-height:72vh;border-radius:18px;border:1px solid rgba(255,255,255,0.08);object-fit:contain;background:#0b1220;" />`;
+
+    stage.innerHTML = `
+        <div style="background:rgba(15,23,42,0.96);border:1px solid rgba(148,163,184,0.18);border-radius:24px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(148,163,184,0.12);background:linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(15,23,42,0.9) 100%);">
+                <div>
+                    <div style="color:#f8fafc;font-size:26px;font-weight:800;">Saved Structure Map</div>
+                    <div style="color:#94a3b8;font-size:13px;margin-top:6px;">${escapeHtml((asset && asset.fileName) || 'Uploaded floor map')}</div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                    <button onclick="requestMapAIGuidance()" style="padding:10px 14px;background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.35);color:#93c5fd;border-radius:10px;cursor:pointer;font-weight:700;">Get AI Instructions</button>
+                    <button onclick="closeMapPreviewPanel()" style="padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#e5e7eb;border-radius:10px;cursor:pointer;font-weight:700;">Hide Map</button>
+                </div>
+            </div>
+            <div style="padding:24px;background:linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(2,6,23,0.98) 100%);">
+                ${mapBody}
+                <div id="layout-map-guidance-output" style="margin-top:18px;display:none;padding:16px;border-radius:14px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.22);color:#dbeafe;font-size:13px;line-height:1.7;"></div>
+            </div>
+        </div>
+    `;
+
+    stage.style.display = 'block';
+    stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function fetchGuidanceText(type, structureOverride) {
+    const response = await fetch(API_BASE_URL + '/generate-guidance', {
+        method: 'POST',
+        headers: getAPIHeaders(),
+        body: JSON.stringify({
+            type: type,
+            organizationType: systemData.organizationType,
+            structure: structureOverride || systemData.structure,
+            staff: systemData.staff,
+            staffCount: systemData.staff?.length || 0
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`API ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.guidance || data.steps || getEvacuationGuidance('fire');
+}
+
+async function requestMapAIGuidance() {
+    if (!systemData.layoutAnalysis) {
+        showToast('No map analysis available for AI instructions.', 'warning');
+        return;
+    }
+
+    let output = document.getElementById('layout-map-guidance-output');
+    if (!output) {
+        openMapPreview();
+        output = document.getElementById('layout-map-guidance-output');
+    }
+
+    if (output) {
+        output.style.display = 'block';
+        output.innerHTML = '<div style="color:#93c5fd;font-weight:700;margin-bottom:8px;">AI is reading the saved map analysis...</div><div style="color:#bfdbfe;">Preparing route-specific instructions.</div>';
+    }
+
+    try {
+        const guidance = await fetchGuidanceText('map-analysis', {
+            ...systemData.structure,
+            layoutAnalysis: systemData.layoutAnalysis,
+            mapSummary: systemData.layoutAnalysis.summary || '',
+            requestedFocus: 'Use the analyzed map to explain exits, evacuation flow, and responder actions.'
+        });
+
+        if (output) {
+            output.innerHTML = `<div style="color:#93c5fd;font-weight:700;margin-bottom:8px;">AI Map Instructions</div><div>${escapeHtml(guidance)}</div>`;
+        }
+
+        const aiCard = getAdminAIGuidanceCard();
+        if (aiCard) {
+            aiCard.innerHTML = `
+                <h3>AI Guidance Engine</h3>
+                <div class="ai-status">
+                    <div class="ai-indicator">ðŸŸ¢ Map Analysis Active</div>
+                    <p><strong>Map-based Recommendation:</strong></p>
+                    <p>${escapeHtml(guidance)}</p>
+                    <button class="btn-secondary" onclick="requestMapAIGuidance()">Get AI Instructions</button>
+                </div>
+            `;
+        }
+
+        const userGuidanceCard = getUserGuidanceCard();
+        if (userGuidanceCard) {
+            userGuidanceCard.innerHTML = `
+                <h3>AI Safety Guide</h3>
+                <div class="guidance-container" id="user-guidance">
+                    <p style="color:#86efac;font-weight:700;">Map-based Recommendation</p>
+                    <p>${escapeHtml(guidance)}</p>
+                    <button class="btn-secondary" onclick="requestMapAIGuidance()">Get AI Instructions</button>
+                </div>
+            `;
+        }
+
+        showToast('AI map instructions ready', 'success');
+    } catch (error) {
+        console.warn('[AI-MAP] Using fallback guidance:', error.message);
+        const fallback = getEvacuationGuidance('fire');
+
+        if (output) {
+            output.innerHTML = `<div style="color:#fbbf24;font-weight:700;margin-bottom:8px;">Template Guidance</div><div>${escapeHtml(fallback)}</div>`;
+        }
+
+        const userGuidanceCard = getUserGuidanceCard();
+        if (userGuidanceCard) {
+            userGuidanceCard.innerHTML = `
+                <h3>AI Safety Guide</h3>
+                <div class="guidance-container" id="user-guidance">
+                    <p style="color:#fbbf24;font-weight:700;">Template Guidance</p>
+                    <p>${escapeHtml(fallback)}</p>
+                    <button class="btn-secondary" onclick="requestMapAIGuidance()">Get AI Instructions</button>
+                </div>
+            `;
+        }
+
+        showToast('Using template instructions for the map guide', 'warning');
+    }
+}
+
+async function reAnalyzeMapGuide() {
+    if (!layoutImageBase64 || !layoutImageMimeType) {
+        showToast('Original floor plan is not loaded in this session. Existing analysis is still available.', 'warning');
+        return;
+    }
+
+    await analyzeLayout();
+    await persistLayoutAnalysis();
+    populateAdminDashboard();
+
+    if (document.getElementById('screen-user-panel') && document.getElementById('screen-user-panel').classList.contains('active')) {
+        populateUserPanel();
+    }
+}
+
+function addLayoutSafetyReport(system, theme) {
+    const grid = document.querySelector('.admin-grid');
+    if (!grid) return;
+
+    const existing = document.getElementById('layout-safety-report');
+    if (existing) existing.remove();
+
+    const analysis = system.layoutAnalysis;
+    const exits = getAnalysisCollection(analysis, 'exits');
+    const highRiskZones = getAnalysisCollection(analysis, 'highRiskZones');
+    const evacuationRoutes = getAnalysisCollection(analysis, 'evacuationRoutes');
+    const equipmentPlacement = getAnalysisCollection(analysis, 'equipmentPlacement');
+    const recommendations = getAnalysisCollection(analysis, 'recommendations');
+    const score = analysis && typeof analysis.overallSafetyScore === 'number' ? analysis.overallSafetyScore : null;
+    const scoreClr = score === null ? '#64748b' : score >= 7 ? '#22c55e' : score >= 4 ? '#f59e0b' : '#ef4444';
+    const summary = analysis && analysis.summary
+        ? escapeHtml(analysis.summary)
+        : 'No map analysis available';
+    const hasMapAsset = !!getCurrentLayoutDataUrl();
+    const viewMapButtonStyle = hasMapAsset
+        ? 'padding:10px 14px;background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.35);color:#93c5fd;border-radius:10px;cursor:pointer;font-weight:700;'
+        : 'padding:10px 14px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.24);color:#64748b;border-radius:10px;cursor:not-allowed;font-weight:700;';
+
+    const card = document.createElement('div');
+    card.className = 'admin-card';
+    card.id = 'layout-safety-report';
+    card.style.gridColumn = '1 / -1';
+
+    let content = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+            <div>
+                <h3 style="margin:0 0 8px 0;">AI Map Analysis Rescue Guide</h3>
+                <p style="color:#9ca3af;font-size:13px;line-height:1.6;max-width:760px;">${summary}</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <div style="background:${scoreClr}22;color:${scoreClr};border:1px solid ${scoreClr}55;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;">
+                    ${score === null ? 'Safety Score N/A' : `Safety Score ${score}/10`}
+                </div>
+                <button onclick="openMapPreview()" ${hasMapAsset ? '' : 'disabled'} style="${viewMapButtonStyle}">
+                    View Map
+                </button>
+                <button onclick="requestMapAIGuidance()" style="padding:10px 14px;background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.35);color:#86efac;border-radius:10px;cursor:pointer;font-weight:700;">
+                    Get AI Instructions
+                </button>
+                <button onclick="reAnalyzeMapGuide()" style="padding:10px 14px;background:${theme.color}18;border:1px solid ${theme.color}55;color:${theme.color};border-radius:10px;cursor:pointer;font-weight:700;">
+                    Re-analyze Map
+                </button>
+            </div>
+        </div>
+    `;
+
+    if (!analysis) {
+        content += `
+            <div style="padding:16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.14);color:#a1a1aa;font-size:13px;">
+                No map analysis available
+            </div>
+        `;
+    } else {
+        content += `
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
+                ${renderGuidePanel('Exits', '#22c55e', exits, function (exit) {
+                    const type = exit && exit.type ? `${escapeHtml(exit.type)} - ` : '';
+                    const location = exit && exit.location ? escapeHtml(exit.location) : 'Exit location unavailable';
+                    return `${type}${location}`;
+                }, 'No exits identified')}
+                ${renderGuidePanel('High-Risk Zones', '#f59e0b', highRiskZones, function (zone) {
+                    const location = zone && zone.location ? escapeHtml(zone.location) : 'Unspecified area';
+                    const risk = zone && zone.risk ? escapeHtml(zone.risk) : 'Risk details unavailable';
+                    return `${location} - ${risk}`;
+                }, 'No high-risk zones identified')}
+                ${renderGuidePanel('Evacuation Routes', '#3b82f6', evacuationRoutes, function (route, index) {
+                    return getAdminRouteLabel(route, index);
+                }, 'No evacuation routes available')}
+                ${renderGuidePanel('Equipment Placement', '#06b6d4', equipmentPlacement, function (equipment) {
+                    const name = equipment && equipment.equipment ? escapeHtml(equipment.equipment) : 'Equipment';
+                    const location = equipment && equipment.location ? escapeHtml(equipment.location) : 'Location unavailable';
+                    return `${name} - ${location}`;
+                }, 'No equipment placement notes')}
+                ${renderGuidePanel('Recommendations', '#8b5cf6', recommendations, function (rec) {
+                    return getRecommendationLabel(rec);
+                }, 'No recommendations available')}
+            </div>
+        `;
+    }
+
+    card.innerHTML = content;
+
+    const aiSummary = document.getElementById('ai-summary');
+    if (aiSummary && aiSummary.nextSibling) {
+        grid.insertBefore(card, aiSummary.nextSibling);
+    } else {
+        grid.appendChild(card);
+    }
+}
+
+function addUserLayoutSafetyGuide(system) {
+    const grid = document.querySelector('.user-grid');
+    if (!grid) return;
+
+    const existing = document.getElementById('user-map-analysis-guide');
+    if (existing) existing.remove();
+
+    const analysis = system.layoutAnalysis;
+    const exits = getAnalysisCollection(analysis, 'exits');
+    const highRiskZones = getAnalysisCollection(analysis, 'highRiskZones');
+    const evacuationRoutes = getAnalysisCollection(analysis, 'evacuationRoutes');
+    const equipmentPlacement = getAnalysisCollection(analysis, 'equipmentPlacement');
+    const recommendations = getAnalysisCollection(analysis, 'recommendations');
+    const assemblyPoints = getAnalysisCollection(analysis, 'assemblyPoints');
+    const score = analysis && typeof analysis.overallSafetyScore === 'number' ? analysis.overallSafetyScore : null;
+    const scoreClr = score === null ? '#64748b' : score >= 7 ? '#22c55e' : score >= 4 ? '#f59e0b' : '#ef4444';
+    const hasMapAsset = !!getCurrentLayoutDataUrl();
+    const summary = analysis && analysis.summary
+        ? escapeHtml(analysis.summary)
+        : 'No map analysis available';
+    const card = document.createElement('div');
+
+    card.className = 'user-card';
+    card.id = 'user-map-analysis-guide';
+    card.style.gridColumn = '1 / -1';
+
+    card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+            <div>
+                <h3 style="margin:0 0 8px 0;">AI Map Analysis Rescue Guide</h3>
+                <p style="color:#9ca3af;font-size:13px;line-height:1.6;">${summary}</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <div style="background:${scoreClr}22;color:${scoreClr};border:1px solid ${scoreClr}55;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;">
+                    ${score === null ? 'Safety Score N/A' : `Safety Score ${score}/10`}
+                </div>
+                <button onclick="openMapPreview()" ${hasMapAsset ? '' : 'disabled'} style="${hasMapAsset ? 'padding:10px 14px;background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.35);color:#93c5fd;border-radius:10px;cursor:pointer;font-weight:700;' : 'padding:10px 14px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.24);color:#64748b;border-radius:10px;cursor:not-allowed;font-weight:700;'}">
+                    View Map
+                </button>
+                <button onclick="requestMapAIGuidance()" style="padding:10px 14px;background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.35);color:#86efac;border-radius:10px;cursor:pointer;font-weight:700;">
+                    Get AI Instructions
+                </button>
+                <div style="padding:8px 12px;border-radius:999px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.32);color:#93c5fd;font-size:12px;font-weight:700;">
+                    Read only
+                </div>
+            </div>
+        </div>
+        ${analysis ? `
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
+                ${renderGuidePanel('Exits', '#22c55e', exits, function (exit) {
+                    const type = exit && exit.type ? `${escapeHtml(exit.type)} - ` : '';
+                    const location = exit && exit.location ? escapeHtml(exit.location) : 'Exit location unavailable';
+                    return `${type}${location}`;
+                }, 'No exits available')}
+                ${renderGuidePanel('High-Risk Zones', '#f59e0b', highRiskZones, function (zone) {
+                    const location = zone && zone.location ? escapeHtml(zone.location) : 'Unspecified area';
+                    const risk = zone && zone.risk ? escapeHtml(zone.risk) : 'Risk details unavailable';
+                    return `${location} - ${risk}`;
+                }, 'No high-risk zones available')}
+                ${renderGuidePanel('Evacuation Routes', '#3b82f6', evacuationRoutes, function (route, index) {
+                    return getAdminRouteLabel(route, index);
+                }, 'No evacuation routes available')}
+                ${renderGuidePanel('Equipment Placement', '#06b6d4', equipmentPlacement, function (equipment) {
+                    const name = equipment && equipment.equipment ? escapeHtml(equipment.equipment) : 'Equipment';
+                    const location = equipment && equipment.location ? escapeHtml(equipment.location) : 'Location unavailable';
+                    return `${name} - ${location}`;
+                }, 'No equipment placement notes')}
+                ${renderGuidePanel('Recommendations', '#8b5cf6', recommendations, function (rec) {
+                    return getRecommendationLabel(rec);
+                }, 'No recommendations available')}
+                ${renderGuidePanel('Assembly Points', '#a855f7', assemblyPoints, function (point) {
+                    return escapeHtml(point.location || point.notes || 'Assembly point not specified');
+                }, 'No assembly points available')}
+            </div>
+            <div style="margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.18);color:#bfdbfe;font-size:13px;line-height:1.7;">
+                This map analysis is read-only for users and comes from the map uploaded during structure setup.
+            </div>
+        ` : `
+            <div style="padding:16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.14);color:#a1a1aa;font-size:13px;">
+                No map analysis available
+            </div>
+        `}
+    `;
+
+    const guidanceCard = document.querySelector('.user-card.guidance-section');
+    if (guidanceCard) {
+        grid.insertBefore(card, guidanceCard);
+    } else {
+        grid.appendChild(card);
+    }
 }
 
 function activateEmergencyMode() {
@@ -426,6 +1023,9 @@ function renderSystemsDashboard(systems) {
             const staffCount = (system.data && system.data.staff && system.data.staff.length) || 0;
             const riskCount = (system.data && system.data.riskTypes && system.data.riskTypes.length) || 0;
             const alertsCount = system.alertsCount || 0;
+            const layoutAnalysis = (system.data && system.data.layoutAnalysis) || system.layoutAnalysis;
+            const safetyScore = layoutAnalysis ? layoutAnalysis.overallSafetyScore : null;
+            const safetyScoreColor = safetyScore ? (safetyScore >= 7 ? '#22c55e' : safetyScore >= 4 ? '#f59e0b' : '#ef4444') : null;
 
             // Format last updated time
             const lastUpdated = system.lastUpdated
@@ -446,6 +1046,7 @@ function renderSystemsDashboard(systems) {
                     <span title="${status.label}" style="font-size: 20px;">${status.emoji}</span>
                 </div>
                 <h3 style="color: #fff; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">${orgName}</h3>
+                ${safetyScore ? `<div style="display:inline-block;background:${safetyScoreColor}22;color:${safetyScoreColor};border:1px solid ${safetyScoreColor}55;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-bottom:8px;">\ud83d\udee1\ufe0f Safety: ${safetyScore}/10</div>` : ''}
                 <p style="color: #888; margin: 8px 0; font-size: 14px;">📍 ${location}</p>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 16px 0; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px;">
@@ -556,7 +1157,12 @@ async function loadSystemIntoPanel(systemID) {
                 systemData.contactEmail = system.contactEmail || system.contact_email;
                 systemData.structure = system.structure || systemData.structure;
                 systemData.staff = system.staff || systemData.staff;
+                systemData.status = system.status || systemData.status || 'active';
+                systemData.layoutAnalysis = system.layoutAnalysis
+                    || (system.structure && (system.structure.layoutAnalysis || system.structure.layout_analysis))
+                    || null;
                 systemData.systemID = systemID; // IMPORTANT: Set the system ID
+                syncLayoutAssetFromStructure(systemData.structure);
 
                 console.log('[LOAD] systemData updated from API:', {
                     organizationName: systemData.organizationName,
@@ -601,7 +1207,7 @@ async function loadSystemIntoPanel(systemID) {
 
             if (stored) {
                 const systems = JSON.parse(stored);
-                const system = systems.find(s => s.systemID === systemID);
+                const system = systems.find(s => (s.systemID || s.id) === systemID);
                 console.log('[LOAD] Found system in localStorage:', system);
 
                 if (system) {
@@ -613,6 +1219,9 @@ async function loadSystemIntoPanel(systemID) {
                     const systemData_structure = (system.data && system.data.structure) || system.structure;
                     const systemData_staff = (system.data && system.data.staff) || system.staff;
                     const systemData_template = (system.data && system.data.template) || system.template;
+                    const systemData_layoutAnalysis = (system.data && system.data.layoutAnalysis)
+                        || system.layoutAnalysis
+                        || (systemData_structure && (systemData_structure.layoutAnalysis || systemData_structure.layout_analysis));
 
                     systemData.organizationName = systemData_org;
                     systemData.organizationType = systemData_type;
@@ -621,7 +1230,10 @@ async function loadSystemIntoPanel(systemID) {
                     systemData.structure = systemData_structure || systemData.structure;
                     systemData.staff = systemData_staff || systemData.staff;
                     systemData.template = systemData_template;
+                    systemData.status = system.status || systemData.status || 'active';
+                    systemData.layoutAnalysis = systemData_layoutAnalysis;
                     systemData.systemID = systemID; // IMPORTANT: Set the system ID
+                    syncLayoutAssetFromStructure(systemData.structure);
 
                     console.log('[LOAD] systemData updated from localStorage:', {
                         organizationName: systemData.organizationName,
@@ -732,9 +1344,9 @@ function openSystem(systemID) {
     console.log('[OPEN] Opening system detail view for:', systemID);
 
     try {
-        // Load the system from localStorage to verify it exists
+        // Load the system from localStorage when available, but allow backend-only systems too
         const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        const system = systems.find(s => s.systemID === systemID);
+        const system = systems.find(s => (s.systemID || s.id) === systemID);
 
         if (!system) {
             console.error('[OPEN] ❌ System not found:', systemID);
@@ -872,7 +1484,175 @@ function toggleStructureMode(mode) {
     }
 }
 
+// ===== LAYOUT AI ANALYSIS =====
+
+async function analyzeLayout() {
+    if (!layoutImageBase64 || !layoutImageMimeType) {
+        showToast('Please upload an image first', 'error');
+        return;
+    }
+    var analyzeBtn = document.getElementById('btn-analyze-layout');
+    var loadingDiv = document.getElementById('layout-analysis-loading');
+    var resultsDiv = document.getElementById('layout-analysis-results');
+    var fallbackDiv = document.getElementById('layout-manual-fallback');
+    if (resultsDiv) resultsDiv.style.display = 'none';
+    if (fallbackDiv) fallbackDiv.style.display = 'none';
+    if (analyzeBtn) analyzeBtn.style.display = 'none';
+    if (loadingDiv) loadingDiv.style.display = 'block';
+    console.log('[LAYOUT-AI] Starting layout analysis...');
+    try {
+        var desc = document.getElementById('image-notes') ? document.getElementById('image-notes').value.trim() : '';
+        var response = await fetch('/api/ai/analyze-layout', {
+            method: 'POST',
+            headers: getAPIHeaders(),
+            body: JSON.stringify({ imageBase64: layoutImageBase64, mimeType: layoutImageMimeType, description: desc })
+        });
+        if (!response.ok) {
+            var errData = await response.json().catch(function() { return {}; });
+            throw new Error(errData.message || errData.error || 'API error ' + response.status);
+        }
+        var data = await response.json();
+        if (data.analysis) {
+            console.log('[LAYOUT-AI] Analysis received, score:', data.analysis.overallSafetyScore);
+            systemData.layoutAnalysis = data.analysis;
+            renderLayoutAnalysis(data.analysis);
+            showToast('Layout analysis complete!', 'success');
+        } else { throw new Error('No analysis data'); }
+    } catch (error) {
+        console.error('[LAYOUT-AI] Failed:', error.message);
+        showToast('AI analysis failed: ' + error.message, 'error');
+        showManualFallbackForm();
+    } finally {
+        if (loadingDiv) loadingDiv.style.display = 'none';
+    }
+}
+
+function getSeverityColor(s) { return s === 'high' ? '#ef4444' : s === 'low' ? '#22c55e' : '#f59e0b'; }
+function getPriorityColor(p) { return p === 'high' ? '#ef4444' : p === 'low' ? '#22c55e' : '#f59e0b'; }
+
+function renderLayoutAnalysis(analysis) {
+    var container = document.getElementById('layout-analysis-results');
+    if (!container) return;
+    var sc = analysis.overallSafetyScore;
+    var scoreClr = sc >= 7 ? '#22c55e' : sc >= 4 ? '#f59e0b' : '#ef4444';
+    var html = '';
+    html += '<div style="background:linear-gradient(135deg,' + scoreClr + '15,' + scoreClr + '08);border:1px solid ' + scoreClr + '44;border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">';
+    html += '<div style="font-size:36px;font-weight:800;color:' + scoreClr + ';">' + sc + '/10</div>';
+    html += '<div style="font-size:13px;color:#999;margin-top:4px;">Overall Safety Score</div>';
+    if (analysis.summary) html += '<p style="color:#ccc;font-size:13px;margin-top:10px;line-height:1.5;">' + analysis.summary + '</p>';
+    html += '</div>';
+    if (analysis.exits && analysis.exits.length > 0) {
+        html += '<div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:10px;">\u2705 Exits Found (' + analysis.exits.length + ')</div>';
+        analysis.exits.forEach(function(e) {
+            html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><strong>' + (e.type || 'Exit') + '</strong> \u2014 ' + e.location + (e.notes ? ' <span style="color:#888">(' + e.notes + ')</span>' : '') + '</div>';
+        });
+        html += '</div>';
+    }
+    if (analysis.highRiskZones && analysis.highRiskZones.length > 0) {
+        html += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:10px;">\u26a0\ufe0f High-Risk Zones (' + analysis.highRiskZones.length + ')</div>';
+        analysis.highRiskZones.forEach(function(z) {
+            html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + getSeverityColor(z.severity) + ';margin-right:6px;"></span><strong>' + z.location + '</strong> \u2014 ' + z.risk + ' <span style="color:' + getSeverityColor(z.severity) + ';font-size:11px;font-weight:600;">[' + (z.severity || 'medium').toUpperCase() + ']</span></div>';
+        });
+        html += '</div>';
+    }
+    if (analysis.evacuationRoutes && analysis.evacuationRoutes.length > 0) {
+        html += '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83c\udfc3 Evacuation Routes (' + analysis.evacuationRoutes.length + ')</div>';
+        analysis.evacuationRoutes.forEach(function(rt) {
+            html += '<div style="color:#ccc;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:' + (rt.priority === 'primary' ? '#3b82f6' : '#6b7280') + ';font-size:11px;font-weight:600;">[' + (rt.priority || 'secondary').toUpperCase() + ']</span> <strong>' + rt.from + '</strong> \u2192 <strong>' + rt.to + '</strong><div style="color:#888;font-size:12px;margin-top:3px;">' + rt.path + '</div></div>';
+        });
+        html += '</div>';
+    }
+    if (analysis.assemblyPoints && analysis.assemblyPoints.length > 0) {
+        html += '<div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="color:#a855f7;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83d\udccd Assembly Points (' + analysis.assemblyPoints.length + ')</div>';
+        analysis.assemblyPoints.forEach(function(ap) {
+            html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><strong>' + ap.location + '</strong>' + (ap.capacity ? ' \u2014 Capacity: ' + ap.capacity : '') + (ap.notes ? ' <span style="color:#888">(' + ap.notes + ')</span>' : '') + '</div>';
+        });
+        html += '</div>';
+    }
+    if (analysis.equipmentPlacement && analysis.equipmentPlacement.length > 0) {
+        html += '<div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="color:#06b6d4;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83e\uddef Equipment Placement (' + analysis.equipmentPlacement.length + ')</div>';
+        analysis.equipmentPlacement.forEach(function(eq) {
+            html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><strong>' + eq.equipment + '</strong> \u2192 ' + eq.location + '<div style="color:#888;font-size:12px;margin-top:2px;">' + eq.reason + '</div></div>';
+        });
+        html += '</div>';
+    }
+    if (analysis.recommendations && analysis.recommendations.length > 0) {
+        html += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
+        html += '<div style="color:#6366f1;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83d\udccb Recommendations (' + analysis.recommendations.length + ')</div>';
+        analysis.recommendations.forEach(function(rec) {
+            html += '<div style="color:#ccc;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:' + getPriorityColor(rec.priority) + ';font-size:11px;font-weight:600;">[' + (rec.priority || 'medium').toUpperCase() + ']</span> <strong>' + rec.action + '</strong><div style="color:#888;font-size:12px;margin-top:2px;">' + rec.reason + '</div></div>';
+        });
+        html += '</div>';
+    }
+    container.innerHTML = html;
+    container.style.display = 'block';
+    var analyzeBtn = document.getElementById('btn-analyze-layout');
+    if (analyzeBtn) { analyzeBtn.textContent = '\ud83d\udd04 Re-Analyze Layout'; analyzeBtn.style.display = 'block'; }
+}
+
+function showManualFallbackForm() {
+    var fb = document.getElementById('layout-manual-fallback');
+    if (!fb) return;
+    fb.innerHTML = '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:20px;">'
+        + '<div style="color:#f59e0b;font-weight:700;margin-bottom:12px;">\u26a0\ufe0f AI Analysis Unavailable</div>'
+        + '<p style="color:#888;font-size:13px;margin-bottom:16px;">Please enter building details manually, or try again later.</p>'
+        + '<div style="display:flex;flex-direction:column;gap:12px;">'
+        + '<div><label style="color:#ccc;font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Number of Exits</label>'
+        + '<input type="number" id="fallback-exits" min="0" placeholder="e.g., 4" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:6px;font-size:13px;" /></div>'
+        + '<div><label style="color:#ccc;font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Known Risk Areas</label>'
+        + '<textarea id="fallback-risks" placeholder="e.g., Basement has limited exits..." rows="2" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:6px;font-size:13px;font-family:inherit;"></textarea></div>'
+        + '<div><label style="color:#ccc;font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Safety Equipment Locations</label>'
+        + '<textarea id="fallback-equipment" placeholder="e.g., Fire extinguishers in hallways..." rows="2" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px;border-radius:6px;font-size:13px;font-family:inherit;"></textarea></div>'
+        + '<button type="button" onclick="saveManualFallbackData()" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#fff;border:none;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;">Save Manual Analysis</button>'
+        + '</div></div>';
+    fb.style.display = 'block';
+    var btn = document.getElementById('btn-analyze-layout');
+    if (btn) { btn.textContent = '\ud83d\udd04 Retry AI Analysis'; btn.style.display = 'block'; }
+}
+
+function saveManualFallbackData() {
+    var exits = parseInt(document.getElementById('fallback-exits').value) || 0;
+    var risks = (document.getElementById('fallback-risks').value || '').trim();
+    var equipment = (document.getElementById('fallback-equipment').value || '').trim();
+    systemData.layoutAnalysis = {
+        exits: [], highRiskZones: [], evacuationRoutes: [], assemblyPoints: [],
+        equipmentPlacement: [], recommendations: [],
+        overallSafetyScore: 5,
+        summary: 'Manual assessment - AI analysis was unavailable.',
+        isManual: true
+    };
+    if (exits > 0) {
+        for (var i = 0; i < exits; i++) systemData.layoutAnalysis.exits.push({ location: 'Exit ' + (i+1), type: 'Exit', notes: 'Manually entered' });
+    }
+    if (risks) systemData.layoutAnalysis.highRiskZones.push({ location: 'User noted', risk: risks, severity: 'medium' });
+    if (equipment) systemData.layoutAnalysis.equipmentPlacement.push({ equipment: 'Various', location: equipment, reason: 'Manually entered' });
+    showToast('Manual safety data saved', 'success');
+    document.getElementById('layout-manual-fallback').style.display = 'none';
+    renderLayoutAnalysis(systemData.layoutAnalysis);
+}
+
 function nextStep2() {
+    // Check which tab is active
+    var imageTabActive = document.getElementById('tab-image') && document.getElementById('tab-image').classList.contains('active');
+
+    if (imageTabActive) {
+        // Image mode - use image notes and layout analysis data
+        var imageNotes = document.getElementById('image-notes') ? document.getElementById('image-notes').value.trim() : '';
+        systemData.structure.notes = imageNotes;
+        if (!systemData.structure.floors || systemData.structure.floors < 1) systemData.structure.floors = 1;
+        if (!systemData.structure.rooms || systemData.structure.rooms < 1) systemData.structure.rooms = 1;
+        if (!systemData.structure.buildings || systemData.structure.buildings < 1) systemData.structure.buildings = 1;
+        showScreen('screen-wizard-step3');
+        showToast('Structure configured! Now add staff members.', 'success');
+        return;
+    }
+
+    // Manual mode - original validation
     const floors = parseInt(document.getElementById('num-floors').value) || 0;
     const rooms = parseInt(document.getElementById('num-rooms').value) || 0;
     const buildings = parseInt(document.getElementById('num-buildings').value) || 1;
@@ -887,6 +1667,9 @@ function nextStep2() {
     systemData.structure.rooms = rooms;
     systemData.structure.buildings = buildings;
     systemData.structure.notes = notes;
+    delete systemData.structure.layoutAsset;
+    layoutImageBase64 = null;
+    layoutImageMimeType = null;
 
     showScreen('screen-wizard-step3');
     showToast('Structure configured! Now add staff members.', 'success');
@@ -1240,6 +2023,7 @@ function accessUserDashboard() {
 function populateAdminDashboard() {
     if (DEBUG) console.log('👨‍💼 [ADMIN] Populating dashboard');
     console.log('[ADMIN] systemData:', systemData);
+    closeMapPreviewPanel();
 
     // Get theme and status
     const theme = getThemeByType(systemData.organizationType);
@@ -1269,6 +2053,9 @@ function populateAdminDashboard() {
 
     // Add AI Summary Section
     addAISummarySection(systemData, theme);
+
+    // Add Layout Safety Report (if available)
+    addLayoutSafetyReport(systemData, theme);
 
     // Add Smart Action Buttons
     addSmartActionButtons(systemData, theme);
@@ -1415,6 +2202,8 @@ function populateUserPanel() {
     // Use saved template or fall back
     const template = systemData.template || getTemplate(systemData.organizationType);
     console.log('[PANEL] Template:', template?.name);
+    closeMapPreviewPanel();
+    addUserLayoutSafetyGuide(systemData);
 
     // Safety status
     const statusDiv = document.querySelector('.user-card.alert-section');
@@ -1598,7 +2387,7 @@ async function requestAIGuidance() {
     console.log('[AI] Button clicked: Get AI Instructions');
 
     // Show loading state
-    const aiCard = document.querySelector('.ai-card');
+    const aiCard = getAdminAIGuidanceCard();
     const originalContent = aiCard?.innerHTML;
     if (aiCard) {
         aiCard.innerHTML = '<h3>AI Guidance Engine</h3><div class="ai-status"><div class="ai-indicator">⏳ Loading...</div><p>Analyzing emergency scenario...</p></div>';
@@ -1616,25 +2405,7 @@ async function requestAIGuidance() {
         });
         console.log('[AI] Calling API endpoint: /api/custom-system/generate-guidance');
 
-        const response = await fetch(API_BASE_URL + '/generate-guidance', {
-            method: 'POST',
-            headers: getAPIHeaders(),
-            body: JSON.stringify({
-                systemID: systemData.systemID,
-                organizationType: systemData.organizationType,
-                emergencyType: 'general',
-                structure: systemData.structure,
-                staff: systemData.staff,
-                staffCount: systemData.staff?.length || 0
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API ${response.status}`);
-        }
-
-        const data = await response.json();
-        const guidance = data.guidance || data.steps || getEvacuationGuidance('fire');
+        const guidance = await fetchGuidanceText('general', systemData.structure);
 
         if (DEBUG) console.log('✅ AI guidance received');
         console.log('[AI] Response received - Success');
@@ -2322,8 +3093,11 @@ function logoutSystem() {
         staff: [],
         riskTypes: [],
         systemID: "",
+        layoutAnalysis: null,
         createdAt: new Date().toISOString()
     };
+    layoutImageBase64 = null;
+    layoutImageMimeType = null;
 }
 
 function goBack() {
@@ -2341,7 +3115,8 @@ async function saveSystemData() {
             contactEmail: systemData.contactEmail,
             structure: systemData.structure,
             staff: systemData.staff,
-            riskTypes: systemData.riskTypes
+            riskTypes: systemData.riskTypes,
+            layoutAnalysis: systemData.layoutAnalysis
         };
 
         if (DEBUG) console.group('📤 [SAVE] Sending to API');
@@ -2391,22 +3166,24 @@ async function saveSystemData() {
         // STEP 1: CREATE SYSTEM OBJECT (EXACT STRUCTURE)
         console.log('[SAVE] STEP 1: Creating system object...');
         const newSystem = {
-            systemID: 'sys_' + Date.now(),
+            systemID: systemData.systemID,
             name: systemData.organizationName || 'Unnamed System',
             type: systemData.organizationType || 'custom',
             createdAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
             alertsCount: 0,
             status: 'active',
+            layoutAnalysis: systemData.layoutAnalysis,
             data: {
                 organizationName: systemData.organizationName,
                 organizationType: systemData.organizationType,
                 location: systemData.location,
                 contactEmail: systemData.contactEmail,
-                structure: systemData.structure,
+                structure: getCacheSafeStructure(systemData.structure),
                 staff: systemData.staff,
                 riskTypes: systemData.riskTypes,
-                template: systemData.template
+                template: systemData.template,
+                layoutAnalysis: systemData.layoutAnalysis
             }
         };
 
@@ -2451,15 +3228,17 @@ async function saveSystemData() {
             lastUpdated: new Date().toISOString(),
             alertsCount: 0,
             status: 'active',
+            layoutAnalysis: systemData.layoutAnalysis,
             data: {
                 organizationName: systemData.organizationName,
                 organizationType: systemData.organizationType,
                 location: systemData.location,
                 contactEmail: systemData.contactEmail,
-                structure: systemData.structure,
+                structure: getCacheSafeStructure(systemData.structure),
                 staff: systemData.staff,
                 riskTypes: systemData.riskTypes,
-                template: systemData.template
+                template: systemData.template,
+                layoutAnalysis: systemData.layoutAnalysis
             }
         };
 
@@ -2499,6 +3278,7 @@ async function loadSystemData(systemID) {
 
         const data = await response.json();
         systemData = data.system;
+        syncLayoutAssetFromStructure(systemData.structure);
         // Restore template if missing
         if (!systemData.template && systemData.organizationType) {
             systemData.template = getTemplate(systemData.organizationType);
@@ -2513,6 +3293,7 @@ async function loadSystemData(systemID) {
         const system = systems.find(s => s.systemID === systemID);
         if (system) {
             systemData = system;
+            syncLayoutAssetFromStructure(systemData.structure || (system.data && system.data.structure));
             // Restore template if missing (legacy systems)
             if (!systemData.template && systemData.organizationType) {
                 systemData.template = getTemplate(systemData.organizationType);
@@ -2551,27 +3332,70 @@ function initializeModule() {
     // Set initial screen - show systems dashboard first
     showSystemsDashboard();
 
-    // Handle upload image preview
+    // Handle upload image preview with base64 extraction for AI analysis
     const layoutImage = document.getElementById('layout-image');
     if (layoutImage) {
         layoutImage.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+                if (!validTypes.includes(file.type)) {
+                    showToast('Please upload a JPG, PNG, or PDF file', 'error');
+                    return;
+                }
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('File too large. Max size is 10MB', 'error');
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (event) => {
+                    const dataUrl = event.target.result;
+                    // Extract base64 and mime type for AI analysis
+                    const matches = dataUrl.match(/^data:(.+);base64,(.+)$/);
+                    if (matches) {
+                        layoutImageMimeType = matches[1];
+                        layoutImageBase64 = matches[2];
+                        systemData.structure.layoutAsset = {
+                            mimeType: layoutImageMimeType,
+                            base64: layoutImageBase64,
+                            fileName: file.name
+                        };
+                        console.log('[UPLOAD] Image loaded:', layoutImageMimeType, Math.round(layoutImageBase64.length / 1024) + 'KB');
+                    }
+                    // Show preview
                     const preview = document.getElementById('upload-preview');
-                    preview.innerHTML = `<img src="${event.target.result}" alt="Layout preview" />`;
+                    if (file.type === 'application/pdf') {
+                        preview.innerHTML = '<div style="padding:20px;background:rgba(255,255,255,0.05);border-radius:8px;text-align:center;"><div style="font-size:40px;margin-bottom:8px;">\ud83d\udcc4</div><p style="color:#ccc;font-size:14px;">' + file.name + '</p><p style="color:#888;font-size:12px;">PDF uploaded successfully</p></div>';
+                    } else {
+                        preview.innerHTML = `<img src="${dataUrl}" alt="Layout preview" />`;
+                    }
+                    // Show analyze button
+                    const analyzeBtn = document.getElementById('btn-analyze-layout');
+                    if (analyzeBtn) {
+                        analyzeBtn.style.display = 'block';
+                        analyzeBtn.textContent = '\ud83d\udd0d Analyze Layout with AI';
+                    }
+                    // Reset previous analysis
+                    const resultsDiv = document.getElementById('layout-analysis-results');
+                    const fallbackDiv = document.getElementById('layout-manual-fallback');
+                    if (resultsDiv) resultsDiv.style.display = 'none';
+                    if (fallbackDiv) fallbackDiv.style.display = 'none';
+                    systemData.layoutAnalysis = null;
                 };
                 reader.readAsDataURL(file);
             }
         });
     }
 
-    // Click on upload box to trigger file input
+    // Click on upload box to trigger file input (prevent double-trigger)
     const uploadBox = document.querySelector('.upload-box');
     if (uploadBox) {
-        uploadBox.addEventListener('click', () => {
-            document.getElementById('layout-image').click();
+        uploadBox.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'INPUT') {
+                document.getElementById('layout-image').click();
+            }
         });
     }
 

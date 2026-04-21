@@ -463,6 +463,92 @@ export function getLastAIUsageReport() {
     return lastAIUsageReport;
 }
 
+// ==================== IMAGE ANALYSIS (VISION) ====================
+
+export async function generateImageAnalysis(imageBase64, mimeType, prompt) {
+    console.log('\n════════════════════════════════════════════════════════════');
+    console.log('🖼️ [AI ROUTER] IMAGE ANALYSIS REQUEST');
+    console.log('════════════════════════════════════════════════════════════');
+    console.log(`   Mime Type: ${mimeType}`);
+    console.log(`   Image Size: ${Math.round(imageBase64.length / 1024)}KB (base64)`);
+    console.log(`   Prompt: "${prompt.substring(0, 80)}..."`);
+
+    // Try Gemini Vision (Primary)
+    if (geminiClient) {
+        try {
+            console.log('\n🔵 [VISION] Attempting Gemini Vision...');
+            const model = geminiClient.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-2.0-flash' });
+
+            const result = await Promise.race([
+                model.generateContent([
+                    prompt,
+                    { inlineData: { data: imageBase64, mimeType: mimeType } }
+                ]),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Gemini Vision timeout')), 60000)
+                )
+            ]);
+
+            const response = await result.response.text();
+            if (response && response.trim().length > 0) {
+                console.log('✅ [VISION] Gemini Vision succeeded');
+                return response.trim();
+            }
+            throw new Error('Empty response from Gemini Vision');
+        } catch (error) {
+            console.error('❌ [VISION] Gemini Vision failed:', error.message);
+        }
+    }
+
+    // Try OpenRouter Vision (Secondary)
+    if (hasOpenRouter) {
+        try {
+            console.log('\n🟢 [VISION] Attempting OpenRouter Vision...');
+            const response = await Promise.race([
+                axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: 'google/gemini-2.0-flash-001',
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'text', text: prompt },
+                                { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageBase64}` } }
+                            ]
+                        }],
+                        temperature: 0.3,
+                        max_tokens: 4000
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                            'HTTP-Referer': 'http://localhost:3000',
+                            'X-Title': 'ResQAI Layout Analysis'
+                        },
+                        timeout: 60000
+                    }
+                ),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('OpenRouter Vision timeout')), 60000)
+                )
+            ]);
+
+            const content = response.data?.choices?.[0]?.message?.content;
+            if (content && content.trim().length > 0) {
+                console.log('✅ [VISION] OpenRouter Vision succeeded');
+                return content.trim();
+            }
+            throw new Error('Empty response from OpenRouter Vision');
+        } catch (error) {
+            console.error('❌ [VISION] OpenRouter Vision failed:', error.message);
+        }
+    }
+
+    // All vision providers failed
+    console.error('🔴 [VISION] All vision providers failed');
+    throw new Error('No vision-capable AI provider available. Configure GEMINI_API_KEY or OPENROUTER_API_KEY.');
+}
+
 // Export Groq test function
 export async function testGroqProvider(prompt, language = 'en') {
     console.log('\n🧪 [GROQ TEST] Testing Groq as standalone provider...');
