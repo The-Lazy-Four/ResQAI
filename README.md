@@ -194,7 +194,7 @@ npm start
 - **Souvik Dey** – Research Implementation, Lead Backend & Frontend Developer
 - **Snehasis Chakraborty** – Idea Conceptualization & Developer
 - **Partha Sarathi Sarkar** – Research, UI Design, Side Developer  
-- **Samrat Chatterjee** – PPT Design Side Developer
+- **Samrat Chatterjee** – AI Integration specialist , Side Developer
 
 ---
 
