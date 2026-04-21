@@ -12,10 +12,58 @@ import { verifyToken, optionalAuth } from '../../middleware/auth.js';
 const router = express.Router();
 const DEBUG = true;
 
+function safeParseJSON(value, fallback = null) {
+    if (!value) return fallback;
+    if (typeof value === 'object') return value;
+
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function buildStoredStructure(structure, layoutAnalysis) {
+    const storedStructure = structure && typeof structure === 'object' && !Array.isArray(structure)
+        ? { ...structure }
+        : {};
+
+    if (layoutAnalysis) {
+        storedStructure.layoutAnalysis = layoutAnalysis;
+    }
+
+    return storedStructure;
+}
+
+function normalizeSystemRecord(system) {
+    if (!system) return system;
+
+    const normalized = { ...system };
+    const parsedStructure = safeParseJSON(system.structure_json, {});
+    const parsedStaff = safeParseJSON(system.staff_json, []);
+    const parsedRiskTypes = safeParseJSON(system.risk_types_json, []);
+    const layoutAnalysis = safeParseJSON(
+        system.layout_analysis_json || system.layout_analysis || parsedStructure?.layoutAnalysis || parsedStructure?.layout_analysis,
+        null
+    );
+
+    if (parsedStructure && typeof parsedStructure === 'object') {
+        delete parsedStructure.layoutAnalysis;
+        delete parsedStructure.layout_analysis;
+    }
+
+    normalized.structure = parsedStructure;
+    normalized.staff = parsedStaff;
+    normalized.riskTypes = parsedRiskTypes;
+    normalized.layoutAnalysis = layoutAnalysis;
+
+    return normalized;
+}
+
 // ===== CREATE CUSTOM SYSTEM =====
 router.post('/create', optionalAuth, async (req, res) => {
     try {
-        const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes } = req.body;
+        const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes, layoutAnalysis } = req.body;
 
         // Validation
         if (!organizationName || !organizationType || !location || !contactEmail) {
@@ -24,6 +72,7 @@ router.post('/create', optionalAuth, async (req, res) => {
 
         const systemID = uuidv4();
         const userID = req.user?.userID || 'anonymous-' + uuidv4();
+        const storedStructure = buildStoredStructure(structure, layoutAnalysis);
 
         try {
             if (isMySQLAvailable()) {
@@ -34,7 +83,7 @@ router.post('/create', optionalAuth, async (req, res) => {
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
                         systemID, userID, organizationName, organizationType, location, contactEmail,
-                        JSON.stringify(structure),
+                        JSON.stringify(storedStructure),
                         JSON.stringify(staff),
                         JSON.stringify(riskTypes),
                         'active'
@@ -50,7 +99,7 @@ router.post('/create', optionalAuth, async (req, res) => {
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             systemID, organizationName, organizationType, location, contactEmail,
-                            JSON.stringify(structure),
+                            JSON.stringify(storedStructure),
                             JSON.stringify(staff),
                             JSON.stringify(riskTypes),
                             'created',
@@ -117,12 +166,7 @@ router.get('/:systemID', optionalAuth, async (req, res) => {
             return res.status(404).json({ error: 'System not found' });
         }
 
-        // Parse JSON fields
-        if (system.structure_json) system.structure = JSON.parse(system.structure_json);
-        if (system.staff_json) system.staff = JSON.parse(system.staff_json);
-        if (system.risk_types_json) system.riskTypes = JSON.parse(system.risk_types_json);
-
-        res.json({ success: true, system });
+        res.json({ success: true, system: normalizeSystemRecord(system) });
 
     } catch (error) {
         console.error('❌ Error fetching system:', error);
@@ -346,8 +390,9 @@ Response should be practical, concise, and action-oriented.`;
 router.patch('/:systemID', verifyToken, async (req, res) => {
     try {
         const { systemID } = req.params;
-        const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes, status } = req.body;
+        const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes, status, layoutAnalysis } = req.body;
         const userID = req.user.userID;
+        const storedStructure = structure ? buildStoredStructure(structure, layoutAnalysis) : undefined;
 
         let result;
 
@@ -364,7 +409,7 @@ router.patch('/:systemID', verifyToken, async (req, res) => {
                  WHERE id = ? AND user_id = ?`,
                 [
                     organizationName || undefined, organizationType || undefined, location || undefined,
-                    contactEmail || undefined, structure ? JSON.stringify(structure) : undefined,
+                    contactEmail || undefined, storedStructure ? JSON.stringify(storedStructure) : undefined,
                     staff ? JSON.stringify(staff) : undefined, riskTypes ? JSON.stringify(riskTypes) : undefined,
                     status || 'active', systemID, userID
                 ]
@@ -378,7 +423,7 @@ router.patch('/:systemID', verifyToken, async (req, res) => {
                      WHERE id = ?`,
                     [
                         organizationName, organizationType, location, contactEmail,
-                        structure ? JSON.stringify(structure) : '{}',
+                        storedStructure ? JSON.stringify(storedStructure) : '{}',
                         staff ? JSON.stringify(staff) : '[]',
                         riskTypes ? JSON.stringify(riskTypes) : '[]',
                         status || 'active', systemID
