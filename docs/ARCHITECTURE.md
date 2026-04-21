@@ -48,7 +48,7 @@ CORE -->|Read/Write| DATA
 **Location**: `public/`
 
 **Components**:
-- **Rapid Crisis Protocol** (`public/scripts/modules/`, `public/pages/dashboard.html`)
+- **Rapid Crisis Protocol** (`public/pages/guest-crisis-portal.html`)
   - Main emergency response interface
   - Real-time incident mapping
   - AI chatbot integration

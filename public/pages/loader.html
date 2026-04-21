@@ -278,8 +278,10 @@
                             // Running in iframe - notify parent
                             window.parent.postMessage('loader-complete', '*');
                         } else {
-                            // Running standalone - redirect
-                            window.location.href = './index.html';
+                            // Running standalone - redirect to the requested next page or fallback
+                            const params = new URLSearchParams(window.location.search);
+                            const next = params.get('next');
+                            window.location.href = next || './landing.html';
                         }
                     }, 800);
                 }, 300);
