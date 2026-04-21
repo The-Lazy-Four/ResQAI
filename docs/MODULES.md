@@ -6,14 +6,14 @@ Detailed explanation of ResQAI's 3 core modules.
 
 ## 🚀 Module 1: Rapid Crisis Protocol
 
-**Location**: `public/scripts/modules/`, `public/pages/dashboard.html`
+**Location**: `public/pages/guest-crisis-portal.html`
 
-**Purpose**: General-purpose emergency response system for the public.
+**Purpose**: Standalone guest-facing emergency response system for the public.
 
 ### User Interface
 
-#### Dashboard View
-**File**: `public/pages/dashboard.html`, `public/scripts/modules/dashboard.js`
+#### Portal View
+**File**: `public/pages/guest-crisis-portal.html`
 
 **Layout**:
 - **Tabbed Interface**:
@@ -57,7 +57,7 @@ Display Results with Guidance
 ```
 
 #### Chat Tab
-**File**: `public/scripts/modules/chatbot.js`
+**File**: `public/pages/guest-crisis-portal.html`
 
 **Features**:
 - Multi-language support (en, hi, bn)
@@ -83,7 +83,7 @@ Display in chat interface
 ```
 
 #### Nearby Tab
-**File**: `public/scripts/modules/nearby.js`
+**File**: `public/pages/guest-crisis-portal.html`
 
 **Features**:
 - Interactive map (Leaflet.js)

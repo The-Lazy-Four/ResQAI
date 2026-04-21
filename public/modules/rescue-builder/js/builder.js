@@ -30,11 +30,31 @@ let systemData = {
 // ===== LAYOUT ANALYSIS STATE =====
 let layoutImageBase64 = null;
 let layoutImageMimeType = null;
+let launchContext = {
+    directWizard: false,
+    returnToOrgSelect: false,
+    selectedType: '',
+    systemID: ''
+};
 
 // ===== UTILITY FUNCTIONS =====
 
 function getAuthToken() {
     return localStorage.getItem(AUTH_TOKEN_KEY) || localStorage.getItem('user-session') || '';
+}
+
+function readLaunchContext() {
+    const params = new URLSearchParams(window.location.search);
+    const selectedType = (params.get('type') || '').trim();
+    const entry = (params.get('entry') || '').trim();
+    const systemID = (params.get('systemID') || '').trim();
+
+    launchContext = {
+        directWizard: entry === 'wizard' && Boolean(selectedType),
+        returnToOrgSelect: entry === 'wizard',
+        selectedType,
+        systemID
+    };
 }
 
 function getAPIHeaders() {
@@ -235,7 +255,7 @@ const SYSTEM_THEMES = {
     school: { color: '#3b82f6', label: 'School', emoji: '🎓' },
     hospital: { color: '#10b981', label: 'Hospital', emoji: '🏥' },
     restaurant: { color: '#f97316', label: 'Restaurant', emoji: '🍽️' },
-    hostel: { color: '#a855f7', label: 'Hostel', emoji: '🏨' },
+    hostel: { color: '#a855f7', label: 'Hotel / Resort', emoji: '🏨' },
     custom: { color: '#6366f1', label: 'Custom', emoji: '⚙️' },
     other: { color: '#06b6d4', label: 'Organization', emoji: '🏢' }
 };
@@ -325,7 +345,7 @@ function getDefaultInsight(type) {
         school: '📚 Schools require comprehensive evacuation procedures and safe spaces. Focus on ensuring all staff are trained in emergency protocols and communication systems are in place.',
         hospital: '🏥 Healthcare facilities need rapid response coordination. Ensure emergency protocols cover patient safety, staff coordination, and resource management.',
         restaurant: '🍽️ Food service venues require crowd management and rapid evacuation procedures. Train staff on emergency exits and communication with emergency services.',
-        hostel: '🏨 Accommodation facilities need guest management and evacuation procedures. Maintain updated guest information and clear emergency routes.',
+        hostel: '🏨 Hotel and resort facilities need guest management and evacuation procedures. Maintain updated guest information and clear emergency routes.',
         custom: '⚙️ Review emergency procedures specific to your organization type. Ensure all staff are trained and communication channels are tested regularly.',
         other: '🏢 Develop comprehensive emergency response plans specific to your organization. Regular drills and staff training are essential.'
     };
@@ -1419,6 +1439,10 @@ function selectType(type) {
 function goToTypeSelection() {
     try {
         if (DEBUG) console.log('🔘 [NAV] Create System clicked');
+        if (launchContext.returnToOrgSelect) {
+            window.location.href = '/pages/custom-builder-org-select.html';
+            return;
+        }
         showScreen('screen-type-selection');
         const backBtn = document.getElementById('back-btn-1');
         if (backBtn) backBtn.style.display = 'none';
@@ -1940,11 +1964,11 @@ async function animateAndRedirect() {
 
                     // Show the dashboard screen
                     console.log('[ANIMATE] STEP 2: Showing screen screen-systems-dashboard...');
-                    showScreen('screen-systems-dashboard');
+                    window.location.href = '/pages/custom-builder-dashboard.html';
                     console.log('[ANIMATE] ✅ STEP 2 COMPLETE: Dashboard screen shown');
 
                     if (DEBUG) {
-                        console.log('[ANIMATE] Dashboard shown');
+                        console.log('[ANIMATE] Standalone dashboard redirect dispatched');
                         console.groupEnd();
                     }
 
@@ -3329,8 +3353,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeModule() {
-    // Set initial screen - show systems dashboard first
-    showSystemsDashboard();
+    readLaunchContext();
+
+    if (launchContext.directWizard) {
+        selectType(launchContext.selectedType);
+    } else if (launchContext.systemID) {
+        localStorage.setItem('active_system_id', launchContext.systemID);
+        showSystemControlPanel(launchContext.systemID);
+    } else {
+        // Set initial screen - show systems dashboard first
+        showSystemsDashboard();
+    }
 
     // Handle upload image preview with base64 extraction for AI analysis
     const layoutImage = document.getElementById('layout-image');

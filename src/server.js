@@ -136,7 +136,7 @@ app.use('/api/custom-system', customSystemRoutes);
 
 // Serve the dashboard for /dashboard route
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+    res.sendFile(path.join(__dirname, '../public/pages/custom-builder-dashboard.html'));
 });
 
 // Serve the cinematic landing page as the default entry point

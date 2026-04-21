@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ResQAI - Select Organization Type</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#ba1724",
+                        "tertiary-fixed": "#f0dbff",
+                        "surface-container-high": "#262a31",
+                        "secondary-fixed-dim": "#4cd6ff",
+                        "on-secondary": "#003543",
+                        "inverse-on-surface": "#2d3137",
+                        "secondary-fixed": "#b7eaff",
+                        "secondary": "#a6e6ff",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#6900b3",
+                        "on-error": "#690005",
+                        "surface-variant": "#31353c",
+                        "on-primary-container": "#5c0008",
+                        "surface-bright": "#353940",
+                        "tertiary-container": "#b76dff",
+                        "surface-container-lowest": "#0a0e14",
+                        "outline": "#ab8986",
+                        "on-tertiary": "#490080",
+                        "primary-fixed": "#ffdad7",
+                        "background": "#10141a",
+                        "secondary-container": "#14d1ff",
+                        "outline-variant": "#5b403e",
+                        "on-primary": "#68000b",
+                        "primary-container": "#ff5352",
+                        "primary": "#ffb3ae",
+                        "on-tertiary-fixed": "#2c0051",
+                        "surface-tint": "#ffb3ae",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "on-tertiary-container": "#400071",
+                        "surface-dim": "#10141a",
+                        "surface-container-low": "#181c22",
+                        "on-primary-fixed-variant": "#930014",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1c2026",
+                        "on-surface": "#dfe2eb",
+                        "on-background": "#dfe2eb",
+                        "on-secondary-container": "#00566b",
+                        "on-primary-fixed": "#410004",
+                        "inverse-surface": "#dfe2eb",
+                        "on-secondary-fixed": "#001f28",
+                        "tertiary": "#ddb7ff",
+                        "surface-container-highest": "#31353c",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed-dim": "#ffb3ae",
+                        "surface": "#10141a",
+                        "on-surface-variant": "#e4beba",
+                        "tertiary-fixed-dim": "#ddb7ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background: radial-gradient(circle at top right, #1a1e2e, #10141a);
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            transform: scale(1.05);
+            border-color: rgba(183, 109, 255, 0.5);
+            box-shadow: 0 0 30px rgba(20, 209, 255, 0.15), 0 0 15px rgba(183, 109, 255, 0.1);
+        }
+        .text-glow {
+            text-shadow: 0 0 15px rgba(255, 179, 174, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- TopAppBar -->
+<!-- Applying Shared Component JSON logic: bg-slate-950/40 backdrop-blur-xl, border-b border-white/5, px-6 py-4 fixed z-50 -->
+<nav class="flex justify-between items-center w-full px-6 py-4 fixed z-50 bg-slate-950/40 backdrop-blur-xl border-b border-white/5 shadow-[0_0_40px_rgba(255,179,174,0.05)]">
+<div class="flex items-center gap-8">
+<button onclick="window.location.href='/pages/custom-builder-dashboard.html'" class="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors group">
+<span class="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-headline text-xs uppercase tracking-widest font-bold">Back</span>
+</button>
+<div class="text-2xl font-black tracking-tighter text-red-400 dark:text-red-300 font-headline uppercase">ResQAI</div>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-red-300 transition-colors">account_circle</span>
+</div>
+</nav>
+<main class="pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
+<!-- Header -->
+<header class="text-center mb-16 max-w-2xl">
+<h1 class="font-headline text-4xl md:text-5xl font-bold tracking-tight text-white mb-4 text-glow">
+                Select Your Organization Type
+            </h1>
+<p class="text-on-surface-variant font-body text-lg opacity-80">
+                Choose the type of organization to customize your rescue system with AI-driven tactical intelligence.
+            </p>
+</header>
+<!-- Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+<!-- Card 1: School -->
+<div onclick="window.location.href='/modules/rescue-builder/index.html?entry=wizard&type=school'" class="glass-card rounded-[1.25rem] p-10 flex flex-col items-center text-center cursor-pointer group">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-4xl group-hover:bg-primary/20 transition-colors">
+                    🏫
+                </div>
+<h3 class="font-headline text-xl font-bold text-white mb-2 uppercase tracking-wide">Educational Institution</h3>
+<p class="text-on-surface-variant text-sm font-body opacity-70">
+                    Emergency systems for schools and campuses with rapid-response protocols.
+                </p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-secondary text-xs font-bold uppercase tracking-widest">Select Platform →</span>
+</div>
+</div>
+<!-- Card 2: Hospital -->
+<div onclick="window.location.href='/modules/rescue-builder/index.html?entry=wizard&type=hospital'" class="glass-card rounded-[1.25rem] p-10 flex flex-col items-center text-center cursor-pointer group">
+<div class="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mb-6 text-4xl group-hover:bg-secondary/20 transition-colors">
+                    🏥
+                </div>
+<h3 class="font-headline text-xl font-bold text-white mb-2 uppercase tracking-wide">Healthcare Facility</h3>
+<p class="text-on-surface-variant text-sm font-body opacity-70">
+                    Crisis management for hospitals and clinics focusing on patient safety.
+                </p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-secondary text-xs font-bold uppercase tracking-widest">Select Platform →</span>
+</div>
+</div>
+<!-- Card 3: Hotel -->
+<div onclick="window.location.href='/modules/rescue-builder/index.html?entry=wizard&type=hostel'" class="glass-card rounded-[1.25rem] p-10 flex flex-col items-center text-center cursor-pointer group">
+<div class="w-20 h-20 bg-tertiary/10 rounded-full flex items-center justify-center mb-6 text-4xl group-hover:bg-tertiary/20 transition-colors">
+                    🏨
+                </div>
+<h3 class="font-headline text-xl font-bold text-white mb-2 uppercase tracking-wide">Hotel / Resort</h3>
+<p class="text-on-surface-variant text-sm font-body opacity-70">
+                    Emergency protocols for the hospitality industry and high-occupancy venues.
+                </p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-secondary text-xs font-bold uppercase tracking-widest">Select Platform →</span>
+</div>
+</div>
+<!-- Card 4: College -->
+<div onclick="window.location.href='/modules/rescue-builder/index.html?entry=wizard&type=college'" class="glass-card rounded-[1.25rem] p-10 flex flex-col items-center text-center cursor-pointer group">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-4xl group-hover:bg-primary/20 transition-colors">
+                    🎓
+                </div>
+<h3 class="font-headline text-xl font-bold text-white mb-2 uppercase tracking-wide">University / College</h3>
+<p class="text-on-surface-variant text-sm font-body opacity-70">
+                    Campus-wide safety and alert systems designed for wide-area deployment.
+                </p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-secondary text-xs font-bold uppercase tracking-widest">Select Platform →</span>
+</div>
+</div>
+<!-- Card 5: Restaurant -->
+<div onclick="window.location.href='/modules/rescue-builder/index.html?entry=wizard&type=restaurant'" class="glass-card rounded-[1.25rem] p-10 flex flex-col items-center text-center cursor-pointer group">
+<div class="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mb-6 text-4xl group-hover:bg-secondary/20 transition-colors">
+                    🍽️
+                </div>
+<h3 class="font-headline text-xl font-bold text-white mb-2 uppercase tracking-wide">Restaurant / Café</h3>
+<p class="text-on-surface-variant text-sm font-body opacity-70">
+                    Safety systems for food service businesses including fire and health alerts.
+                </p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-secondary text-xs font-bold uppercase tracking-widest">Select Platform →</span>
+</div>
+</div>
+<!-- Card 6: Custom -->
+<div onclick="window.location.href='/modules/rescue-builder/index.html?entry=wizard&type=other'" class="glass-card rounded-[1.25rem] p-10 flex flex-col items-center text-center cursor-pointer group">
+<div class="w-20 h-20 bg-tertiary-container/20 rounded-full flex items-center justify-center mb-6 text-4xl group-hover:bg-tertiary-container/40 transition-colors">
+                    ⚙️
+                </div>
+<h3 class="font-headline text-xl font-bold text-white mb-2 uppercase tracking-wide">Custom Organization</h3>
+<p class="text-on-surface-variant text-sm font-body opacity-70">
+                    Build a custom rescue system from scratch for unique operational needs.
+                </p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-secondary text-xs font-bold uppercase tracking-widest">Start Customizing →</span>
+</div>
+</div>
+</div>
+<!-- Footer Background Asset (Asymmetric Wireframe) -->
+<div class="fixed bottom-0 left-0 w-full h-1/3 pointer-events-none z-0 opacity-10 overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 300">
+<path class="text-outline-variant" d="M0,300 L1000,300 L1000,0 C800,100 600,50 400,150 C200,250 0,100 0,0 Z" fill="none" stroke="currentColor" stroke-width="1"></path>
+<path class="text-outline" d="M0,250 C300,200 700,350 1000,250" fill="none" stroke="currentColor" stroke-width="0.5"></path>
+</svg>
+</div>
+</main>
+<!-- Bottom Action Hint -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+<span class="font-label text-[10px] text-on-surface-variant/40 uppercase tracking-[0.3em]">ResQAI Global Intelligence Core</span>
+<div class="w-12 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent rounded-full"></div>
+</div>
+</body></html>
