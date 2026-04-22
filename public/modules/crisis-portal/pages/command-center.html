@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ResQAI | Guest Crisis Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e14;
+        }
+
+        .font-headline {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#dfe2eb",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "primary": "#ffb3ae",
+                        "error-container": "#93000a",
+                        "surface-dim": "#10141a",
+                        "secondary-fixed-dim": "#4cd6ff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#31353c",
+                        "primary-fixed": "#ffdad7",
+                        "surface-variant": "#31353c",
+                        "surface": "#10141a",
+                        "primary-fixed-dim": "#ffb3ae",
+                        "inverse-on-surface": "#2d3137",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#410004",
+                        "on-primary-container": "#5c0008",
+                        "background": "#10141a",
+                        "on-secondary-container": "#00566b",
+                        "outline": "#ab8986",
+                        "surface-container-high": "#262a31",
+                        "on-tertiary": "#490080",
+                        "tertiary-fixed-dim": "#ddb7ff",
+                        "tertiary-container": "#b76dff",
+                        "on-secondary-fixed": "#001f28",
+                        "secondary": "#a6e6ff",
+                        "tertiary": "#ddb7ff",
+                        "outline-variant": "#5b403e",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-container": "#400071",
+                        "surface-tint": "#ffb3ae",
+                        "secondary-container": "#14d1ff",
+                        "on-tertiary-fixed": "#2c0051",
+                        "surface-bright": "#353940",
+                        "on-primary": "#68000b",
+                        "surface-container-low": "#181c22",
+                        "inverse-primary": "#ba1724",
+                        "on-secondary": "#003543",
+                        "secondary-fixed": "#b7eaff",
+                        "on-primary-fixed-variant": "#930014",
+                        "surface-container-lowest": "#0a0e14",
+                        "primary-container": "#ff5352",
+                        "surface-container": "#1c2026",
+                        "on-tertiary-fixed-variant": "#6900b3",
+                        "on-surface": "#dfe2eb",
+                        "tertiary-fixed": "#f0dbff",
+                        "inverse-surface": "#dfe2eb",
+                        "on-surface-variant": "#e4beba"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    }
+                },
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-on-background selection:bg-primary/30">
+    <!-- SIDE NAV BAR (FROM JSON) -->
+    <aside
+        class="fixed left-0 top-0 h-screen flex flex-col z-40 bg-[#0a0e14]/60 backdrop-blur-2xl border-r border-white/5 w-72 shadow-[20px_0_60px_rgba(0,0,0,0.5)]">
+        <div class="px-8 py-10">
+            <a href="/pages/module-selection.html" title="Go back">
+                <h1 class="text-xl font-black text-rose-500 font-headline uppercase tracking-widest">ResQAI</h1>
+            </a>
+        </div>
+        <nav class="flex-1 px-4 space-y-2">
+            <!-- Command Center (Active) -->
+            <a class="flex items-center gap-4 bg-gradient-to-r from-rose-500/20 to-transparent text-rose-400 border-l-4 border-rose-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] transition-transform duration-300 hover:scale-102"
+                href="/modules/crisis-portal/pages/command-center.html">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span>Command Center</span>
+            </a>
+            <!-- Live Intel -->
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/live-intel.html">
+                <span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+                <span>Live Intel</span>
+            </a>
+            <!-- Deployment -->
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/deployment.html">
+                <span class="material-symbols-outlined" data-icon="local_fire_department">local_fire_department</span>
+                <span>Deployment</span>
+            </a>
+            <!-- Signal Hub -->
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/signal-hub.html">
+                <span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+                <span>Signal Hub</span>
+            </a>
+            <!-- Archive -->
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/archive.html">
+                <span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                <span>Archive</span>
+            </a>
+        </nav>
+        <div class="px-8 py-6 mb-8">
+            <button
+                class="w-full py-4 bg-primary-container text-on-primary-container rounded-lg font-headline font-bold text-xs tracking-tighter hover:bg-primary transition-all shadow-[0_0_20px_rgba(255,83,82,0.3)]">
+                INITIATE SOS
+            </button>
+        </div>
+        <div class="px-4 py-6 border-t border-white/5">
+            <div class="flex items-center gap-4 px-6 py-4 mb-4">
+                <div
+                    class="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img alt="Tactical Operator"
+                        data-alt="professional portrait of a security consultant in tactical dark clothing against a minimalist studio background with cool blue lighting"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFnjReDhdt6YKdrfoPT4YJ19pWui7xpiD2mSOGge9ytDqAGN_PVdWyycZj6NYm3KwE8QxmPnFFnoL_YDOdA3Ce2MQj5BP1nQiIMdReMpAB3fNG3yKDKqmI3lzvzFllkMz9W3dAWA75GLr2ofQdzemCeGOPTZKDYqQSLnjKA1RvOp0l5kQZVrAZR7LE0LReRpl4zoiN7Nney-e172Srh1RjBxiPdg_4SshTV1eDeOQCsMC84aXPMzTsnpZ2dc6fny9NatMHtuzzkos" />
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-500 font-headline">OPERATOR 01</p>
+                    <p class="text-[10px] text-rose-400 font-headline">SECTOR 7G - ACTIVE</p>
+                </div>
+            </div>
+            <a class="flex items-center gap-4 text-slate-500 px-6 py-2 hover:text-rose-400 transition-colors" href="#">
+                <span class="material-symbols-outlined text-sm" data-icon="settings">settings</span>
+                <span class="font-headline text-[10px] uppercase">Settings</span>
+            </a>
+        </div>
+    </aside>
+    <main class="ml-72 min-h-screen flex flex-col">
+        <!-- TOP APP BAR (FROM JSON) -->
+        <header
+            class="sticky top-0 z-30 flex justify-between items-center w-full px-8 py-4 h-20 bg-slate-950/40 backdrop-blur-xl border-b border-white/10 shadow-[0_0_40px_rgba(255,83,82,0.1)]">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+                    <span class="material-symbols-outlined text-secondary" data-icon="location_on">location_on</span>
+                    <span class="text-xs font-headline uppercase tracking-widest text-slate-400">Locating... SECTOR
+                        7G</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full border border-green-500/20">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-headline uppercase tracking-widest text-green-500">STATUS: SECURE</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <p class="font-headline text-on-surface font-bold text-lg tracking-tight">14:42:09 UTC</p>
+                <div class="flex items-center gap-2">
+                    <button class="p-2 text-slate-400 hover:text-rose-400 hover:bg-white/5 rounded-lg transition-all"
+                        title="Security Protocol">
+                        <span class="material-symbols-outlined" data-icon="shield">shield</span>
+                    </button>
+                    <button
+                        class="p-2 text-slate-400 hover:text-rose-400 hover:bg-white/5 rounded-lg transition-all relative"
+                        title="Notifications">
+                        <span class="material-symbols-outlined"
+                            data-icon="notifications_active">notifications_active</span>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full"></span>
+                    </button>
+                    <button
+                        class="flex items-center gap-2 px-6 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-headline font-bold text-xs transition-all hover:scale-95">
+                        <span class="material-symbols-outlined text-sm" data-icon="share_location">share_location</span>
+                        BROADCAST LOCATION
+                    </button>
+                </div>
+            </div>
+        </header>
+        <!-- DASHBOARD GRID -->
+        <div class="p-8 grid grid-cols-12 gap-8 flex-1">
+            <!-- LEFT COLUMN: NEARBY ALERTS -->
+            <section class="col-span-3 flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400">Nearby Crisis
+                        Alerts</h2>
+                    <span class="text-[10px] bg-white/5 px-2 py-1 rounded text-slate-500 font-headline">5KM
+                        RADIUS</span>
+                </div>
+                <!-- Alert Cards -->
+                <div class="space-y-4">
+                    <div
+                        class="bg-surface-container-low border-l-4 border-primary-container p-5 rounded-r-xl shadow-lg relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="material-symbols-outlined text-4xl"
+                                data-icon="local_fire_department">local_fire_department</span>
+                        </div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span
+                                class="text-[10px] font-headline font-bold text-primary px-2 py-0.5 bg-primary/10 rounded">CRITICAL</span>
+                            <span class="text-[10px] text-slate-500">1.2 KM</span>
+                        </div>
+                        <h3 class="font-headline font-bold text-on-background mb-1">Structural Fire</h3>
+                        <p class="text-xs text-on-surface-variant line-clamp-2">Emergency teams deployed to Zone B
+                            industrial complex. Evacuate immediately.</p>
+                        <p class="mt-3 text-[10px] font-headline text-slate-500">DETECTED: 4 MIN AGO</p>
+                    </div>
+                    <div
+                        class="bg-surface-container-low border-l-4 border-yellow-500 p-5 rounded-r-xl shadow-lg relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="material-symbols-outlined text-4xl"
+                                data-icon="medical_services">medical_services</span>
+                        </div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span
+                                class="text-[10px] font-headline font-bold text-yellow-500 px-2 py-0.5 bg-yellow-500/10 rounded">MEDIUM</span>
+                            <span class="text-[10px] text-slate-500">3.8 KM</span>
+                        </div>
+                        <h3 class="font-headline font-bold text-on-background mb-1">Mass Casualty Event</h3>
+                        <p class="text-xs text-on-surface-variant line-clamp-2">Transit collision at Main Intersection.
+                            Ambulances on route. Traffic blocked.</p>
+                        <p class="mt-3 text-[10px] font-headline text-slate-500">DETECTED: 12 MIN AGO</p>
+                    </div>
+                    <div
+                        class="bg-surface-container-low border-l-4 border-green-500 p-5 rounded-r-xl shadow-lg relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="material-symbols-outlined text-4xl" data-icon="power_off">power_off</span>
+                        </div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span
+                                class="text-[10px] font-headline font-bold text-green-500 px-2 py-0.5 bg-green-500/10 rounded">LOW</span>
+                            <span class="text-[10px] text-slate-500">4.5 KM</span>
+                        </div>
+                        <h3 class="font-headline font-bold text-on-background mb-1">Grid Instability</h3>
+                        <p class="text-xs text-on-surface-variant line-clamp-2">Localized power outage in Sector 4.
+                            Estimated repair: 2 hours.</p>
+                        <p class="mt-3 text-[10px] font-headline text-slate-500">DETECTED: 45 MIN AGO</p>
+                    </div>
+                </div>
+            </section>
+            <!-- CENTER COLUMN: SMART SOS HUB -->
+            <section class="col-span-5 flex flex-col gap-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-rose-500" data-icon="bolt">bolt</span>
+                    <h2 class="font-headline text-lg font-black uppercase tracking-tighter text-on-background">Smart SOS
+                        Hub</h2>
+                </div>
+                <div class="grid grid-cols-4 gap-4">
+                    <!-- Fire -->
+                    <button data-action="sos-fire"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-primary-container transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-container/10 group-hover:bg-primary-container/20 shadow-[0_0_20px_rgba(255,83,82,0.1)]">
+                            <span class="material-symbols-outlined text-primary-container"
+                                data-icon="fire_truck">fire_truck</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Fire</span>
+                    </button>
+                    <!-- Medical -->
+                    <button data-action="sos-medical"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-green-500 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-green-500/10 group-hover:bg-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
+                            <span class="material-symbols-outlined text-green-500"
+                                data-icon="emergency">emergency</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Medical</span>
+                    </button>
+                    <!-- Women Safety -->
+                    <button data-action="sos-women-safety"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-pink-500 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-pink-500/10 group-hover:bg-pink-500/20 shadow-[0_0_20px_rgba(236,72,153,0.1)]">
+                            <span class="material-symbols-outlined text-pink-500" data-icon="female">female</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Safety</span>
+                    </button>
+                    <!-- Child Safety -->
+                    <button data-action="sos-child-safety"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-yellow-500 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-yellow-500/10 group-hover:bg-yellow-500/20 shadow-[0_0_20px_rgba(234,179,8,0.1)]">
+                            <span class="material-symbols-outlined text-yellow-500"
+                                data-icon="child_care">child_care</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Child</span>
+                    </button>
+                    <!-- Earthquake -->
+                    <button data-action="sos-earthquake"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-orange-900 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-900/10 group-hover:bg-orange-900/20 shadow-[0_0_20px_rgba(124,45,18,0.1)]">
+                            <span class="material-symbols-outlined text-orange-900" data-icon="tsunami">tsunami</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Quake</span>
+                    </button>
+                    <!-- Flood -->
+                    <button data-action="sos-flood"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-blue-500 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-500/10 group-hover:bg-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                            <span class="material-symbols-outlined text-blue-500"
+                                data-icon="water_drop">water_drop</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Flood</span>
+                    </button>
+                    <!-- Theft -->
+                    <button data-action="sos-theft"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-orange-500 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-500/10 group-hover:bg-orange-500/20 shadow-[0_0_20px_rgba(249,115,22,0.1)]">
+                            <span class="material-symbols-outlined text-orange-500" data-icon="policy">policy</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Theft</span>
+                    </button>
+                    <!-- Custom -->
+                    <button data-action="sos-custom"
+                        class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-purple-500 transition-all group">
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500/10 group-hover:bg-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
+                            <span class="material-symbols-outlined text-purple-500"
+                                data-icon="more_horiz">more_horiz</span>
+                        </div>
+                        <span
+                            class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Other</span>
+                    </button>
+                </div>
+                <!-- TRIGGER SOS NOW -->
+                <button data-action="sos-main"
+                    class="group relative w-full h-48 bg-surface-container-highest rounded-3xl overflow-hidden border border-white/10 transition-all hover:scale-[0.98] active:scale-95">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-tr from-primary-container to-transparent opacity-20 group-hover:opacity-40 transition-opacity">
+                    </div>
+                    <div class="relative z-10 flex flex-col items-center justify-center h-full">
+                        <div
+                            class="w-24 h-24 bg-primary-container rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,83,82,0.6)] mb-4 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-5xl text-on-primary-container"
+                                data-icon="notifications_active"
+                                style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+                        </div>
+                        <p class="font-headline font-black text-2xl tracking-tighter text-on-background">TRIGGER SOS NOW
+                        </p>
+                        <p class="text-[10px] font-headline tracking-[0.2em] text-slate-400 mt-2">POLICE &amp; AMBULANCE
+                            DISPATCHED ON PRESS</p>
+                    </div>
+                    <!-- Technical UI lines decoration -->
+                    <div class="absolute top-4 left-4 w-12 h-12 border-t border-l border-white/20"></div>
+                    <div class="absolute bottom-4 right-4 w-12 h-12 border-b border-r border-white/20"></div>
+                </button>
+            </section>
+            <!-- RIGHT COLUMN: RESPONSE MAP -->
+            <section class="col-span-4 flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400">Live Safety
+                        Map</h2>
+                    <div class="flex gap-2">
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-primary-container"></div>
+                            <span class="text-[8px] text-slate-500 font-headline uppercase">Units</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-secondary"></div>
+                            <span class="text-[8px] text-slate-500 font-headline uppercase">You</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative flex-1 bg-surface-container-low rounded-3xl overflow-hidden border border-white/5">
+                    <img alt="Map View" class="w-full h-full object-cover opacity-60 mix-blend-luminosity"
+                        data-alt="a dark stylized satellite map of an urban city center with glowing red and blue tactical data markers and grid overlays"
+                        data-location="New York"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjjqoCaybHmk0eF3qsJG4NTkCbNpLApWZ6bZCh4x55Hnpuyif9KKnbo84ALRQcDKoRKniu7SXSF8bEq7Q5oS_gkgK-DDEIj6DDoLWhtDSGR2DGHfRKEfUAS7PnqPJbf1jeAbn_4yVk4jZo8FFgQ9RugvmRgYb1sqK9a13J1omyJAKMQsicCaXOHF6ZYAy5ThSgf4pIC4raUhRXe_6zkrw64_vobgguSSfPaeLWiAlZ9WTTPiBBC4grIdGFrIQa3d1iL2mfn1iVbF0" />
+                    <!-- HUD Overlays -->
+                    <div class="absolute inset-0 pointer-events-none">
+                        <div
+                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-secondary/20 rounded-full animate-ping">
+                        </div>
+                        <div
+                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-secondary rounded-full shadow-[0_0_10px_#14d1ff]">
+                        </div>
+                        <div
+                            class="absolute top-10 right-10 w-4 h-4 bg-primary-container rounded-full animate-pulse shadow-[0_0_10px_#ff5352]">
+                        </div>
+                        <div
+                            class="absolute bottom-20 left-10 w-4 h-4 bg-primary-container rounded-full animate-pulse shadow-[0_0_10px_#ff5352]">
+                        </div>
+                    </div>
+                    <div
+                        class="absolute bottom-4 left-4 right-4 bg-surface-dim/80 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] text-slate-500 font-headline uppercase">Nearest Safe Zone</p>
+                                <p class="text-sm font-bold font-headline">Sector 7 Central Bunker</p>
+                            </div>
+                            <button
+                                class="bg-secondary px-4 py-2 rounded-lg text-xs font-bold text-on-secondary">NAVIGATE</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- BOTTOM AREA -->
+        <footer class="px-8 pb-8 space-y-6">
+            <!-- AI ASSISTANT BAR -->
+            <div class="relative group">
+                <div
+                    class="absolute -inset-1 bg-gradient-to-r from-tertiary-container to-secondary-container rounded-2xl opacity-20 group-focus-within:opacity-40 transition-opacity blur">
+                </div>
+                <div
+                    class="relative bg-surface-container-low border border-white/10 p-2 rounded-2xl flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary" data-icon="psychology">psychology</span>
+                    </div>
+                    <input
+                        id="aiInput"
+                        class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-slate-600"
+                        placeholder="Ask ResQAI for first aid steps, safety routes, or crisis status..." type="text" />
+                    <button class="p-2 text-slate-400 hover:text-on-surface transition-colors" data-action="voice-start">
+                        <span class="material-symbols-outlined" data-icon="mic">mic</span>
+                    </button>
+                    <button
+                        data-action="ask-ai"
+                        class="bg-tertiary-container text-on-tertiary-container px-6 py-2 rounded-xl font-headline font-bold text-xs">
+                        ASK AI
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-8">
+                <!-- EMERGENCY CONTACTS -->
+                <div class="col-span-8">
+                    <h2 class="text-[10px] font-headline font-black uppercase tracking-widest text-slate-500 mb-3 px-1">
+                        Quick-Dial Protocols</h2>
+                    <div class="flex gap-4">
+                        <button data-action="dial-112"
+                            class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                            <span class="font-headline font-black text-xl text-on-background">112</span>
+                            <span class="text-[10px] font-headline text-slate-500 uppercase">Universal</span>
+                        </button>
+                        <button data-action="dial-101"
+                            class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                            <span class="font-headline font-black text-xl text-on-background">101</span>
+                            <span class="text-[10px] font-headline text-slate-500 uppercase">Fire</span>
+                        </button>
+                        <button data-action="dial-108"
+                            class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                            <span class="font-headline font-black text-xl text-on-background">108</span>
+                            <span class="text-[10px] font-headline text-slate-500 uppercase">Ambulance</span>
+                        </button>
+                        <button data-action="dial-100"
+                            class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                            <span class="font-headline font-black text-xl text-on-background">100</span>
+                            <span class="text-[10px] font-headline text-slate-500 uppercase">Police</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- SAFETY TIPS CAROUSEL (STATIC PREVIEW) -->
+                <div class="col-span-4">
+                    <h2 class="text-[10px] font-headline font-black uppercase tracking-widest text-slate-500 mb-3 px-1">
+                        Active Safety Protocol</h2>
+                    <div
+                        class="bg-surface-container-high border border-white/10 p-5 rounded-2xl relative overflow-hidden">
+                        <div class="flex gap-4 items-center">
+                            <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-secondary"
+                                    data-icon="medical_information">medical_information</span>
+                            </div>
+                            <div>
+                                <p class="text-xs font-headline font-bold text-on-background uppercase">Smoke Inhalation
+                                    Prevention</p>
+                                <p class="text-[10px] text-on-surface-variant mt-1 leading-relaxed">Stay low to the
+                                    floor. Use a damp cloth to cover nose and mouth...</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-center gap-1.5 mt-4">
+                            <div class="w-4 h-1 bg-secondary rounded-full"></div>
+                            <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+                            <div class="w-1 h-1 bg-white/20 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- ResQAI Crisis Portal - Modular Entry Point -->
+    <script type="module" src="/modules/crisis-portal/scripts/main.js"></script>
+
+    <!-- Command Center Initialization -->
+    <script type="module">
+        import { initCommandCenter } from '/modules/crisis-portal/scripts/commandCenterInit.js';
+        initCommandCenter();
+    </script>
+
+    <!-- Animation Styles -->
+    <style>
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-slideDown {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</body>
+
+</html>
