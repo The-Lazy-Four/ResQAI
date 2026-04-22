@@ -1,5 +1,5 @@
 // ============================================
-// ResQAI - Express Server
+// ResQAI - Express Server with Socket.IO
 // ============================================
 
 import express from 'express';
@@ -7,6 +7,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 // Import database initialization
 import { initMySQL } from './db/mysql.js';
@@ -21,6 +23,7 @@ import aiRoutes from './api/routes/ai.js';
 import portalRoutes from './api/routes/portal.js';
 import authRoutes from './api/routes/auth.js';
 import customSystemRoutes from './api/routes/custom-system.js';
+import cameraIncidentRoutes from './api/routes/camera-incidents.js';
 
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
@@ -30,44 +33,55 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
-// Load environment variables from project root (MUST be before any env var access)
-// Override system environment variables with .env file
+// Load environment variables
 const envConfig = dotenv.config({ path: path.join(projectRoot, '.env'), override: true });
 
-// Debug: Show what was loaded
 if (envConfig.parsed) {
     console.log('\n✅ [DOTENV] Loaded .env variables:');
     if (envConfig.parsed.GROQ_MODEL) {
         console.log(`   GROQ_MODEL from .env: ${envConfig.parsed.GROQ_MODEL}`);
     }
-}
-
-// Force override any system environment variables with .env values
-if (envConfig.parsed) {
     Object.keys(envConfig.parsed).forEach(key => {
         process.env[key] = envConfig.parsed[key];
     });
     console.log('✅ [DOTENV] Forced all .env values into process.env\n');
 }
 
-// Validate environment on startup
 validateEnvironment();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// ==================== DATABASE INITIALIZATION ====================
+// ==================== SOCKET.IO ====================
 
-// Initialize MySQL (with SQLite fallback)
+const io = new SocketIOServer(httpServer, {
+    cors: { origin: '*', methods: ['GET', 'POST'] }
+});
+
+export { io };
+
+io.on('connection', (socket) => {
+    console.log(`🔌 [Socket.IO] Client connected: ${socket.id}`);
+    socket.on('disconnect', () => {
+        console.log(`🔌 [Socket.IO] Client disconnected: ${socket.id}`);
+    });
+    socket.on('join:admin', () => {
+        socket.join('admin');
+        console.log(`🔐 [Socket.IO] Admin joined: ${socket.id}`);
+    });
+});
+
+// ==================== DATABASE ====================
+
 console.log('\n🗄️  [DATABASE] Initializing database connections...');
 await initMySQL().catch(err => {
     console.warn('⚠️  MySQL initialization failed, SQLite will be used:', err.message);
 });
 
-// ==================== ENVIRONMENT VALIDATION ====================
+// ==================== ENVIRONMENT LOG ====================
 
-// Log environment status (first 10 chars of keys for security)
 console.log(`\n📋 [ENVIRONMENT] Node Env: ${NODE_ENV}`);
 console.log(`📋 [ENVIRONMENT] GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.slice(0, 10) + '...' : 'NOT SET'}`);
 console.log(`📋 [ENVIRONMENT] OPENROUTER_PRIMARY_API_KEY: ${(process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY) ? (process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY).slice(0, 10) + '...' : 'NOT SET'}`);
@@ -77,7 +91,6 @@ console.log(`📋 [ENVIRONMENT] PORT: ${PORT}\n`);
 
 // ==================== MIDDLEWARE ====================
 
-// CORS configuration - Allow all origins in production for Render deployment
 const corsOptions = NODE_ENV === 'production'
     ? { origin: '*', methods: ['GET', 'POST', 'PATCH', 'DELETE'] }
     : {
@@ -88,20 +101,14 @@ const corsOptions = NODE_ENV === 'production'
 
 console.log(`🔒 [CORS] Mode: ${NODE_ENV === 'production' ? 'ALLOW ALL (Production)' : 'LOCALHOST ONLY (Development)'}\n`);
 app.use(cors(corsOptions));
-
-// Body parsing
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ==================== API ROUTES ====================
 
-// Health check - Returns server status and AI provider availability
 app.get('/api/health', (req, res) => {
     const aiStatus = getAIStatus();
-
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
@@ -117,11 +124,11 @@ app.get('/api/health', (req, res) => {
             primaryProvider: aiStatus.gemini ? 'Gemini' : aiStatus.openRouter ? 'OpenRouter' : aiStatus.groq ? 'Groq' : 'None',
             providerPriority: aiStatus.providerPriority
         },
+        socketio: '✅ Active',
         cors: NODE_ENV === 'production' ? 'Allow All (Production)' : 'Localhost Only (Development)'
     });
 });
 
-// Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/emergencies', emergencyRoutes);
 app.use('/api/classification', classificationRoutes);
@@ -131,15 +138,14 @@ app.use('/api/nearby', nearbyRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/custom-system', customSystemRoutes);
+app.use('/api/camera-incidents', cameraIncidentRoutes);
 
 // ==================== SERVE FRONTEND ====================
 
-// Serve the dashboard for /dashboard route
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/pages/custom-builder-dashboard.html'));
+    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
 });
 
-// Serve the cinematic landing page as the default entry point
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
         res.sendFile(path.join(__dirname, '../public/pages/landing.html'));
@@ -157,32 +163,28 @@ app.use((err, req, res, next) => {
     });
 });
 
-// ==================== START SERVER ====================
+// ==================== START ====================
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
     console.log(`
-╔═════════════════════════════════════════╗
-║         🚨 ResQAI Backend Running 🚨    ║
-╠═════════════════════════════════════════╣
-║  Server: http://localhost:${PORT}            ║
-║  API:    http://localhost:${PORT}/api      ║
-║  Health: http://localhost:${PORT}/api/health║
-╚═════════════════════════════════════════╝
+╔══════════════════════════════════════════╗
+║         🚨 ResQAI Backend Running 🚨     ║
+╠══════════════════════════════════════════╣
+║  Server:  http://localhost:${PORT}            ║
+║  API:     http://localhost:${PORT}/api      ║
+║  Admin:   http://localhost:${PORT}/admin    ║
+║  Health:  http://localhost:${PORT}/api/health║
+╚══════════════════════════════════════════╝
     `);
 
-    // Check Gemini API Key
     if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'your-gemini-api-key-here') {
         console.log('✅ GEMINI_API_KEY detected - AI features ENABLED');
         console.log('🤖 Classification and Chat AI will use Gemini API');
-    } else if (!process.env.GEMINI_API_KEY || !process.env.GEMINI_API_KEY.trim()) {
-        console.warn('⚠️  GEMINI_API_KEY not set in .env');
-        console.warn('⚠️  AI features will use fallback (rule-based) mode');
-        console.warn('📝 To enable Gemini AI, add GEMINI_API_KEY=your-key-here to .env');
     } else {
-        console.warn('⚠️  GEMINI_API_KEY is placeholder (not configured)');
-        console.warn('⚠️  AI features will use fallback (rule-based) mode');
-        console.warn('📝 Replace with real API key in .env file');
+        console.warn('⚠️  GEMINI_API_KEY not set - AI features in fallback mode');
     }
+    console.log('🔌 Socket.IO server ready for real-time connections');
+    console.log('📷 AI Camera Surveillance Module available at /admin\n');
 });
 
 export default app;

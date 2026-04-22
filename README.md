@@ -87,8 +87,8 @@ CORE --> SYSTEM
 
 | Frontend Area | Purpose | Key Files |
 |---|---|---|
-| App Entry + Navigation | Entry flow, module selection, transitions | public/pages/landing.html, public/pages/module-selection.html, public/pages/custom-builder-dashboard.html |
-| Rapid Crisis Protocol | Guest-facing crisis portal entry and standalone experience | public/pages/guest-crisis-portal.html |
+| App Entry + Navigation | Entry flow, module selection, transitions | public/pages/landing.html, public/pages/index.html, public/scripts/app.js |
+| Rapid Crisis Protocol | Incident reporting, dashboard, nearby alerts, chat/voice UX | public/scripts/modules/dashboard.js, public/scripts/modules/nearby.js, public/scripts/modules/chatbot.js, public/scripts/modules/voice.js |
 | EcoPlus Module | Hotel/resort emergency workflows (guest + admin) | public/modules/echo-plus/index.html, public/modules/echo-plus/js/app.js, public/modules/echo-plus/js/module.js, public/modules/echo-plus/js/ai-safe.js |
 | SQBitain (Custom Builder) | Multi-step rescue system builder with admin/user panels | public/modules/rescue-builder/index.html, public/modules/rescue-builder/js/builder.js, public/modules/rescue-builder/js/templates.js |
 
@@ -194,7 +194,7 @@ npm start
 - **Souvik Dey** – Research Implementation, Lead Backend & Frontend Developer
 - **Snehasis Chakraborty** – Idea Conceptualization & Developer
 - **Partha Sarathi Sarkar** – Research, UI Design, Side Developer  
-- **Samrat Chatterjee** – AI Integration specialist , Side Developer
+- **Samrat Chatterjee** – PPT Design Side Developer
 
 ---
 

@@ -12,7 +12,7 @@ const router = express.Router();
 
 // ==================== GET AI RESPONSE - MULTI-PROVIDER ====================
 
-async function getAIResponse(message, language = 'en') {
+async function getAIResponse(message, language = 'en', context = '', history = [], isVoiceOverride = false, priorityProvider = null) {
     console.log('\n📨 [CHAT] Message received:', message.substring(0, 100));
 
     // Validate language
@@ -22,15 +22,22 @@ async function getAIResponse(message, language = 'en') {
     }
 
     const systemPrompt = getSystemPrompt(language);
+    
+    // Format conversation history
+    const historyText = history && history.length > 0 
+        ? history.map(h => `${h.role === 'user' ? 'Guest' : 'Rescue AI'}: ${h.content}`).join('\n')
+        : '';
 
     const prompt = `${systemPrompt}
+${context ? `\nCORE CONTEXT:\n${context}` : ''}
+${historyText ? `\nCONVERSATION HISTORY:\n${historyText}` : ''}
 
-User query (${language}): "${message}"
+USER QUERY (${language}): "${message}"
 
-Provide a comprehensive, structured response in ${language} that follows the exact format above.`;
+${isVoiceOverride ? 'CONSTRAINTS: Keep response extremely short (1-2 sentences) for immediate voice guidance.' : 'Provide a comprehensive, structured response that follows the exact format above.'}`;
 
     // Use the multi-provider AI router
-    const response = await generateAIResponse(prompt, language);
+    const response = await generateAIResponse(prompt, language, isVoiceOverride, priorityProvider);
 
     // Limit response length
     if (response.length > 2000) {
@@ -44,13 +51,13 @@ Provide a comprehensive, structured response in ${language} that follows the exa
 
 router.post('/', async (req, res) => {
     try {
-        const { message, language = 'en' } = req.body;
+        const { message, language = 'en', context = '', history = [], isVoiceOverride = false } = req.body;
 
         if (!message || !message.trim()) {
             console.warn('❌ Empty message received');
             return res.status(400).json({
                 success: false,
-                error: 'AI service unavailable',
+                error: 'Input required',
                 message: 'Message is required'
             });
         }
@@ -58,8 +65,9 @@ router.post('/', async (req, res) => {
         console.log('\n📨 [ROUTE] Chat request received');
         const id = uuidv4();
 
-        // Get AI response from multi-provider router (always returns a response)
-        const response = await getAIResponse(message, language);
+        // Get AI response
+        const providerPriority = isVoiceOverride ? 'Groq' : null;
+        const response = await getAIResponse(message, language, context, history, isVoiceOverride, providerPriority);
 
         // Store in database (optional)
         try {
@@ -73,12 +81,14 @@ router.post('/', async (req, res) => {
         console.log('✅ [ROUTE] Sending response to client');
         res.json({
             success: true,
+            id: id,
             message: message,
             response: response,
             language: language,
             timestamp: new Date().toISOString(),
             providers: getAIRouterStatus().availableProviders
         });
+
     } catch (error) {
         console.error('\n🔴 [ROUTE] Unhandled error:', error.message);
         res.status(500).json({
