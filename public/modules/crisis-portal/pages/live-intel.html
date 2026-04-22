@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ResQAI | Live Intel</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e14;
+        }
+
+        .font-headline {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#dfe2eb",
+                        "primary-container": "#ff5352",
+                        "surface-container-low": "#181c22",
+                        "secondary": "#a6e6ff",
+                        "on-surface-variant": "#e4beba"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"]
+                    }
+                },
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-on-background">
+    <!-- SIDE NAV BAR -->
+    <aside
+        class="fixed left-0 top-0 h-screen flex flex-col z-40 bg-[#0a0e14]/60 backdrop-blur-2xl border-r border-white/5 w-72">
+        <div class="px-8 py-10">
+            <a href="/pages/module-selection.html" title="Go back">
+                <h1 class="text-xl font-black text-rose-500 font-headline uppercase tracking-widest">ResQAI</h1>
+            </a>
+        </div>
+        <nav class="flex-1 px-4 space-y-2">
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/command-center.html">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Command Center</span>
+            </a>
+            <a class="flex items-center gap-4 bg-gradient-to-r from-rose-500/20 to-transparent text-rose-400 border-l-4 border-rose-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px]"
+                href="/modules/crisis-portal/pages/live-intel.html">
+                <span class="material-symbols-outlined">biotech</span>
+                <span>Live Intel</span>
+            </a>
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/deployment.html">
+                <span class="material-symbols-outlined">local_fire_department</span>
+                <span>Deployment</span>
+            </a>
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/signal-hub.html">
+                <span class="material-symbols-outlined">sensors</span>
+                <span>Signal Hub</span>
+            </a>
+            <a class="flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors"
+                href="/modules/crisis-portal/pages/archive.html">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span>Archive</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="ml-72 min-h-screen flex flex-col">
+        <!-- TOP APP BAR -->
+        <header
+            class="sticky top-0 z-30 flex justify-between items-center w-full px-8 py-4 h-20 bg-slate-950/40 backdrop-blur-xl border-b border-white/10">
+            <h1 class="text-2xl font-headline font-black text-on-background">🔥 LIVE INTELLIGENCE FEED</h1>
+            <p class="font-headline text-on-surface font-bold text-lg">14:42:09 UTC</p>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="p-8 flex-1">
+            <!-- FILTERS -->
+            <div class="flex gap-4 mb-8">
+                <button class="px-4 py-2 bg-primary-container text-white rounded-lg font-headline font-bold text-sm"
+                    onclick="filterAlerts('all')">ALL ALERTS</button>
+                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg font-headline font-bold text-sm"
+                    onclick="filterAlerts('CRITICAL')">🔴 CRITICAL</button>
+                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg font-headline font-bold text-sm"
+                    onclick="filterAlerts('MEDIUM')">🟡 MEDIUM</button>
+                <button class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg font-headline font-bold text-sm"
+                    onclick="filterAlerts('LOW')">🟢 LOW</button>
+            </div>
+
+            <!-- ALERTS LIST -->
+            <div id="alertsList" class="space-y-4">
+                <div class="text-center py-12 text-slate-500">
+                    <p class="font-headline">Loading alerts...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Main Initialization -->
+    <script type="module" src="/modules/crisis-portal/scripts/main.js"></script>
+
+    <!-- Page Initialization -->
+    <script type="module">
+        import { initLiveIntel } from '/modules/crisis-portal/scripts/liveIntelInit.js';
+        initLiveIntel();
+    </script>
+
+    <!-- Animation Styles -->
+    <style>
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</body>
+
+</html>
