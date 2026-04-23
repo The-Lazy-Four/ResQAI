@@ -10,7 +10,7 @@ import axios from 'axios';
 // ==================== INITIALIZATION ====================
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_SECONDARY_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const AI_TIMEOUT = parseInt(process.env.AI_TIMEOUT || '30000');
 
