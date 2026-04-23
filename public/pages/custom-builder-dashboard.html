@@ -190,10 +190,33 @@
 <div id="systemsList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
 </div>
 </main>
+<div id="panelChooser" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/70 backdrop-blur-sm px-6">
+<div class="w-full max-w-2xl rounded-2xl border border-outline-variant/20 bg-surface-container-low shadow-2xl overflow-hidden">
+<div class="flex items-center justify-between gap-4 border-b border-white/10 px-6 py-5">
+<div>
+<p class="text-[10px] uppercase tracking-[0.24em] text-primary font-headline mb-2">Open Rescue System</p>
+<h2 id="chooserSystemName" class="text-2xl font-headline font-bold text-white">Choose Panel</h2>
+</div>
+<button onclick="closePanelChooser()" aria-label="Close panel chooser" class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5">close</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+<button onclick="openSelectedPanel('admin')" class="group rounded-xl border border-primary/25 bg-primary-container/10 p-6 text-left hover:bg-primary-container/20 hover:border-primary/50 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-primary text-4xl mb-6">admin_panel_settings</span>
+<span class="block text-xl font-headline font-bold text-white mb-2">Admin Panel</span>
+<span class="block text-sm text-on-surface-variant/70 leading-relaxed">Manage alerts, staff, AI guidance, evacuation routes, and system controls.</span>
+</button>
+<button onclick="openSelectedPanel('user')" class="group rounded-xl border border-secondary/25 bg-secondary-container/10 p-6 text-left hover:bg-secondary-container/20 hover:border-secondary/50 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-secondary text-4xl mb-6">health_and_safety</span>
+<span class="block text-xl font-headline font-bold text-white mb-2">User Panel</span>
+<span class="block text-sm text-on-surface-variant/70 leading-relaxed">Open the safety view with SOS, active alerts, rescue guidance, and user-facing status.</span>
+</button>
+</div>
+</div>
+</div>
 <!-- Notifications Hub (Bottom Right) -->
-<div class="fixed bottom-8 right-8 z-[60] flex flex-col gap-4 max-w-sm w-full pointer-events-none">
+<div class="fixed bottom-8 right-8 z-[60] flex flex-col gap-4 max-w-sm w-full pointer-events-none" id="notificationsHub">
 <!-- Warning Toast -->
-<div class="pointer-events-auto bg-[#ff9800]/10 backdrop-blur-xl border border-[#ff9800]/30 rounded-lg p-4 shadow-2xl flex items-start gap-4 translate-x-0 transition-transform hover:-translate-y-1">
+<div id="apiKeyAlert" class="pointer-events-auto bg-[#ff9800]/10 backdrop-blur-xl border border-[#ff9800]/30 rounded-lg p-4 shadow-2xl flex items-start gap-4 translate-x-0 transition-transform hover:-translate-y-1 hidden">
 <div class="bg-[#ff9800] text-on-surface p-1.5 rounded flex items-center justify-center">
 <span class="material-symbols-outlined text-lg">warning</span>
 </div>
@@ -206,7 +229,7 @@
 </div>
 </div>
 <!-- Info Toast -->
-<div class="pointer-events-auto bg-secondary/10 backdrop-blur-xl border border-secondary/30 rounded-lg p-4 shadow-2xl flex items-start gap-4 translate-x-0 transition-transform hover:-translate-y-1">
+<div id="systemReadyAlert" class="pointer-events-auto bg-secondary/10 backdrop-blur-xl border border-secondary/30 rounded-lg p-4 shadow-2xl flex items-start gap-4 translate-x-0 transition-transform hover:-translate-y-1 hidden">
 <div class="bg-secondary text-on-secondary p-1.5 rounded flex items-center justify-center">
 <span class="material-symbols-outlined text-lg">build</span>
 </div>
@@ -247,6 +270,18 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    function escapeJsString(value) {
+        return String(value == null ? '' : value)
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/\r/g, '\\r')
+            .replace(/\n/g, '\\n');
+    }
+
+    function escapeOnclickArg(value) {
+        return escapeHtml(escapeJsString(value));
     }
 
     function getMeta(type) {
@@ -392,8 +427,8 @@
                         <p class="text-[11px] text-on-surface-variant/50 mb-6">Last updated: ${escapeHtml(updated)}</p>
 
                         <div class="flex gap-3">
-                            <button onclick="openSystem('${escapeHtml(system.systemID)}')" class="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-[1.02] active:scale-95 transition-all">Open</button>
-                            <button onclick="deleteSystem('${escapeHtml(system.systemID)}')" class="flex-1 px-4 py-3 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-200 font-headline font-bold text-xs tracking-widest uppercase hover:bg-rose-500/10 transition-all">Delete</button>
+                            <button onclick="openSystemChooser('${escapeOnclickArg(system.systemID)}', '${escapeOnclickArg(system.name)}')" class="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-[1.02] active:scale-95 transition-all">Open</button>
+                            <button onclick="deleteSystem('${escapeOnclickArg(system.systemID)}')" class="flex-1 px-4 py-3 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-200 font-headline font-bold text-xs tracking-widest uppercase hover:bg-rose-500/10 transition-all">Delete</button>
                         </div>
                     </div>
                 </article>
@@ -401,9 +436,27 @@
         }).join('');
     }
 
-    function openSystem(systemID) {
+    let selectedSystemID = '';
+
+    function openSystemChooser(systemID, systemName) {
+        selectedSystemID = systemID;
         localStorage.setItem('active_system_id', systemID);
-        window.location.href = `/modules/rescue-builder/index.html?systemID=${encodeURIComponent(systemID)}`;
+        document.getElementById('chooserSystemName').textContent = systemName || 'Choose Panel';
+        const chooser = document.getElementById('panelChooser');
+        chooser.classList.remove('hidden');
+        chooser.classList.add('flex');
+    }
+
+    function closePanelChooser() {
+        const chooser = document.getElementById('panelChooser');
+        chooser.classList.add('hidden');
+        chooser.classList.remove('flex');
+        selectedSystemID = '';
+    }
+
+    function openSelectedPanel(panel) {
+        if (!selectedSystemID) return;
+        window.location.href = `/modules/rescue-builder/index.html?systemID=${encodeURIComponent(selectedSystemID)}&panel=${encodeURIComponent(panel)}`;
     }
 
     function deleteSystem(systemID) {
@@ -415,6 +468,31 @@
         loadSystems();
     }
 
-    document.addEventListener('DOMContentLoaded', loadSystems);
+    async function checkSystemHealth() {
+        try {
+            const response = await fetch('/api/health');
+            const data = await response.json();
+            
+            const apiKeyAlert = document.getElementById('apiKeyAlert');
+            const systemReadyAlert = document.getElementById('systemReadyAlert');
+            
+            if (data.ai && data.ai.primaryProvider === 'None') {
+                apiKeyAlert.classList.remove('hidden');
+            } else {
+                systemReadyAlert.classList.remove('hidden');
+                // Auto hide info toast after 5 seconds
+                setTimeout(() => {
+                    systemReadyAlert.classList.add('hidden');
+                }, 5000);
+            }
+        } catch (error) {
+            console.error('Failed to check system health:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSystems();
+        checkSystemHealth();
+    });
 </script>
 </body></html>
