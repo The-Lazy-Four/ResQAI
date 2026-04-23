@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>ResQAI | Guest Crisis Portal</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0a0e14;
+    }
+
+    .font-headline {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.35s ease forwards;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-background": "#dfe2eb", "primary": "#ffb3ae", "error-container": "#93000a",
+            "surface-dim": "#10141a", "secondary-fixed-dim": "#4cd6ff", "on-error": "#690005",
+            "surface-container-highest": "#31353c", "primary-fixed": "#ffdad7", "surface-variant": "#31353c",
+            "surface": "#10141a", "primary-fixed-dim": "#ffb3ae", "inverse-on-surface": "#2d3137",
+            "error": "#ffb4ab", "on-primary-fixed": "#410004", "on-primary-container": "#5c0008",
+            "background": "#10141a", "outline": "#ab8986", "surface-container-high": "#262a31",
+            "on-tertiary": "#490080", "tertiary-fixed-dim": "#ddb7ff", "tertiary-container": "#b76dff",
+            "secondary": "#a6e6ff", "tertiary": "#ddb7ff", "outline-variant": "#5b403e",
+            "on-error-container": "#ffdad6", "on-tertiary-container": "#400071", "surface-tint": "#ffb3ae",
+            "secondary-container": "#14d1ff", "on-tertiary-fixed": "#2c0051", "surface-bright": "#353940",
+            "on-primary": "#68000b", "surface-container-low": "#181c22", "inverse-primary": "#ba1724",
+            "on-secondary": "#003543", "secondary-fixed": "#b7eaff", "on-primary-fixed-variant": "#930014",
+            "surface-container": "#1c2026", "on-tertiary-fixed-variant": "#6900b3", "on-surface": "#dfe2eb",
+            "tertiary-fixed": "#f0dbff", "inverse-surface": "#dfe2eb", "on-surface-variant": "#e4beba",
+            "primary-container": "#ff5352", "on-secondary-container": "#00566b", "on-secondary-fixed": "#001f28"
+          },
+          borderRadius: { DEFAULT: "1rem", lg: "2rem", xl: "3rem", full: "9999px" },
+          fontFamily: { headline: ["Space Grotesk"], body: ["Inter"], label: ["Space Grotesk"] }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-background text-on-background selection:bg-primary/30">
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed top-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- SIDE NAV BAR -->
+  <aside
+    class="fixed left-0 top-0 h-screen flex flex-col z-40 bg-[#0a0e14]/60 backdrop-blur-2xl border-r border-white/5 w-72 shadow-[20px_0_60px_rgba(0,0,0,0.5)]">
+    <div class="px-8 py-10">
+      <a href="/pages/module-selection.html">
+        <h1 class="text-xl font-black text-rose-500 font-headline uppercase tracking-widest">ResQAI</h1>
+      </a>
+    </div>
+    <nav class="flex-1 px-4 space-y-2">
+      <a data-page="command-center"
+        class="nav-link flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">dashboard</span><span>Command Center</span>
+      </a>
+      <a data-page="live-intel"
+        class="nav-link flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">biotech</span><span>Live Intel</span>
+      </a>
+      <a data-page="deployment"
+        class="nav-link flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">local_fire_department</span><span>Deployment</span>
+      </a>
+      <a data-page="signal-hub"
+        class="nav-link flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">sensors</span><span>Signal Hub</span>
+      </a>
+      <a data-page="archive"
+        class="nav-link flex items-center gap-4 text-slate-500 py-4 px-6 font-headline uppercase tracking-widest text-[12px] hover:text-cyan-400 hover:bg-white/5 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined">folder_open</span><span>Archive</span>
+      </a>
+    </nav>
+    <div class="px-8 py-6 mb-8">
+      <button id="sidebar-sos-btn"
+        class="w-full py-4 bg-primary-container text-on-primary-container rounded-lg font-headline font-bold text-xs tracking-tighter hover:bg-primary transition-all shadow-[0_0_20px_rgba(255,83,82,0.3)]">
+        INITIATE SOS
+      </button>
+    </div>
+    <div class="px-4 py-6 border-t border-white/5">
+      <div class="flex items-center gap-4 px-6 py-4 mb-4">
+        <div
+          class="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center overflow-hidden">
+          <img alt="Operator"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFnjReDhdt6YKdrfoPT4YJ19pWui7xpiD2mSOGge9ytDqAGN_PVdWyycZj6NYm3KwE8QxmPnFFnoL_YDOdA3Ce2MQj5BP1nQiIMdReMpAB3fNG3yKDKqmI3lzvzFllkMz9W3dAWA75GLr2ofQdzemCeGOPTZKDYqQSLnjKA1RvOp0l5kQZVrAZR7LE0LReRpl4zoiN7Nney-e172Srh1RjBxiPdg_4SshTV1eDeOQCsMC84aXPMzTsnpZ2dc6fny9NatMHtuzzkos" />
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-500 font-headline">OPERATOR 01</p>
+          <p class="text-[10px] text-rose-400 font-headline">SECTOR 7G - ACTIVE</p>
+        </div>
+      </div>
+      <a class="flex items-center gap-4 text-slate-500 px-6 py-2 hover:text-rose-400 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-sm">settings</span>
+        <span class="font-headline text-[10px] uppercase">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="ml-72 min-h-screen flex flex-col">
+    <!-- TOP APP BAR -->
+    <header
+      class="sticky top-0 z-30 flex justify-between items-center w-full px-8 py-4 h-20 bg-slate-950/40 backdrop-blur-xl border-b border-white/10 shadow-[0_0_40px_rgba(255,83,82,0.1)]">
+      <div class="flex items-center gap-6">
+        <a href="/pages/module-selection.html"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-slate-300 hover:text-on-surface hover:bg-white/10 transition-all">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          <span class="text-[10px] font-headline uppercase tracking-widest">Back</span>
+        </a>
+        <div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+          <span class="material-symbols-outlined text-secondary">location_on</span>
+          <span id="location-display" class="text-xs font-headline uppercase tracking-widest text-slate-400">SECTOR
+            7G</span>
+        </div>
+        <div id="status-indicator"
+          class="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full border border-green-500/20">
+          <div class="status-dot w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span class="status-text text-xs font-headline uppercase tracking-widest text-green-500">STATUS: SECURE</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <p id="live-clock" class="font-headline text-on-surface font-bold text-lg tracking-tight">00:00:00 UTC</p>
+        <div class="flex items-center gap-2">
+          <button class="p-2 text-slate-400 hover:text-rose-400 hover:bg-white/5 rounded-lg transition-all"
+            title="Security Protocol">
+            <span class="material-symbols-outlined">shield</span>
+          </button>
+          <button class="p-2 text-slate-400 hover:text-rose-400 hover:bg-white/5 rounded-lg transition-all relative"
+            title="Notifications">
+            <span class="material-symbols-outlined">notifications_active</span>
+            <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full"></span>
+          </button>
+          <button id="broadcast-location-btn"
+            class="flex items-center gap-2 px-6 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-headline font-bold text-xs transition-all hover:scale-95">
+            <span class="material-symbols-outlined text-sm">share_location</span>
+            BROADCAST LOCATION
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== COMMAND CENTER ===== -->
+    <div data-section="command-center" class="hidden flex-1 flex flex-col">
+      <div class="p-8 grid grid-cols-12 gap-8 flex-1">
+
+        <!-- LEFT: NEARBY ALERTS -->
+        <section class="col-span-3 flex flex-col gap-6">
+          <div class="flex items-center justify-between">
+            <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400">Nearby Crisis Alerts
+            </h2>
+            <span class="text-[10px] bg-white/5 px-2 py-1 rounded text-slate-500 font-headline">5KM RADIUS</span>
+          </div>
+          <div id="alerts-container" class="space-y-4"></div>
+        </section>
+
+        <!-- CENTER: SMART SOS HUB -->
+        <section class="col-span-5 flex flex-col gap-6">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-rose-500">bolt</span>
+            <h2 class="font-headline text-lg font-black uppercase tracking-tighter text-on-background">Smart SOS Hub
+            </h2>
+          </div>
+          <div class="grid grid-cols-4 gap-4">
+            <button data-sos-type="fire"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-primary-container transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-container/10 group-hover:bg-primary-container/20">
+                <span class="material-symbols-outlined text-primary-container">fire_truck</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Fire</span>
+            </button>
+            <button data-sos-type="medical"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-green-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-green-500/10 group-hover:bg-green-500/20">
+                <span class="material-symbols-outlined text-green-500">emergency</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Medical</span>
+            </button>
+            <button data-sos-type="safety"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-pink-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-pink-500/10 group-hover:bg-pink-500/20">
+                <span class="material-symbols-outlined text-pink-500">female</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Safety</span>
+            </button>
+            <button data-sos-type="child"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-yellow-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-yellow-500/10 group-hover:bg-yellow-500/20">
+                <span class="material-symbols-outlined text-yellow-500">child_care</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Child</span>
+            </button>
+            <button data-sos-type="quake"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-orange-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-900/10 group-hover:bg-orange-900/20">
+                <span class="material-symbols-outlined text-orange-400">tsunami</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Quake</span>
+            </button>
+            <button data-sos-type="flood"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-blue-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-500/10 group-hover:bg-blue-500/20">
+                <span class="material-symbols-outlined text-blue-500">water_drop</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Flood</span>
+            </button>
+            <button data-sos-type="theft"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-orange-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-500/10 group-hover:bg-orange-500/20">
+                <span class="material-symbols-outlined text-orange-500">policy</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Theft</span>
+            </button>
+            <button data-sos-type="other"
+              class="aspect-square flex flex-col items-center justify-center gap-3 bg-surface-container-low border border-white/5 rounded-2xl hover:border-purple-500 transition-all group">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500/10 group-hover:bg-purple-500/20">
+                <span class="material-symbols-outlined text-purple-500">more_horiz</span>
+              </div>
+              <span class="font-headline text-[10px] font-bold uppercase tracking-widest text-slate-400">Other</span>
+            </button>
+          </div>
+          <!-- TRIGGER SOS NOW -->
+          <button id="main-sos-btn"
+            class="group relative w-full h-48 bg-surface-container-highest rounded-3xl overflow-hidden border border-white/10 transition-all hover:scale-[0.98] active:scale-95">
+            <div
+              class="absolute inset-0 bg-gradient-to-tr from-primary-container to-transparent opacity-20 group-hover:opacity-40 transition-opacity">
+            </div>
+            <div class="relative z-10 flex flex-col items-center justify-center h-full">
+              <div
+                class="w-24 h-24 bg-primary-container rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,83,82,0.6)] mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-5xl text-on-primary-container"
+                  style="font-variation-settings:'FILL' 1;">notifications_active</span>
+              </div>
+              <p class="font-headline font-black text-2xl tracking-tighter text-on-background">TRIGGER SOS NOW</p>
+              <p class="text-[10px] font-headline tracking-[0.2em] text-slate-400 mt-2">POLICE &amp; AMBULANCE
+                DISPATCHED ON PRESS</p>
+            </div>
+            <div class="absolute top-4 left-4 w-12 h-12 border-t border-l border-white/20"></div>
+            <div class="absolute bottom-4 right-4 w-12 h-12 border-b border-r border-white/20"></div>
+          </button>
+          <button id="stop-audio-btn"
+            class="w-full py-3 bg-white/5 border border-rose-500/40 text-rose-300 rounded-xl font-headline font-bold text-xs tracking-wider hover:bg-rose-500/10 transition-colors"
+            title="Stop voice and siren">
+            STOP SIREN
+          </button>
+        </section>
+
+        <!-- RIGHT: MAP -->
+        <section class="col-span-4 flex flex-col gap-6">
+          <div class="flex items-center justify-between">
+            <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400">Live Safety Map</h2>
+            <div class="flex gap-2">
+              <div class="flex items-center gap-1">
+                <div class="w-2 h-2 rounded-full bg-primary-container"></div><span
+                  class="text-[8px] text-slate-500 font-headline uppercase">Units</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <div class="w-2 h-2 rounded-full bg-secondary"></div><span
+                  class="text-[8px] text-slate-500 font-headline uppercase">You</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative flex-1 bg-surface-container-low rounded-3xl overflow-hidden border border-white/5">
+            <img alt="Map View" class="w-full h-full object-cover opacity-60 mix-blend-luminosity"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjjqoCaybHmk0eF3qsJG4NTkCbNpLApWZ6bZCh4x55Hnpuyif9KKnbo84ALRQcDKoRKniu7SXSF8bEq7Q5oS_gkgK-DDEIj6DDoLWhtDSGR2DGHfRKEfUAS7PnqPJbf1jeAbn_4yVk4jZo8FFgQ9RugvmRgYb1sqK9a13J1omyJAKMQsicCaXOHF6ZYAy5ThSgf4pIC4raUhRXe_6zkrw64_vobgguSSfPaeLWiAlZ9WTTPiBBC4grIdGFrIQa3d1iL2mfn1iVbF0" />
+            <div class="absolute inset-0 pointer-events-none">
+              <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-secondary/20 rounded-full animate-ping">
+              </div>
+              <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-secondary rounded-full shadow-[0_0_10px_#14d1ff]">
+              </div>
+              <div
+                class="absolute top-10 right-10 w-4 h-4 bg-primary-container rounded-full animate-pulse shadow-[0_0_10px_#ff5352]">
+              </div>
+              <div
+                class="absolute bottom-20 left-10 w-4 h-4 bg-primary-container rounded-full animate-pulse shadow-[0_0_10px_#ff5352]">
+              </div>
+            </div>
+            <div
+              class="absolute bottom-4 left-4 right-4 bg-surface-dim/80 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="text-[10px] text-slate-500 font-headline uppercase">Nearest Safe Zone</p>
+                  <p class="text-sm font-bold font-headline">Sector 7 Central Bunker</p>
+                </div>
+                <button id="navigate-btn"
+                  class="bg-secondary px-4 py-2 rounded-lg text-xs font-bold text-on-secondary">NAVIGATE</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="px-8 pb-8 space-y-6">
+        <!-- AI RESPONSE PANEL -->
+        <div id="ai-response-panel"
+          class="hidden bg-surface-container border border-tertiary/20 rounded-2xl p-5 animate-fade-in">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="material-symbols-outlined text-tertiary text-sm">psychology</span>
+            <span class="text-[10px] font-headline uppercase tracking-widest text-tertiary">ResQAI Response</span>
+            <button onclick="document.getElementById('ai-response-panel').classList.add('hidden')"
+              class="ml-auto text-slate-500 hover:text-slate-300 text-xs px-2">✕</button>
+          </div>
+          <div id="ai-response-content" class="text-sm text-on-surface leading-relaxed"></div>
+        </div>
+
+        <!-- AI BAR -->
+        <div class="relative group">
+          <div
+            class="absolute -inset-1 bg-gradient-to-r from-tertiary-container to-secondary-container rounded-2xl opacity-20 group-focus-within:opacity-40 transition-opacity blur">
+          </div>
+          <div class="relative bg-surface-container-low border border-white/10 p-2 rounded-2xl flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-tertiary">psychology</span>
+            </div>
+            <input id="ai-input"
+              class="flex-1 bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-slate-600"
+              placeholder="Ask ResQAI for first aid steps, safety routes, or crisis status..." type="text" />
+            <button id="mic-btn" class="p-2 text-slate-400 hover:text-on-surface transition-colors" title="Voice input">
+              <span class="material-symbols-outlined">mic</span>
+            </button>
+            <button id="ask-ai-btn"
+              class="bg-tertiary-container text-on-tertiary-container px-6 py-2 rounded-xl font-headline font-bold text-xs hover:opacity-90 transition-opacity">
+              ASK AI
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8">
+          <!-- QUICK DIAL -->
+          <div class="col-span-8">
+            <h2 class="text-[10px] font-headline font-black uppercase tracking-widest text-slate-500 mb-3 px-1">
+              Quick-Dial Protocols</h2>
+            <div class="flex gap-4">
+              <button data-dial="112"
+                class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                <span class="font-headline font-black text-xl text-on-background">112</span>
+                <span class="text-[10px] font-headline text-slate-500 uppercase">Universal</span>
+              </button>
+              <button data-dial="101"
+                class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                <span class="font-headline font-black text-xl text-on-background">101</span>
+                <span class="text-[10px] font-headline text-slate-500 uppercase">Fire</span>
+              </button>
+              <button data-dial="108"
+                class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                <span class="font-headline font-black text-xl text-on-background">108</span>
+                <span class="text-[10px] font-headline text-slate-500 uppercase">Ambulance</span>
+              </button>
+              <button data-dial="100"
+                class="flex-1 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all">
+                <span class="font-headline font-black text-xl text-on-background">100</span>
+                <span class="text-[10px] font-headline text-slate-500 uppercase">Police</span>
+              </button>
+            </div>
+          </div>
+          <!-- SAFETY TIPS -->
+          <div class="col-span-4">
+            <h2 class="text-[10px] font-headline font-black uppercase tracking-widest text-slate-500 mb-3 px-1">Active
+              Safety Protocol</h2>
+            <div class="bg-surface-container-high border border-white/10 p-5 rounded-2xl relative overflow-hidden">
+              <div class="flex gap-4 items-center">
+                <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                  <span id="safety-tip-icon" class="material-symbols-outlined text-secondary">medical_information</span>
+                </div>
+                <div>
+                  <p id="safety-tip-title" class="text-xs font-headline font-bold text-on-background uppercase">
+                    Loading...</p>
+                  <p id="safety-tip-body" class="text-[10px] text-on-surface-variant mt-1 leading-relaxed"></p>
+                </div>
+              </div>
+              <div id="safety-tip-dots" class="flex justify-center gap-1.5 mt-4"></div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ===== LIVE INTEL ===== -->
+    <div data-section="live-intel" class="hidden flex-1 p-8">
+      <div class="mb-8 flex items-center gap-4">
+        <span class="material-symbols-outlined text-cyan-400 text-3xl">biotech</span>
+        <div>
+          <h1 class="font-headline text-2xl font-black text-on-background uppercase tracking-tight">Live Intel Feed</h1>
+          <p class="text-xs text-slate-500 font-headline">Real-time situational awareness — AI-monitored data streams
+          </p>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+          <div class="flex justify-between items-start mb-4"><span
+              class="text-[10px] font-headline text-slate-500 uppercase">Active Incidents</span><span
+              class="material-symbols-outlined text-rose-400">crisis_alert</span></div>
+          <p id="intel-incidents" class="font-headline font-black text-4xl text-rose-400">3</p>
+          <p class="text-[10px] text-slate-500 mt-2">+1 in last 15 min</p>
+        </div>
+        <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+          <div class="flex justify-between items-start mb-4"><span
+              class="text-[10px] font-headline text-slate-500 uppercase">Units Deployed</span><span
+              class="material-symbols-outlined text-cyan-400">directions_run</span></div>
+          <p class="font-headline font-black text-4xl text-cyan-400">7</p>
+          <p class="text-[10px] text-slate-500 mt-2">Across 4 sectors</p>
+        </div>
+        <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+          <div class="flex justify-between items-start mb-4"><span
+              class="text-[10px] font-headline text-slate-500 uppercase">Threat Level</span><span
+              class="material-symbols-outlined text-yellow-400">warning</span></div>
+          <p class="font-headline font-black text-4xl text-yellow-400">MEDIUM</p>
+          <p class="text-[10px] text-slate-500 mt-2">Elevated since 13:22 UTC</p>
+        </div>
+      </div>
+      <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+        <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400 mb-4">AI Situation Analysis
+        </h2>
+        <div id="intel-ai-area" class="space-y-3">
+          <div class="flex gap-4 items-start p-4 bg-white/3 rounded-xl border border-white/5">
+            <span class="material-symbols-outlined text-rose-400 shrink-0">local_fire_department</span>
+            <div>
+              <p class="text-xs font-headline font-bold text-on-background mb-1">Structural Fire — Zone B Industrial</p>
+              <p class="text-xs text-on-surface-variant">Fire units on scene. Evacuation in progress. AI recommends 500m
+                exclusion zone. Wind NNE 12km/h — risk of spread to Zone C.</p>
+            </div>
+          </div>
+          <div class="flex gap-4 items-start p-4 bg-white/3 rounded-xl border border-white/5">
+            <span class="material-symbols-outlined text-yellow-400 shrink-0">medical_services</span>
+            <div>
+              <p class="text-xs font-headline font-bold text-on-background mb-1">Mass Casualty — Main Intersection</p>
+              <p class="text-xs text-on-surface-variant">3 ambulances dispatched. Estimated 8 casualties. AI triage:
+                route non-critical to Sector 4 clinic, critical to Central Hospital.</p>
+            </div>
+          </div>
+        </div>
+        <button id="intel-refresh-btn"
+          class="mt-4 px-4 py-2 bg-tertiary-container text-on-tertiary-container rounded-xl font-headline text-xs font-bold hover:opacity-90 transition-opacity">
+          ⚡ REFRESH AI ANALYSIS
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== DEPLOYMENT ===== -->
+    <div data-section="deployment" class="hidden flex-1 p-8">
+      <div class="mb-8 flex items-center gap-4">
+        <span class="material-symbols-outlined text-rose-400 text-3xl">local_fire_department</span>
+        <div>
+          <h1 class="font-headline text-2xl font-black text-on-background uppercase tracking-tight">Unit Deployment</h1>
+          <p class="text-xs text-slate-500 font-headline">Track and coordinate emergency response units</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400">Active Units</h2>
+          <div id="deployment-units" class="space-y-3"></div>
+          <button id="deploy-unit-btn"
+            class="w-full py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs font-headline font-bold text-rose-400 hover:bg-rose-500/20 transition-all">
+            + DEPLOY NEW UNIT
+          </button>
+        </div>
+        <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+          <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Deployment Map</h2>
+          <div class="relative h-64 rounded-2xl overflow-hidden">
+            <img
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjjqoCaybHmk0eF3qsJG4NTkCbNpLApWZ6bZCh4x55Hnpuyif9KKnbo84ALRQcDKoRKniu7SXSF8bEq7Q5oS_gkgK-DDEIj6DDoLWhtDSGR2DGHfRKEfUAS7PnqPJbf1jeAbn_4yVk4jZo8FFgQ9RugvmRgYb1sqK9a13J1omyJAKMQsicCaXOHF6ZYAy5ThSgf4pIC4raUhRXe_6zkrw64_vobgguSSfPaeLWiAlZ9WTTPiBBC4grIdGFrIQa3d1iL2mfn1iVbF0"
+              alt="Map" class="w-full h-full object-cover opacity-60" />
+            <div
+              class="absolute top-8 left-12 w-3 h-3 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_#ff5352]">
+            </div>
+            <div
+              class="absolute top-16 right-16 w-3 h-3 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_10px_#00d4ff]">
+            </div>
+            <div
+              class="absolute bottom-12 left-1/2 w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]">
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-500 font-headline mt-3 text-center">LIVE UNIT POSITIONS — SECTOR 7G</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SIGNAL HUB ===== -->
+    <div data-section="signal-hub" class="hidden flex-1 p-8">
+      <div class="mb-8 flex items-center gap-4">
+        <span class="material-symbols-outlined text-purple-400 text-3xl">sensors</span>
+        <div>
+          <h1 class="font-headline text-2xl font-black text-on-background uppercase tracking-tight">Signal Hub</h1>
+          <p class="text-xs text-slate-500 font-headline">Communications, broadcasts, and incoming signals</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+          <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Broadcast Message
+          </h2>
+          <textarea id="broadcast-text" rows="4"
+            class="w-full bg-surface-container border border-white/10 rounded-xl p-4 text-sm text-on-surface placeholder:text-slate-600 focus:ring-1 focus:ring-tertiary/50 outline-none resize-none"
+            placeholder="Type emergency broadcast message..."></textarea>
+          <div class="flex gap-3 mt-3">
+            <button id="broadcast-btn"
+              class="flex-1 py-3 bg-primary-container text-on-primary-container rounded-xl font-headline text-xs font-bold hover:opacity-90 transition-opacity">
+              📡 BROADCAST ALL SECTORS
+            </button>
+            <button id="broadcast-ai-btn"
+              class="px-4 py-3 bg-tertiary-container text-on-tertiary-container rounded-xl font-headline text-xs font-bold hover:opacity-90 transition-opacity">
+              AI DRAFT
+            </button>
+          </div>
+          <div id="broadcast-status" class="hidden mt-3 text-xs text-green-400 font-headline"></div>
+        </div>
+        <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+          <h2 class="font-headline text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Incoming Signals
+          </h2>
+          <div id="signal-feed" class="space-y-3 max-h-72 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ARCHIVE ===== -->
+    <div data-section="archive" class="hidden flex-1 p-8">
+      <div class="mb-8 flex items-center gap-4">
+        <span class="material-symbols-outlined text-slate-400 text-3xl">folder_open</span>
+        <div>
+          <h1 class="font-headline text-2xl font-black text-on-background uppercase tracking-tight">Incident Archive
+          </h1>
+          <p class="text-xs text-slate-500 font-headline">Historical emergency records and AI post-analysis</p>
+        </div>
+      </div>
+      <div id="archive-list" class="space-y-4"></div>
+    </div>
+
+  </main>
+
+  <script src="../scripts/voiceSpeech.js"></script>
+
+  <!-- ============================================================
+  INLINE MODULE SCRIPT — all portal logic self-contained
+  ============================================================ -->
+  <script type="module">
+
+    // ===== CONFIG =====
+    const AI_ENDPOINT = '/api/chat';
+
+    // ===== AI SERVICE =====
+    async function askAI(message) {
+      try {
+        const res = await fetch(AI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, language: 'en' }),
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        return data.response || 'AI response unavailable.';
+      } catch {
+        return getFallback(message);
+      }
+    }
+
+    function getFallback(msg) {
+      msg = msg.toLowerCase();
+      if (msg.includes('fire') || msg.includes('fire_truck')) return [
+        '🔥 **FIRE EMERGENCY — IMMEDIATE STEPS:**',
+        '1. Activate nearest fire alarm immediately',
+        '2. Call 101 (Fire) or 112 (Emergency)',
+        '3. Stay LOW — smoke rises, crawl if needed',
+        '4. Touch doors before opening — if hot, DO NOT open',
+        '5. Use stairs ONLY — never use elevators',
+        '6. Exit building and go to assembly point',
+        '7. Do NOT re-enter for any reason',
+        '\n📞 Fire: 101 | Emergency: 112 | Ambulance: 108'
+      ].join('\n');
+      if (msg.includes('medical') || msg.includes('emergency') || msg.includes('ambulance')) return [
+        '🚑 **MEDICAL EMERGENCY — IMMEDIATE STEPS:**',
+        '1. Call 108 (Ambulance) immediately — stay on line',
+        '2. Keep the person calm and still',
+        '3. Do NOT move them unless in immediate danger',
+        '4. If unconscious and not breathing — start CPR',
+        '5. CPR: 30 chest compressions, 2 rescue breaths',
+        '6. Use AED if available nearby',
+        '7. Clear area and await paramedics',
+        '\n📞 Ambulance: 108 | Emergency: 112'
+      ].join('\n');
+      if (msg.includes('flood') || msg.includes('water')) return [
+        '🌊 **FLOOD EMERGENCY — IMMEDIATE STEPS:**',
+        '1. Move to HIGHEST available floor immediately',
+        '2. Do NOT walk or drive through moving water',
+        '3. Avoid storm drains and waterways',
+        '4. Call 112 — report your location',
+        '5. Turn off electricity at main breaker',
+        '6. Stay away from downed power lines',
+        '7. Wait for official evacuation clearance',
+        '\n📞 Emergency: 112 | Rescue: NDRF 011-24363260'
+      ].join('\n');
+      if (msg.includes('earthquake') || msg.includes('quake') || msg.includes('tsunami')) return [
+        '🌍 **EARTHQUAKE — IMMEDIATE STEPS:**',
+        '1. DROP to hands and knees immediately',
+        '2. COVER your head/neck under sturdy desk or table',
+        '3. HOLD ON until shaking completely stops',
+        '4. Stay AWAY from windows, shelves, heavy furniture',
+        '5. If outdoors — move away from buildings',
+        '6. After shaking stops — evacuate carefully',
+        '7. Expect aftershocks — stay alert',
+        '\n📞 Emergency: 112 | NDMA Helpline: 1078'
+      ].join('\n');
+      if (msg.includes('theft') || msg.includes('crime') || msg.includes('policy')) return [
+        '🚔 **CRIME / THEFT ALERT — IMMEDIATE STEPS:**',
+        '1. Call 100 (Police) or 112 immediately',
+        '2. Move to a safe, populated, well-lit area',
+        '3. Do NOT confront or chase the suspect',
+        '4. Lock doors if you are indoors',
+        '5. Note suspect description for police',
+        '6. Preserve the scene — do not touch evidence',
+        '7. Inform security or building management',
+        '\n📞 Police: 100 | Emergency: 112'
+      ].join('\n');
+      if (msg.includes('safety') || msg.includes('women') || msg.includes('female')) return [
+        '🆘 **SAFETY ALERT — IMMEDIATE STEPS:**',
+        '1. Move to a public, populated area immediately',
+        '2. Call 112 (Emergency) or 1091 (Women Helpline)',
+        '3. Call a trusted contact — share your location',
+        '4. Use SOS on your phone if available',
+        '5. Make noise — attract attention',
+        '6. Approach shop owners, security, or police',
+        '7. Do NOT go to isolated areas',
+        '\n📞 Women Helpline: 1091 | Police: 100 | Emergency: 112'
+      ].join('\n');
+      if (msg.includes('child') || msg.includes('child_care')) return [
+        '👶 **CHILD SAFETY ALERT — IMMEDIATE STEPS:**',
+        '1. Call 1098 (Childline) or 112 immediately',
+        '2. Keep child close — do not leave unattended',
+        '3. Move to a safe, public, well-lit location',
+        '4. Alert nearby adults and security',
+        '5. Notify school / parent / guardian immediately',
+        '6. Provide description to authorities',
+        '7. Do not negotiate with threats — call police',
+        '\n📞 Childline: 1098 | Police: 100 | Emergency: 112'
+      ].join('\n');
+      // General SOS / default
+      return [
+        '🚨 **EMERGENCY SOS — IMMEDIATE CHECKLIST:**',
+        '1. Ensure YOUR safety first — stay calm',
+        '2. Call 112 (Universal Emergency) NOW',
+        '3. Give your exact location clearly',
+        '4. Stay on the line with operator',
+        '5. Move away from immediate danger',
+        '6. Broadcast your location if possible',
+        '7. Help is being dispatched — stay put and visible',
+        '\n📞 Universal: 112 | Police: 100 | Ambulance: 108 | Fire: 101'
+      ].join('\n');
+    }
+
+    async function getSOSGuidance(type) {
+      const prompts = {
+        fire: 'FIRE emergency. Give 5 immediate numbered survival steps. Be very concise and urgent.',
+        medical: 'MEDICAL emergency. Give 5 immediate first aid steps. Be very concise and urgent.',
+        safety: 'WOMEN SAFETY emergency. Give immediate safety steps and emergency contacts. Be concise.',
+        child: 'CHILD SAFETY emergency. Give immediate protective steps. Be concise.',
+        quake: 'EARTHQUAKE emergency. Give DROP COVER HOLD steps and what to do after. Be numbered and concise.',
+        flood: 'FLOOD emergency. Give immediate evacuation and safety steps. Be numbered and concise.',
+        theft: 'THEFT / CRIME emergency. Give immediate safety steps. Be concise.',
+        other: 'General EMERGENCY. Give 5 immediate survival and safety steps. Be concise.',
+        sos: 'CRITICAL SOS triggered. Give an immediate emergency checklist: stay safe, call for help, await rescue. Be very concise.',
+      };
+      return askAI(prompts[type] || prompts.sos);
+    }
+
+    // ===== UI UTILS =====
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const colors = {
+        critical: 'border-rose-500 bg-rose-500/10 text-rose-300',
+        info: 'border-cyan-500 bg-cyan-500/10 text-cyan-300',
+        success: 'border-green-500 bg-green-500/10 text-green-300',
+        warning: 'border-yellow-500 bg-yellow-500/10 text-yellow-300',
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto border ${colors[type] || colors.info} px-5 py-3 rounded-xl text-xs font-headline backdrop-blur-md shadow-xl animate-fade-in max-w-sm`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.4s'; setTimeout(() => el.remove(), 400); }, 4000);
+    }
+
+    function showAIPanel(text) {
+      const panel = document.getElementById('ai-response-panel');
+      const content = document.getElementById('ai-response-content');
+      if (!panel || !content) return;
+      panel.classList.remove('hidden');
+      content.innerHTML = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-on-background">$1</strong>')
+        .replace(/\n/g, '<br>')
+        .replace(/(\d+\.\s)/g, '<span class="text-cyan-400 font-bold">$1</span>');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ===== CLOCK =====
+    function startClock() {
+      const el = document.getElementById('live-clock');
+      if (!el) return;
+      const tick = () => {
+        const n = new Date();
+        el.textContent = [n.getUTCHours(), n.getUTCMinutes(), n.getUTCSeconds()]
+          .map(v => String(v).padStart(2, '0')).join(':') + ' UTC';
+      };
+      tick(); setInterval(tick, 1000);
+    }
+
+    // ===== NAVIGATION =====
+    function initNav() {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          navigateTo(link.getAttribute('data-page'));
+        });
+      });
+      navigateTo('command-center');
+    }
+
+    function navigateTo(pageId) {
+      document.querySelectorAll('[data-section]').forEach(s => s.classList.add('hidden'));
+      const target = document.querySelector(`[data-section="${pageId}"]`);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        const active = link.getAttribute('data-page') === pageId;
+        link.classList.toggle('text-rose-400', active);
+        link.classList.toggle('bg-gradient-to-r', active);
+        link.classList.toggle('from-rose-500/20', active);
+        link.classList.toggle('to-transparent', active);
+        link.classList.toggle('border-l-4', active);
+        link.classList.toggle('border-rose-500', active);
+        link.classList.toggle('text-slate-500', !active);
+      });
+    }
+
+    // ===== ALERTS =====
+    const alerts = [
+      { id: 1, type: 'fire', severity: 'critical', title: 'Structural Fire', description: 'Emergency teams deployed to Zone B. Evacuate immediately.', distance: '1.2 KM', ago: '4 MIN AGO', icon: 'local_fire_department', border: 'border-rose-500', badge: 'text-rose-400' },
+      { id: 2, type: 'medical', severity: 'medium', title: 'Mass Casualty Event', description: 'Transit collision at Main Intersection. Ambulances on route.', distance: '3.8 KM', ago: '12 MIN AGO', icon: 'medical_services', border: 'border-yellow-500', badge: 'text-yellow-500' },
+      { id: 3, type: 'power', severity: 'low', title: 'Grid Instability', description: 'Localized power outage in Sector 4. Estimated repair: 2 hours.', distance: '4.5 KM', ago: '45 MIN AGO', icon: 'power_off', border: 'border-green-500', badge: 'text-green-500' },
+    ];
+
+    function renderAlerts() {
+      const c = document.getElementById('alerts-container');
+      if (!c) return;
+      c.innerHTML = alerts.map(a => `
+    <div class="bg-surface-container-low ${a.border} border-l-4 p-5 rounded-r-xl shadow-lg relative overflow-hidden group animate-fade-in">
+      <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+        <span class="material-symbols-outlined text-4xl">${a.icon}</span>
+      </div>
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-[10px] font-headline font-bold ${a.badge} px-2 py-0.5 bg-white/5 rounded">${a.severity.toUpperCase()}</span>
+        <span class="text-[10px] text-slate-500">${a.distance}</span>
+      </div>
+      <h3 class="font-headline font-bold text-on-background mb-1">${a.title}</h3>
+      <p class="text-xs text-on-surface-variant line-clamp-2">${a.description}</p>
+      <p class="mt-3 text-[10px] font-headline text-slate-500">DETECTED: ${a.ago}</p>
+    </div>
+  `).join('');
+    }
+
+    function addAlert({ type, severity, title, description }) {
+      const icons = { fire: 'local_fire_department', medical: 'medical_services', flood: 'water_drop', quake: 'tsunami', theft: 'policy', child: 'child_care', safety: 'female', other: 'warning', sos: 'notifications_active' };
+      const borders = { critical: 'border-rose-500', medium: 'border-yellow-500', low: 'border-green-500' };
+      const badges = { critical: 'text-rose-400', medium: 'text-yellow-500', low: 'text-green-500' };
+      alerts.unshift({
+        id: Date.now(), type, severity, title, description, distance: 'YOUR LOCATION', ago: 'JUST NOW',
+        icon: icons[type] || 'warning', border: borders[severity] || 'border-rose-500', badge: badges[severity] || 'text-rose-400'
+      });
+      if (alerts.length > 6) alerts.length = 6;
+      renderAlerts();
+    }
+
+    // ===== STATUS =====
+    function setStatus(text, color) {
+      const el = document.getElementById('status-indicator');
+      if (!el) return;
+      const dot = el.querySelector('.status-dot');
+      const label = el.querySelector('.status-text');
+      el.className = `flex items-center gap-2 px-4 py-2 ${color === 'red' ? 'bg-rose-500/10 border border-rose-500/20' : 'bg-green-500/10 border border-green-500/20'} rounded-full`;
+      if (dot) dot.className = `status-dot w-2 h-2 ${color === 'red' ? 'bg-rose-500' : 'bg-green-500'} rounded-full animate-pulse`;
+      if (label) { label.textContent = text; label.className = `status-text text-xs font-headline uppercase tracking-widest ${color === 'red' ? 'text-rose-500' : 'text-green-500'}`; }
+    }
+
+    // ===== SOS =====
+    let sosActive = false;
+
+    async function triggerSOS(type = 'sos') {
+      if (sosActive) { showToast('⚠️ SOS already active', 'warning'); return; }
+      sosActive = true;
+      const labels = { fire: 'Fire Emergency', medical: 'Medical Emergency', safety: 'Women Safety Alert', child: 'Child Safety Alert', quake: 'Earthquake Alert', flood: 'Flood Emergency', theft: 'Theft Alert', other: 'General Emergency', sos: 'SOS TRIGGERED' };
+      const label = labels[type] || 'SOS TRIGGERED';
+
+      setStatus('EMERGENCY — SOS ACTIVE', 'red');
+      showToast(`🚨 ${label.toUpperCase()} — Emergency services dispatched!`, 'critical');
+
+      addAlert({ type, severity: 'critical', title: label, description: 'SOS triggered by Operator 01 at Sector 7G. Emergency services notified.' });
+
+      showAIPanel('⏳ Getting emergency guidance from ResQAI...');
+
+      const guidance = await getSOSGuidance(type);
+      showAIPanel(`🚨 <strong>${label}</strong> — AI Guidance:\n\n${guidance}`);
+      window.VoiceSystem?.handleAIResponse(guidance, type);
+
+      setTimeout(() => showToast('✅ Police & Ambulance dispatched to Sector 7G', 'info'), 2000);
+      setTimeout(() => { sosActive = false; setStatus('STATUS: SECURE', 'green'); }, 30000);
+    }
+
+    function initSOS() {
+      document.getElementById('sidebar-sos-btn')?.addEventListener('click', () => triggerSOS('sos'));
+      document.getElementById('main-sos-btn')?.addEventListener('click', () => triggerSOS('sos'));
+      document.querySelectorAll('[data-sos-type]').forEach(btn => {
+        btn.addEventListener('click', () => triggerSOS(btn.getAttribute('data-sos-type')));
+      });
+      document.querySelectorAll('[data-dial]').forEach(btn => {
+        btn.addEventListener('click', () => showToast(`📞 Calling ${btn.getAttribute('data-dial')}...`, 'info'));
+      });
+      document.getElementById('navigate-btn')?.addEventListener('click', () => showToast('🗺️ Navigation to Sector 7 Central Bunker activated', 'info'));
+      document.getElementById('broadcast-location-btn')?.addEventListener('click', () => {
+        showToast('📡 Broadcasting location...', 'info');
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              const { latitude: lat, longitude: lng } = pos.coords;
+              document.getElementById('location-display').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+              showToast(`✅ Location broadcasted: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'success');
+            },
+            () => showToast('✅ Location broadcasted: SECTOR 7G', 'success')
+          );
+        } else showToast('✅ Location broadcasted: SECTOR 7G', 'success');
+      });
+    }
+
+    // ===== VOICE =====
+    function initVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const input = document.getElementById('ai-input');
+      const micBtn = document.getElementById('mic-btn');
+      if (!SpeechRecognition || !micBtn) { if (micBtn) { micBtn.disabled = true; micBtn.classList.add('opacity-30'); } return; }
+      const rec = new SpeechRecognition();
+      rec.lang = 'en-US';
+      let listening = false;
+      rec.onresult = e => { if (input) input.value = e.results[0][0].transcript; stop(); };
+      rec.onerror = stop; rec.onend = stop;
+      function stop() { listening = false; micBtn.classList.remove('text-rose-400', 'animate-pulse'); }
+      micBtn.addEventListener('click', () => {
+        if (listening) { rec.stop(); stop(); }
+        else { listening = true; micBtn.classList.add('text-rose-400', 'animate-pulse'); rec.start(); }
+      });
+    }
+
+    // ===== AI BAR =====
+    function initAIBar() {
+      const input = document.getElementById('ai-input');
+      const btn = document.getElementById('ask-ai-btn');
+      if (!input || !btn) return;
+      const submit = async () => {
+        const msg = input.value.trim();
+        if (!msg) return;
+        input.value = '';
+        showAIPanel('⏳ ResQAI is thinking...');
+        const res = await askAI(`You are ResQAI, an emergency response AI. Be concise and direct. User says: "${msg}"`);
+        showAIPanel(res);
+        window.VoiceSystem?.handleAIResponse(res, 'other');
+      };
+      btn.addEventListener('click', submit);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    }
+
+    function initAudioKillSwitch() {
+      const stopPortalAudio = () => {
+        window.VoiceSystem?.stopAllAudio();
+      };
+
+      document.getElementById('stop-audio-btn')?.addEventListener('click', () => {
+        stopPortalAudio();
+        showToast('🔇 Voice and siren stopped', 'info');
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          stopPortalAudio();
+        }
+      });
+
+      // Ensure speech/siren stops when user leaves this module/page.
+      window.addEventListener('pagehide', stopPortalAudio);
+      window.addEventListener('beforeunload', stopPortalAudio);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          stopPortalAudio();
+        }
+      });
+
+      // Stop audio before navigating to non-crisis-portal routes.
+      document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href') || '';
+        if (!href) return;
+        const isLocalAnchor = href.startsWith('#');
+        const staysInModule = href.includes('/modules/crisis-portal/');
+        if (!isLocalAnchor && !staysInModule) {
+          stopPortalAudio();
+        }
+      });
+    }
+
+    // ===== SAFETY TIPS =====
+    function initSafetyTips() {
+      const tips = [
+        { icon: 'medical_information', title: 'Smoke Inhalation Prevention', body: 'Stay low to the floor. Use a damp cloth to cover nose and mouth. Crawl to exits.' },
+        { icon: 'fire_extinguisher', title: 'Fire Extinguisher: PASS', body: 'Pull pin, Aim low, Squeeze handle, Sweep side to side. Only if safe to do so.' },
+        { icon: 'water_drop', title: 'Flood Safety', body: 'Never walk in moving water. Move to higher ground immediately. Avoid storm drains.' },
+        { icon: 'earthquake', title: 'Earthquake: Drop Cover Hold', body: 'Drop to hands and knees. Take cover under desk. Hold on until shaking stops.' },
+        { icon: 'favorite', title: 'CPR Basics', body: 'Call 108. Push hard and fast in center of chest. 100-120 compressions per minute.' },
+      ];
+      let i = 0;
+      const title = document.getElementById('safety-tip-title');
+      const body = document.getElementById('safety-tip-body');
+      const icon = document.getElementById('safety-tip-icon');
+      const dots = document.getElementById('safety-tip-dots');
+      if (!title) return;
+      const render = idx => {
+        const t = tips[idx];
+        title.textContent = t.title; body.textContent = t.body;
+        if (icon) icon.textContent = t.icon;
+        if (dots) dots.innerHTML = tips.map((_, j) => `<div class="${j === idx ? 'w-4 h-1 bg-secondary' : 'w-1 h-1 bg-white/20'} rounded-full transition-all"></div>`).join('');
+      };
+      render(0);
+      setInterval(() => { i = (i + 1) % tips.length; render(i); }, 5000);
+    }
+
+    // ===== DEPLOYMENT PAGE =====
+    const deployUnits = [
+      { id: 'U-01', name: 'Fire Unit Alpha', sector: 'Zone B', status: 'ON SCENE', color: 'text-rose-400' },
+      { id: 'U-02', name: 'Ambulance Delta', sector: 'Main Intersection', status: 'EN ROUTE', color: 'text-yellow-400' },
+      { id: 'U-03', name: 'Police Unit 7', sector: 'Sector 4', status: 'STANDBY', color: 'text-green-400' },
+      { id: 'U-04', name: 'Rescue Team Gamma', sector: 'Sector 7G', status: 'DEPLOYED', color: 'text-cyan-400' },
+    ];
+    function renderDeployment() {
+      const c = document.getElementById('deployment-units');
+      if (!c) return;
+      c.innerHTML = deployUnits.map(u => `
+    <div class="flex items-center justify-between bg-surface-container border border-white/5 p-4 rounded-xl">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+          <span class="font-headline font-black text-[10px] text-slate-400">${u.id}</span>
+        </div>
+        <div>
+          <p class="text-xs font-headline font-bold text-on-background">${u.name}</p>
+          <p class="text-[10px] text-slate-500">${u.sector}</p>
+        </div>
+      </div>
+      <span class="text-[10px] font-headline font-bold ${u.color}">${u.status}</span>
+    </div>`).join('');
+    }
+
+    // ===== ARCHIVE =====
+    const archiveItems = [
+      { date: '2025-01-10', type: 'Fire', title: 'Structural Fire — Zone B', summary: 'Fire contained after 2hrs. 3 units deployed. No casualties.', resolved: true },
+      { date: '2025-01-08', type: 'Medical', title: 'Road Accident — Highway 7', summary: '4 casualties, 2 critical. All transported to Central Hospital.', resolved: true },
+      { date: '2025-01-05', type: 'Flood', title: 'Flash Flood — Sector 3', summary: '20 residents evacuated. Sector 3 road closed for 6 hours.', resolved: true },
+    ];
+    function renderArchive() {
+      const c = document.getElementById('archive-list');
+      if (!c) return;
+      c.innerHTML = archiveItems.map(a => `
+    <div class="bg-surface-container-low border border-white/5 rounded-2xl p-6">
+      <div class="flex justify-between items-start mb-2">
+        <div>
+          <span class="text-[10px] font-headline text-slate-500">${a.date}</span>
+          <span class="ml-3 text-[10px] font-headline font-bold text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded">${a.type.toUpperCase()}</span>
+        </div>
+        <span class="text-[10px] font-headline text-green-400">RESOLVED</span>
+      </div>
+      <h3 class="font-headline font-bold text-on-background mb-1">${a.title}</h3>
+      <p class="text-xs text-on-surface-variant">${a.summary}</p>
+    </div>`).join('');
+    }
+
+    // ===== SIGNAL HUB =====
+    const signals = [
+      { time: '14:38', from: 'Unit Alpha', message: 'Fire contained in west wing. Requesting backup for east.', type: 'critical' },
+      { time: '14:29', from: 'Dispatch HQ', message: 'All units: threat level elevated to MEDIUM. Stay alert.', type: 'warning' },
+      { time: '14:15', from: 'Unit Delta', message: 'Ambulance arrived on scene. 8 casualties confirmed.', type: 'info' },
+      { time: '13:55', from: 'Sector 4', message: 'Power restored. Grid stable.', type: 'info' },
+    ];
+    function renderSignals() {
+      const c = document.getElementById('signal-feed');
+      if (!c) return;
+      const colors = { critical: 'border-rose-500/30 text-rose-300', warning: 'border-yellow-500/30 text-yellow-300', info: 'border-cyan-500/30 text-cyan-300' };
+      c.innerHTML = signals.map(s => `
+    <div class="border ${colors[s.type] || colors.info} bg-white/3 rounded-xl p-3">
+      <div class="flex justify-between mb-1">
+        <span class="text-[10px] font-headline font-bold">${s.from}</span>
+        <span class="text-[10px] text-slate-500">${s.time} UTC</span>
+      </div>
+      <p class="text-xs text-on-surface-variant">${s.message}</p>
+    </div>`).join('');
+    }
+    function initSignalHub() {
+      document.getElementById('broadcast-btn')?.addEventListener('click', () => {
+        const ta = document.getElementById('broadcast-text');
+        const text = ta?.value?.trim();
+        if (!text) { showToast('⚠️ Enter a message to broadcast', 'warning'); return; }
+        const statusEl = document.getElementById('broadcast-status');
+        if (statusEl) { statusEl.textContent = `✅ Broadcast sent at ${new Date().toUTCString()}`; statusEl.classList.remove('hidden'); }
+        showToast('📡 Broadcast sent to all sectors', 'success');
+        signals.unshift({ time: new Date().toTimeString().slice(0, 5), from: 'Operator 01', message: text, type: 'info' });
+        renderSignals();
+        if (ta) ta.value = '';
+      });
+      document.getElementById('broadcast-ai-btn')?.addEventListener('click', async () => {
+        const ta = document.getElementById('broadcast-text');
+        if (ta) ta.value = '⏳ Generating...';
+        const draft = await askAI('Draft a concise 2-sentence emergency broadcast message for an active incident. Be urgent and clear.');
+        if (ta) ta.value = draft;
+      });
+    }
+
+    // ===== INTEL PAGE =====
+    function initIntel() {
+      document.getElementById('intel-refresh-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('intel-refresh-btn');
+        if (btn) btn.textContent = '⏳ Analyzing...';
+        const analysis = await askAI('Provide a 2-sentence AI situation analysis update for an active emergency scene with fire and medical incidents.');
+        const area = document.getElementById('intel-ai-area');
+        if (area) {
+          const el = document.createElement('div');
+          el.className = 'flex gap-4 items-start p-4 bg-white/3 rounded-xl border border-tertiary/20 animate-fade-in';
+          el.innerHTML = `<span class="material-symbols-outlined text-tertiary shrink-0">psychology</span>
+        <div><p class="text-xs font-headline font-bold text-on-background mb-1">AI Update — ${new Date().toUTCString()}</p>
+        <p class="text-xs text-on-surface-variant">${analysis}</p></div>`;
+          area.appendChild(el);
+        }
+        if (btn) btn.textContent = '⚡ REFRESH AI ANALYSIS';
+      });
+    }
+
+    // ===== DEPLOY PAGE =====
+    function initDeployment() {
+      const typeNames = ['Police Unit', 'Fire Unit', 'Rescue Team', 'Medical Unit'];
+      const sectorNames = ['Sector 1', 'Sector 2', 'Sector 5', 'Zone A'];
+      document.getElementById('deploy-unit-btn')?.addEventListener('click', () => {
+        const u = {
+          id: `U-0${deployUnits.length + 1}`,
+          name: `${typeNames[Math.floor(Math.random() * typeNames.length)]} ${String.fromCharCode(65 + deployUnits.length)}`,
+          sector: sectorNames[Math.floor(Math.random() * sectorNames.length)],
+          status: 'DEPLOYED', color: 'text-cyan-400'
+        };
+        deployUnits.push(u);
+        renderDeployment();
+        showToast(`✅ ${u.name} deployed to ${u.sector}`, 'info');
+      });
+    }
+
+    // ===== BOOT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      startClock();
+      initNav();
+      renderAlerts();
+      initSOS();
+      initVoice();
+      initAIBar();
+      initAudioKillSwitch();
+      initSafetyTips();
+      renderDeployment();
+      renderArchive();
+      renderSignals();
+      initSignalHub();
+      initIntel();
+      initDeployment();
+      console.log('[ResQAI] Crisis portal fully loaded ✅');
+    });
+
+  </script>
+</body>
+
+</html>
