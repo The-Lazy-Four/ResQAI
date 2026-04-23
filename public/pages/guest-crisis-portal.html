@@ -1,14 +1,25 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0; url=/modules/crisis-portal/pages/command-center.html" />
-    <title>ResQAI | Redirecting...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting to Crisis Portal...</title>
+    <meta http-equiv="refresh" content="0; url=/modules/crisis-portal/pages/guest-crisis-portal.html" />
+    <script>
+        (function () {
+            const target = '/modules/crisis-portal/pages/guest-crisis-portal.html' + window.location.search + window.location.hash;
+            window.location.replace(target);
+        })();
+    </script>
 </head>
 
 <body>
-    <p>Redirecting to command center...</p>
+    <p>Redirecting to the Guest Crisis Portal...</p>
+    <p>
+        If you are not redirected, open
+        <a href="/modules/crisis-portal/pages/guest-crisis-portal.html">the Guest Crisis Portal</a>.
+    </p>
 </body>
 
 </html>
