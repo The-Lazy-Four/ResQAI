@@ -34,7 +34,8 @@ let launchContext = {
     directWizard: false,
     returnToOrgSelect: false,
     selectedType: '',
-    systemID: ''
+    systemID: '',
+    selectedPanel: ''
 };
 
 // ===== UTILITY FUNCTIONS =====
@@ -48,12 +49,14 @@ function readLaunchContext() {
     const selectedType = (params.get('type') || '').trim();
     const entry = (params.get('entry') || '').trim();
     const systemID = (params.get('systemID') || '').trim();
+    const selectedPanel = (params.get('panel') || '').trim().toLowerCase();
 
     launchContext = {
         directWizard: entry === 'wizard' && Boolean(selectedType),
         returnToOrgSelect: entry === 'wizard',
         selectedType,
-        systemID
+        systemID,
+        selectedPanel: ['admin', 'user'].includes(selectedPanel) ? selectedPanel : ''
     };
 }
 
@@ -1141,7 +1144,7 @@ async function loadSystemIntoPanel(systemID) {
     if (!panelInfo) {
         if (DEBUG) console.error('Panel info container not found');
         console.log('[LOAD] ERROR: Panel info element missing');
-        return;
+        return false;
     }
 
     // Show loading state
@@ -1211,7 +1214,7 @@ async function loadSystemIntoPanel(systemID) {
                 if (DEBUG) console.log('✅ System loaded from API:', systemID);
                 console.log('[LOAD] Panel info updated from API');
                 if (DEBUG) console.groupEnd();
-                return;
+                return true;
             }
         }
         throw new Error(`HTTP ${response.status}`);
@@ -1283,7 +1286,7 @@ async function loadSystemIntoPanel(systemID) {
                     if (DEBUG) console.log('✅ System loaded from localStorage');
                     console.log('[LOAD] Panel info updated from localStorage');
                     if (DEBUG) console.groupEnd();
-                    return;
+                    return true;
                 }
             }
         } catch (storageErr) {
@@ -1301,6 +1304,7 @@ async function loadSystemIntoPanel(systemID) {
         if (DEBUG) console.error('System not found:', systemID);
         console.log('[LOAD] ERROR: System not found:', systemID);
         if (DEBUG) console.groupEnd();
+        return false;
     }
 }
 
@@ -1397,21 +1401,39 @@ function showSystemControlPanel(systemID) {
     loadSystemIntoPanel(systemID);
 }
 
+async function openSystemPanelDirect(systemID, panel) {
+    console.log('[PANEL] Direct launch:', panel, 'for system:', systemID);
+    localStorage.setItem('active_system_id', systemID);
+    showScreen('screen-system-control-panel');
+
+    const loaded = await loadSystemIntoPanel(systemID);
+    if (!loaded) {
+        showToast('System could not be loaded', 'error');
+        return;
+    }
+
+    if (panel === 'admin') {
+        accessAdminDashboard();
+    } else if (panel === 'user') {
+        accessUserDashboard();
+    }
+}
+
 // ===== BACK BUTTON FUNCTIONS =====
 
 function goBackToMainPage() {
-    console.log('🔙 Exiting to parent ResQAI app...');
+    console.log('[BACK] Returning to custom builder dashboard...');
     // Call parent window function to exit the iframe
     if (window.parent && window.parent.goBackFromRescueBuilder) {
         window.parent.goBackFromRescueBuilder();
     } else {
-        console.warn('⚠️ Cannot exit - parent window function not available');
+        window.location.href = '/pages/custom-builder-dashboard.html';
     }
 }
 
 function goBackFromSystemPanel() {
-    console.log('🔙 [BACK] Returning to systems dashboard from control panel...');
-    showSystemsDashboard();
+    console.log('[BACK] Returning to custom builder dashboard from control panel...');
+    window.location.href = '/pages/custom-builder-dashboard.html';
 }
 
 // ===== SCREEN 1: TYPE SELECTION =====
@@ -3352,17 +3374,22 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('📱 Entry point: Your Systems Dashboard');
 });
 
-function initializeModule() {
+async function initializeModule() {
     readLaunchContext();
 
     if (launchContext.directWizard) {
         selectType(launchContext.selectedType);
     } else if (launchContext.systemID) {
         localStorage.setItem('active_system_id', launchContext.systemID);
-        showSystemControlPanel(launchContext.systemID);
+        if (launchContext.selectedPanel) {
+            await openSystemPanelDirect(launchContext.systemID, launchContext.selectedPanel);
+        } else {
+            window.location.href = '/pages/custom-builder-dashboard.html';
+            return;
+        }
     } else {
-        // Set initial screen - show systems dashboard first
-        showSystemsDashboard();
+        window.location.href = '/pages/custom-builder-dashboard.html';
+        return;
     }
 
     // Handle upload image preview with base64 extraction for AI analysis
