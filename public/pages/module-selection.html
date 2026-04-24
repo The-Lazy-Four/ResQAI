@@ -127,6 +127,12 @@
             <div class="flex items-center gap-8">
                 <span
                     class="text-2xl font-black tracking-tighter text-red-500 font-['Space_Grotesk'] bg-gradient-to-r from-primary-container to-primary bg-clip-text text-transparent">ResQAI</span>
+                <div class="hidden md:flex items-center gap-6 font-['Space_Grotesk'] tracking-tight text-sm uppercase">
+                    <a class="text-red-400 border-b-2 border-red-500 pb-1" href="#">Mission</a>
+                    <a class="text-slate-400 hover:text-slate-100 transition-colors" href="#">Tactical Suite</a>
+                    <a class="text-slate-400 hover:text-slate-100 transition-colors" href="#">AI Engine</a>
+                    <a class="text-slate-400 hover:text-slate-100 transition-colors" href="#">Network</a>
+                </div>
             </div>
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
@@ -134,12 +140,17 @@
                     <span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/80">System
                         Active</span>
                 </div>
-                <a href="/pages/auth.html" aria-label="Open profile"
-                    class="h-10 w-10 rounded-full border border-outline-variant/30 overflow-hidden hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/70 focus:ring-offset-2 focus:ring-offset-background transition-transform cursor-pointer">
+                <button
+                    class="hidden lg:flex items-center gap-2 px-4 py-2 bg-secondary-container/20 text-secondary border border-secondary/30 rounded-full text-xs font-label uppercase tracking-wider hover:bg-secondary-container/30 transition-all shadow-[0_0_15px_rgba(20,209,255,0.2)]">
+                    <span class="material-symbols-outlined text-sm">monitoring</span>
+                    Live Monitor
+                </button>
+                <div
+                    class="h-10 w-10 rounded-full border border-outline-variant/30 overflow-hidden hover:scale-105 transition-transform cursor-pointer">
                     <img class="w-full h-full object-cover"
                         data-alt="professional male operator headshot with neutral expression in a high-tech control room environment"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-KR31NXUV7lpu3uGC7D_DPZrm5pj7SX3Rz-gDS79s3g8E-8qj7wiDyBI10HsW7ymP7l159OuRODWX_9XX_yYged_x-YR61fxzpF1hDiJJ4muCXtfJGJm_W2DEsurx6uaC3HffyMcbIwCaf1-4_0oDFAuma3jeLEpM9_vWoZSu3aRU6vP4tUFsuatIqJTwhoL6YFsOraJZt0bEmOWjUAxWWNE-jvaSwPO-xAl_1j6j9S_HT_sIoZ0sOU2gkkcm9_cy63WfYwpay88" />
-                </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -164,6 +175,17 @@
                 Next-generation emergency orchestration. ResQAI synchronizes tactical response with artificial
                 intelligence to mitigate crisis before it escalates.
             </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <button
+                    class="group relative px-8 py-4 bg-gradient-to-br from-primary-container to-primary rounded-lg font-label font-bold uppercase tracking-widest text-on-primary-container overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,83,82,0.4)] active:scale-95">
+                    Get Started
+                </button>
+                <button
+                    class="px-8 py-4 bg-surface-container-high border border-outline-variant/30 rounded-lg font-label font-bold uppercase tracking-widest text-on-surface transition-all hover:bg-surface-container-highest hover:border-outline-variant/60 active:scale-95 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">play_circle</span>
+                    Watch Demo
+                </button>
+            </div>
         </section>
         <!-- Main Cards Grid -->
         <section class="max-w-7xl mx-auto px-8 py-24">
@@ -184,7 +206,7 @@
                         </h3>
                         <p class="text-on-surface-variant/70 mb-10 text-sm leading-relaxed">Immediate SOS activation and
                             evacuation guidance for transient populations and temporary site visitors.</p>
-                        <button onclick="window.location.href='/modules/crisis-portal/pages/guest-crisis-portal.html'"
+                        <button onclick="window.location.href='/modules/crisis-portal/pages/command-center.html'"
                             class="w-full py-4 bg-primary-container text-on-primary-container font-label font-bold uppercase tracking-widest rounded-lg transition-transform active:scale-95 group-hover:shadow-[0_10px_20px_rgba(255,83,82,0.2)]">
                             LAUNCH PORTAL
                         </button>
@@ -226,7 +248,8 @@
                         <h3 class="text-2xl font-headline font-bold text-on-surface mb-4">Custom Rescue Builder</h3>
                         <p class="text-on-surface-variant/70 mb-10 text-sm leading-relaxed">Architect your own safety
                             protocols. Modular AI logic to fit specific industrial or residential layouts.</p>
-                        <button onclick="window.location.href='/pages/custom-builder-dashboard.html'"
+                        <button
+                            onclick="window.location.href='/modules/rescue-builder/pages/custom-builder-dashboard.html'"
                             class="w-full py-4 bg-tertiary-container text-on-tertiary-container font-label font-bold uppercase tracking-widest rounded-lg transition-transform active:scale-95 group-hover:shadow-[0_10px_20px_rgba(183,109,255,0.2)]">
                             GET STARTED
                         </button>
