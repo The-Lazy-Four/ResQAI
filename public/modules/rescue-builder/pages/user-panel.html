@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResQAI — User Panel</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: { "surface-container-lowest": "#0a0e14", "on-surface-variant": "#e4beba", "primary": "#ffb3ae", "surface-bright": "#353940", "on-primary": "#68000b", "surface-container-low": "#181c22", "outline": "#ab8986", "surface": "#10141a", "surface-container": "#1c2026", "outline-variant": "#5b403e", "on-surface": "#dfe2eb", "surface-container-high": "#262a31", "surface-tint": "#ffb3ae", "error-container": "#93000a", "secondary": "#a6e6ff", "primary-container": "#ff5352", "surface-container-highest": "#31353c", "secondary-container": "#14d1ff", "on-secondary": "#003543", "background": "#10141a", "tertiary": "#ddb7ff", "on-primary-container": "#5c0008", "error": "#ffb4ab" },
+          fontFamily: { headline: ["Space Grotesk"], body: ["Inter"], mono: ["JetBrains Mono"] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.3
+      }
+    }
+
+    @keyframes slide-up {
+      from {
+        transform: translateY(100%);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    @keyframes ring-pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.8
+      }
+
+      100% {
+        transform: scale(2.2);
+        opacity: 0
+      }
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px
+    }
+
+    .card {
+      background: rgba(24, 28, 34, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      animation: fade-in 0.35s ease
+    }
+
+    .card:hover {
+      border-color: rgba(255, 179, 174, 0.1)
+    }
+
+    #toast {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none
+    }
+
+    .toast-msg {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      pointer-events: auto;
+      animation: fade-in 0.3s ease
+    }
+
+    .toast-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80
+    }
+
+    .toast-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171
+    }
+
+    .toast-warning {
+      background: rgba(249, 115, 22, 0.15);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #fb923c
+    }
+
+    .toast-info {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93c5fd
+    }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: 'Space Grotesk';
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #64748b;
+      border: 1px solid transparent
+    }
+
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #94a3b8
+    }
+
+    .nav-tab.active {
+      background: rgba(255, 83, 82, 0.12);
+      border-color: rgba(255, 83, 82, 0.25);
+      color: #ffb3ae
+    }
+
+    .section-hidden {
+      display: none
+    }
+
+    .section-active {
+      display: block
+    }
+
+    .sos-btn {
+      width: 100%;
+      padding: 20px;
+      border-radius: 16px;
+      font-weight: 900;
+      font-family: 'Space Grotesk';
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .sos-btn:active {
+      transform: scale(0.97)
+    }
+
+    .alert-card {
+      background: rgba(24, 28, 34, 0.9);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      animation: fade-in 0.3s ease
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04)
+    }
+
+    .step-item:last-child {
+      border-bottom: none
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      font-family: 'Space Grotesk'
+    }
+
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 85%;
+      animation: fade-in 0.3s ease
+    }
+
+    .chat-user {
+      background: rgba(255, 83, 82, 0.12);
+      border: 1px solid rgba(255, 83, 82, 0.2);
+      color: #fff;
+      margin-left: auto;
+      border-bottom-right-radius: 4px
+    }
+
+    .chat-ai {
+      background: rgba(221, 183, 255, 0.08);
+      border: 1px solid rgba(221, 183, 255, 0.15);
+      color: #ddd;
+      margin-right: auto;
+      border-bottom-left-radius: 4px
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 179, 174, 0.15);
+      border-radius: 3px
+    }
+
+    .ring-anim::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 3px solid #ef4444;
+      animation: ring-pulse 1.5s ease-out infinite
+    }
+
+    textarea.chat-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #dfe2eb;
+      font-size: 14px;
+      resize: none;
+      width: 100%;
+      outline: none;
+      font-family: 'Inter';
+      transition: border-color 0.2s;
+      height: 52px;
+      max-height: 120px;
+      overflow-y: auto
+    }
+
+    textarea.chat-input:focus {
+      border-color: rgba(221, 183, 255, 0.35);
+      height: auto
+    }
+  </style>
+</head>
+
+<body class="bg-[#0a0e14] text-on-surface font-body min-h-screen">
+
+  <div id="toast"></div>
+
+  <!-- Header -->
+  <header
+    class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-5 py-3.5 bg-[#10141a]/90 backdrop-blur-md border-b border-white/5">
+    <div class="flex items-center gap-3">
+      <span class="text-primary font-black text-xl font-headline tracking-tighter">ResQAI</span>
+      <div class="h-4 w-px bg-white/10 hidden md:block"></div>
+      <div
+        class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-400/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"
+          style="animation:pulse-dot 2s infinite"></span>
+        <span class="text-emerald-300 font-headline font-bold text-[10px] uppercase tracking-widest">Staff
+          Dashboard</span>
+      </div>
+      <span id="hdr-org" class="text-slate-500 text-xs font-body truncate max-w-[160px]"></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="hdr-time" class="text-slate-600 text-xs font-mono hidden md:block"></span>
+      <button onclick="goToAdmin()"
+        class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-400/25 text-rose-400 text-[10px] font-headline uppercase tracking-widest hover:bg-rose-500/10 transition-all">
+        <span class="material-symbols-outlined text-sm">admin_panel_settings</span> Admin
+      </button>
+      <button onclick="goBack()"
+        class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-[10px] tracking-widest uppercase hover:scale-105 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-sm">arrow_back</span> Exit
+      </button>
+    </div>
+  </header>
+
+  <!-- Nav Tabs -->
+  <div
+    class="fixed top-14 left-0 w-full z-40 bg-[#0a0e14]/95 backdrop-blur-md border-b border-white/5 px-4 py-2 flex gap-1.5 overflow-x-auto">
+    <button class="nav-tab active" onclick="showTab('home')" id="tab-home"><span
+        class="material-symbols-outlined text-base">home</span> Home</button>
+    <button class="nav-tab" onclick="showTab('sos')" id="tab-sos"><span
+        class="material-symbols-outlined text-base">emergency</span> SOS</button>
+    <button class="nav-tab" onclick="showTab('alerts')" id="tab-alerts"><span
+        class="material-symbols-outlined text-base">campaign</span> Alerts</button>
+    <button class="nav-tab" onclick="showTab('guide')" id="tab-guide"><span
+        class="material-symbols-outlined text-base">menu_book</span> Guide</button>
+    <button class="nav-tab" onclick="showTab('ai')" id="tab-ai"><span
+        class="material-symbols-outlined text-base">smart_toy</span> AI Chat</button>
+    <button class="nav-tab" onclick="showTab('activity')" id="tab-activity"><span
+        class="material-symbols-outlined text-base">history</span> Activity</button>
+  </div>
+
+  <!-- Content -->
+  <div class="pt-28 pb-8 px-4 max-w-2xl mx-auto">
+
+    <!-- HOME TAB -->
+    <div id="section-home" class="section-active space-y-5">
+
+      <!-- Welcome -->
+      <div class="card p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h1 class="text-white font-black font-headline text-2xl leading-tight" id="home-org-name"><span
+                class="shimmer inline-block w-48 h-7"></span></h1>
+            <p class="text-slate-500 text-sm mt-1" id="home-org-type"></p>
+            <p class="text-slate-600 text-xs mt-0.5 flex items-center gap-1" id="home-location"><span
+                class="material-symbols-outlined text-xs">location_on</span></p>
+          </div>
+          <div class="text-right">
+            <div id="status-badge"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 font-headline font-bold text-[10px] uppercase tracking-widest">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"
+                style="animation:pulse-dot 2s infinite"></span> SAFE
+            </div>
+            <div class="text-slate-600 text-[10px] mt-1 font-mono" id="last-updated">--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold font-headline text-primary" id="qstat-staff">—</div>
+          <div class="text-[10px] text-slate-600 uppercase tracking-wider font-headline mt-1">Staff</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold font-headline text-amber-400" id="qstat-alerts">—</div>
+          <div class="text-[10px] text-slate-600 uppercase tracking-wider font-headline mt-1">Alerts</div>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl font-bold font-headline text-rose-400" id="qstat-sos">—</div>
+          <div class="text-[10px] text-slate-600 uppercase tracking-wider font-headline mt-1">SOS Events</div>
+        </div>
+      </div>
+
+      <!-- Active Alerts Preview -->
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-amber-400 text-base">campaign</span> Active Alerts
+          </h3>
+          <button onclick="showTab('alerts')"
+            class="text-slate-600 hover:text-primary text-[10px] font-headline uppercase tracking-wider transition-colors">View
+            All →</button>
+        </div>
+        <div id="home-alerts-preview">
+          <div class="shimmer h-12 rounded-xl mb-2"></div>
+          <div class="shimmer h-12 rounded-xl"></div>
+        </div>
+      </div>
+
+      <!-- Safety Tips -->
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm mb-3">
+          <span class="material-symbols-outlined text-emerald-400 text-base">health_and_safety</span> Safety Tips
+        </h3>
+        <div id="safety-tips-list" class="space-y-2">
+          <div class="shimmer h-8 rounded-lg"></div>
+          <div class="shimmer h-8 rounded-lg"></div>
+          <div class="shimmer h-8 rounded-lg"></div>
+        </div>
+      </div>
+
+      <!-- Risk Info -->
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm mb-3">
+          <span class="material-symbols-outlined text-rose-400 text-base">warning</span> Active Risk Types
+        </h3>
+        <div id="risk-tags" class="flex flex-wrap gap-2">
+          <div class="shimmer h-7 w-20 rounded-full"></div>
+          <div class="shimmer h-7 w-24 rounded-full"></div>
+          <div class="shimmer h-7 w-16 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOS TAB -->
+    <div id="section-sos" class="section-hidden space-y-5">
+
+      <!-- Big SOS Button -->
+      <div class="card p-8 text-center">
+        <div class="mb-6">
+          <div class="text-slate-400 text-sm mb-1">Emergency? Tap the button to alert all staff.</div>
+          <div class="text-slate-600 text-xs">Your location and emergency type will be logged.</div>
+        </div>
+        <div class="flex justify-center mb-6">
+          <div class="relative">
+            <button onclick="activateSOS()"
+              class="w-36 h-36 rounded-full bg-gradient-to-br from-rose-600 to-rose-500 text-white font-black font-headline text-2xl shadow-[0_0_60px_rgba(239,68,68,0.4)] hover:shadow-[0_0_80px_rgba(239,68,68,0.6)] transition-all hover:scale-105 active:scale-95 border-4 border-rose-400/30 relative ring-anim"
+              style="animation:none;">
+              🆘<br><span class="text-sm font-bold tracking-widest">SOS</span>
+            </button>
+          </div>
+        </div>
+        <p class="text-slate-600 text-xs">Hold for 1 second to confirm. All admins will be immediately notified.</p>
+      </div>
+
+      <!-- Emergency Type Selector -->
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline text-sm mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-rose-400 text-base">category</span> Select Emergency Type
+        </h3>
+        <div id="sos-type-grid" class="grid grid-cols-3 gap-2">
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+        </div>
+        <p class="text-slate-600 text-xs mt-3">Selected: <span id="selected-sos-type"
+            class="text-primary font-mono">General Emergency</span></p>
+      </div>
+
+      <!-- AI Emergency Guidance -->
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline text-sm mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary text-base">smart_toy</span> AI Emergency Guidance
+        </h3>
+        <button onclick="getEmergencyGuidance()"
+          class="w-full py-3 rounded-xl bg-tertiary/10 border border-tertiary/25 text-tertiary font-headline font-bold text-xs uppercase tracking-wider hover:bg-tertiary/15 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span> Get AI Guidance for Selected Emergency
+        </button>
+        <div id="sos-ai-guidance"
+          class="hidden mt-4 bg-tertiary/6 border border-tertiary/15 rounded-xl p-4 text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+        </div>
+      </div>
+
+      <!-- SOS History -->
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline text-sm mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-slate-400 text-base">history</span> SOS Event History
+        </h3>
+        <div id="sos-history" class="space-y-2 max-h-60 overflow-y-auto">
+          <div class="text-slate-600 text-sm text-center py-4">Loading SOS history...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTS TAB -->
+    <div id="section-alerts" class="section-hidden space-y-5">
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-amber-400 text-base">campaign</span> All Alerts from Admin
+          </h3>
+          <button onclick="loadAlerts()" class="text-slate-600 hover:text-amber-400 transition-colors">
+            <span class="material-symbols-outlined text-base">refresh</span>
+          </button>
+        </div>
+        <div id="all-alerts-list" class="space-y-3">
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIDE TAB -->
+    <div id="section-guide" class="section-hidden space-y-5">
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm mb-4">
+          <span class="material-symbols-outlined text-sky-400 text-base">directions_run</span> Evacuation Steps
+        </h3>
+        <div id="evac-steps" class="space-y-1">
+          <div class="shimmer h-14 rounded-xl"></div>
+          <div class="shimmer h-14 rounded-xl mt-2"></div>
+          <div class="shimmer h-14 rounded-xl mt-2"></div>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm mb-4">
+          <span class="material-symbols-outlined text-primary text-base">badge</span> Staff Roles
+        </h3>
+        <div id="guide-staff-roles" class="space-y-2">
+          <div class="shimmer h-12 rounded-xl"></div>
+          <div class="shimmer h-12 rounded-xl mt-1"></div>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-white font-bold font-headline flex items-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-tertiary text-base">smart_toy</span> AI Situational Guide
+          </h3>
+        </div>
+        <div class="flex gap-2 flex-wrap mb-3">
+          <button onclick="getScenarioGuide('fire')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-400/20 text-rose-400 hover:bg-rose-500/15 transition-all font-body">🔥
+            Fire</button>
+          <button onclick="getScenarioGuide('medical')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 hover:bg-emerald-500/15 transition-all font-body">⚕️
+            Medical</button>
+          <button onclick="getScenarioGuide('flood')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-sky-500/10 border border-sky-400/20 text-sky-400 hover:bg-sky-500/15 transition-all font-body">💧
+            Flood</button>
+          <button onclick="getScenarioGuide('intruder')"
+            class="text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-400/20 text-amber-400 hover:bg-amber-500/15 transition-all font-body">🚨
+            Intruder</button>
+        </div>
+        <div id="scenario-guide-box"
+          class="hidden bg-tertiary/6 border border-tertiary/15 rounded-xl p-4 text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+        </div>
+      </div>
+    </div>
+
+    <!-- AI CHAT TAB -->
+    <div id="section-ai" class="section-hidden space-y-4">
+      <div class="card p-5">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="material-symbols-outlined text-tertiary text-lg">smart_toy</span>
+          <span class="text-white font-bold font-headline text-sm">Emergency AI Assistant</span>
+          <span
+            class="ml-auto px-2 py-0.5 rounded-full bg-tertiary/10 border border-tertiary/25 text-tertiary text-[9px] font-headline uppercase tracking-widest">Online</span>
+        </div>
+
+        <!-- Suggested questions -->
+        <div class="flex flex-wrap gap-1.5 mb-4" id="chat-suggestions">
+          <button onclick="sendChatMsg('What should I do during a fire emergency?')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all">🔥
+            Fire procedure</button>
+          <button onclick="sendChatMsg('Where is the nearest assembly point?')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all">📍
+            Assembly point</button>
+          <button onclick="sendChatMsg('Who is the emergency warden?')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all">👮
+            Warden info</button>
+          <button onclick="sendChatMsg('First aid steps for a colleague?')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all">⚕️
+            First aid</button>
+        </div>
+
+        <!-- Chat messages -->
+        <div id="chat-messages"
+          class="space-y-3 min-h-[220px] max-h-[380px] overflow-y-auto mb-4 rounded-xl bg-black/20 p-4">
+          <div class="chat-bubble chat-ai">
+            <p>👋 Hi! I'm your ResQAI emergency assistant. Ask me anything about safety procedures, emergency protocols,
+              or evacuation routes for your organization.</p>
+          </div>
+        </div>
+
+        <!-- Chat input -->
+        <div class="flex gap-2 items-end">
+          <textarea id="chat-input" class="chat-input flex-1" placeholder="Type your emergency question..."
+            onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){sendChat()}"></textarea>
+          <button onclick="sendChat()" id="btn-send-chat"
+            class="flex-shrink-0 w-11 h-11 rounded-xl bg-tertiary/20 border border-tertiary/30 text-tertiary flex items-center justify-center hover:bg-tertiary/30 transition-all">
+            <span class="material-symbols-outlined text-base">send</span>
+          </button>
+        </div>
+        <div class="text-[10px] text-slate-700 mt-1">Ctrl+Enter to send</div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY TAB -->
+    <div id="section-activity" class="section-hidden space-y-5">
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-white font-bold font-headline text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-400 text-base">history</span> Recent System Activity
+          </h3>
+          <button onclick="loadActivity()" class="text-slate-600 hover:text-amber-400 transition-colors">
+            <span class="material-symbols-outlined text-base">refresh</span>
+          </button>
+        </div>
+        <div id="activity-list" class="space-y-2 max-h-[500px] overflow-y-auto">
+          <div class="shimmer h-12 rounded-xl"></div>
+          <div class="shimmer h-12 rounded-xl mt-2"></div>
+          <div class="shimmer h-12 rounded-xl mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = '/api/custom-system';
+    let systemData = null;
+    let systemID = null;
+    let selectedSOSType = 'general';
+    let chatHistory = [];
+    let alertPollInterval = null;
+
+    // ===== INIT =====
+    window.addEventListener('DOMContentLoaded', async () => {
+      systemID = localStorage.getItem('active_system_id') || new URLSearchParams(location.search).get('systemID');
+      if (!systemID) { toast('No system selected. Please open a system first.', 'error'); return; }
+
+      // Clock
+      setInterval(() => {
+        document.getElementById('hdr-time').textContent = new Date().toLocaleTimeString();
+      }, 1000);
+
+      await loadSystem();
+      await loadAlerts();
+      alertPollInterval = setInterval(loadAlerts, 10000);
+    });
+
+    window.addEventListener('beforeunload', () => { if (alertPollInterval) clearInterval(alertPollInterval); });
+
+    // ===== TOAST =====
+    function toast(msg, type = 'info') {
+      const el = document.getElementById('toast');
+      const div = document.createElement('div');
+      div.className = `toast-msg toast-${type}`;
+      div.textContent = msg;
+      el.appendChild(div);
+      setTimeout(() => div.remove(), 4000);
+    }
+
+    // ===== TAB NAV =====
+    function showTab(tab) {
+      ['home', 'sos', 'alerts', 'guide', 'ai', 'activity'].forEach(t => {
+        document.getElementById(`section-${t}`)?.classList.toggle('section-hidden', t !== tab);
+        document.getElementById(`section-${t}`)?.classList.toggle('section-active', t === tab);
+        document.getElementById(`tab-${t}`)?.classList.toggle('active', t === tab);
+      });
+      if (tab === 'sos') loadSOSHistory();
+      if (tab === 'guide') renderGuide();
+      if (tab === 'activity') loadActivity();
+    }
+
+    // ===== LOAD SYSTEM =====
+    async function loadSystem() {
+      try {
+        const cached = JSON.parse(localStorage.getItem('resqai_custom_systems') || '[]');
+        let sys = cached.find(s => (s.systemID || s.id) === systemID);
+        if (sys?.data) sys = { ...sys, ...sys.data, systemID: sys.systemID || sys.id };
+
+        if (!sys) {
+          const r = await fetch(`${API}/${systemID}`);
+          if (r.ok) { const d = await r.json(); sys = d.system; }
+        }
+        if (!sys) { toast('System not found', 'error'); return; }
+        systemData = sys;
+
+        const name = sys.organization_name || sys.organizationName || sys.name || 'Your Organization';
+        const type = sys.organization_type || sys.organizationType || sys.type || 'Custom System';
+        const loc = sys.location || '';
+        const staff = Array.isArray(sys.staff) ? sys.staff : [];
+
+        // Update header
+        document.getElementById('hdr-org').textContent = name;
+        document.getElementById('home-org-name').textContent = name;
+        document.getElementById('home-org-type').textContent = type;
+        document.getElementById('home-location').innerHTML = `<span class="material-symbols-outlined text-xs">location_on</span>${loc}`;
+        document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+        document.getElementById('qstat-staff').textContent = staff.length;
+
+        // Safety tips
+        const tips = sys.template?.safetyTips || ['Know your nearest exit route', 'Keep emergency contacts accessible', 'Do not use elevators during emergencies', 'Follow warden instructions at all times', 'Stay calm and assist others where safe'];
+        document.getElementById('safety-tips-list').innerHTML = tips.map(t => `
+      <div class="flex items-center gap-3 p-2.5 rounded-lg bg-white/2 border border-white/4">
+        <span class="material-symbols-outlined text-emerald-400 text-sm flex-shrink-0">check_circle</span>
+        <span class="text-slate-400 text-sm">${t}</span>
+      </div>`).join('');
+
+        // Risk tags
+        const risks = sys.riskTypes || sys.risk_types_json || [];
+        const rColors = ['rose', 'amber', 'sky', 'emerald', 'violet', 'orange'];
+        document.getElementById('risk-tags').innerHTML = (Array.isArray(risks) ? risks : []).map((r, i) => {
+          const c = rColors[i % rColors.length];
+          return `<span class="px-3 py-1 rounded-full bg-${c}-500/10 border border-${c}-400/20 text-${c}-400 text-xs font-headline uppercase tracking-wider">${r}</span>`;
+        }).join('') || '<span class="text-slate-600 text-sm">No risks configured</span>';
+
+        // SOS type grid
+        const types = sys.template?.emergencyTypes || [
+          { id: 'fire', icon: '🔥', label: 'Fire', color: '#ef4444' },
+          { id: 'medical', icon: '⚕️', label: 'Medical', color: '#22c55e' },
+          { id: 'flood', icon: '💧', label: 'Flood', color: '#3b82f6' },
+          { id: 'intruder', icon: '🚨', label: 'Intruder', color: '#f97316' },
+          { id: 'chemical', icon: '☢️', label: 'Chemical', color: '#a855f7' },
+          { id: 'earthquake', icon: '📍', label: 'Quake', color: '#eab308' },
+        ];
+        document.getElementById('sos-type-grid').innerHTML = types.map(t => `
+      <button onclick="selectSOSType('${t.id}','${t.label}')" class="sos-type-btn p-3 rounded-xl text-center transition-all" style="background:${t.color}12;border:1px solid ${t.color}30;color:${t.color};" id="sos-type-${t.id}">
+        <div style="font-size:22px;">${t.icon}</div>
+        <div style="font-size:10px;font-weight:700;font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">${t.label}</div>
+      </button>`).join('');
+
+      } catch (err) { toast('Error loading system: ' + err.message, 'error'); }
+    }
+
+    // ===== SOS =====
+    function selectSOSType(id, label) {
+      selectedSOSType = id;
+      document.getElementById('selected-sos-type').textContent = label;
+      document.querySelectorAll('.sos-type-btn').forEach(b => b.style.outline = 'none');
+      const btn = document.getElementById(`sos-type-${id}`);
+      if (btn) btn.style.outline = '2px solid currentColor';
+      toast(`Emergency type selected: ${label}`, 'info');
+    }
+
+    async function activateSOS() {
+      const confirmed = confirm(`🚨 Send SOS alert to all admin staff?\n\nType: ${selectedSOSType.toUpperCase()}\n\nThis will immediately notify all administrators.`);
+      if (!confirmed) return;
+      toast('🚨 SOS ALERT SENT!', 'error');
+      try {
+        const resp = await fetch(`${API}/log-emergency`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemID, emergencyType: selectedSOSType, location: systemData?.location, timestamp: new Date().toISOString() })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          toast(`✅ Emergency logged. Event ID: ${data.eventID}`, 'success');
+          document.getElementById('status-badge').innerHTML = `<span style="animation:pulse-dot 0.5s infinite" class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span> EMERGENCY`;
+          document.getElementById('status-badge').className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-400/25 text-rose-400 font-headline font-bold text-[10px] uppercase tracking-widest';
+          await loadSOSHistory();
+          document.getElementById('qstat-sos').textContent = parseInt(document.getElementById('qstat-sos').textContent || '0') + 1;
+        }
+      } catch (err) { toast('SOS logged locally (offline)', 'warning'); }
+    }
+
+    async function loadSOSHistory() {
+      try {
+        const resp = await fetch(`${API}/${systemID}/events`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const events = (data.events || []).filter(e => e.event_type === 'EMERGENCY_SOS');
+        const list = document.getElementById('sos-history');
+        document.getElementById('qstat-sos').textContent = events.length;
+        if (!events.length) { list.innerHTML = '<div class="text-slate-600 text-sm text-center py-4">No SOS events recorded</div>'; return; }
+        list.innerHTML = events.slice(0, 10).map(ev => {
+          const det = (() => { try { return JSON.parse(ev.details || '{}'); } catch { return {}; } })();
+          return `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-rose-500/5 border border-rose-400/15">
+          <span class="material-symbols-outlined text-rose-400 text-sm">emergency</span>
+          <div class="flex-1">
+            <div class="text-sm text-white font-medium">${(det.emergencyType || 'SOS').toUpperCase()}</div>
+            <div class="text-xs text-slate-600">${new Date(ev.created_at).toLocaleString()}</div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 text-[9px] font-headline uppercase border border-rose-400/20">Logged</span>
+        </div>`;
+        }).join('');
+      } catch { }
+    }
+
+    async function getEmergencyGuidance() {
+      const box = document.getElementById('sos-ai-guidance');
+      box.classList.remove('hidden');
+      box.textContent = '⏳ AI is generating emergency guidance...';
+      try {
+        const resp = await fetch(`${API}/generate-guidance`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: selectedSOSType, organizationType: systemData?.organization_type || systemData?.organizationType || systemData?.type || 'organization', staff: systemData?.staff || [], structure: systemData?.structure || {} })
+        });
+        if (resp.ok) { const d = await resp.json(); box.textContent = d.guidance || 'Guidance unavailable'; toast('✅ AI guidance loaded', 'success'); }
+        else throw new Error();
+      } catch { box.textContent = `Standard ${selectedSOSType} protocol:\n1. Alert all occupants\n2. Call emergency services\n3. Evacuate using nearest exit\n4. Assemble at designated muster point\n5. Account for all personnel`; }
+    }
+
+    // ===== ALERTS =====
+    async function loadAlerts() {
+      try {
+        const resp = await fetch(`${API}/${systemID}/alerts`);
+        if (!resp.ok) return;
+        const { alerts } = await resp.json();
+        const count = alerts?.length || 0;
+        document.getElementById('qstat-alerts').textContent = count;
+
+        const renderAlert = (a) => {
+          const sev = a.severity || 'info';
+          const colours = { critical: 'rose', warning: 'amber', info: 'sky' };
+          const c = colours[sev] || 'amber';
+          const icons = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+          return `
+        <div class="alert-card border-l-4 border-${c}-400/60" style="border-left-color:var(--tw-border-opacity)">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="text-sm">${icons[sev] || '📢'}</span>
+            <span class="text-${c}-400 text-[10px] font-headline font-bold uppercase tracking-wider">${sev}</span>
+            <span class="text-slate-600 text-[10px] ml-auto font-mono">${new Date(a.created_at).toLocaleString()}</span>
+          </div>
+          <p class="text-slate-300 text-sm leading-relaxed">${a.message}</p>
+        </div>`;
+        };
+
+        if (alerts?.length) {
+          // Preview on home (show 2)
+          document.getElementById('home-alerts-preview').innerHTML = alerts.slice(0, 2).map(renderAlert).join('') +
+            (alerts.length > 2 ? `<button onclick="showTab('alerts')" class="w-full text-center text-slate-600 text-xs hover:text-primary transition-colors mt-2">+${alerts.length - 2} more alerts</button>` : '');
+          // Full list on alerts tab
+          document.getElementById('all-alerts-list').innerHTML = alerts.map(renderAlert).join('');
+        } else {
+          document.getElementById('home-alerts-preview').innerHTML = '<div class="text-slate-600 text-sm text-center py-4 flex items-center justify-center gap-2"><span class="material-symbols-outlined text-base">check_circle</span> No active alerts</div>';
+          document.getElementById('all-alerts-list').innerHTML = '<div class="text-slate-600 text-sm text-center py-8">No alerts from admin yet.</div>';
+        }
+      } catch (err) { console.warn('Alert load error:', err); }
+    }
+
+    // ===== GUIDE =====
+    function renderGuide() {
+      const template = systemData?.template || {};
+      const steps = template.evacuationSteps || ['Activate alarm system', 'Notify all occupants', 'Guide to nearest exits', 'Assemble at muster point', 'Account for all personnel'];
+      document.getElementById('evac-steps').innerHTML = steps.map((s, i) => `
+    <div class="step-item">
+      <div class="step-num bg-sky-500/15 border border-sky-400/25 text-sky-400">${i + 1}</div>
+      <div class="pt-1">
+        <p class="text-slate-300 text-sm">${s}</p>
+      </div>
+    </div>`).join('');
+
+      const staff = systemData?.staff || [];
+      if (staff.length) {
+        const roleColors = { commander: 'rose', warden: 'amber', medical: 'emerald', coordinator: 'sky', responder: 'violet' };
+        document.getElementById('guide-staff-roles').innerHTML = staff.map(s => {
+          const c = roleColors[s.role] || 'slate';
+          return `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/2 border border-white/4">
+          <div class="w-8 h-8 rounded-lg bg-${c}-500/15 border border-${c}-400/25 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-${c}-400 text-sm">person</span>
+          </div>
+          <div class="flex-1">
+            <div class="text-white font-medium text-sm">${s.name || '—'}</div>
+            <div class="text-slate-500 text-[10px] uppercase font-headline">${s.role || 'staff'}</div>
+          </div>
+          ${s.phone ? `<a href="tel:${s.phone}" class="text-emerald-400 text-xs font-mono hover:text-emerald-300 transition-colors">${s.phone}</a>` : ''}
+        </div>`;
+        }).join('');
+      } else {
+        document.getElementById('guide-staff-roles').innerHTML = '<div class="text-slate-600 text-sm text-center py-4">No staff configured</div>';
+      }
+    }
+
+    async function getScenarioGuide(type) {
+      const box = document.getElementById('scenario-guide-box');
+      box.classList.remove('hidden');
+      box.textContent = '⏳ Generating AI scenario guide...';
+      try {
+        const resp = await fetch(`${API}/generate-guidance`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, organizationType: systemData?.organization_type || systemData?.organizationType || systemData?.type || 'organization', staff: systemData?.staff || [], structure: systemData?.structure || {} })
+        });
+        if (resp.ok) { const d = await resp.json(); box.textContent = d.guidance; toast('✅ AI guide ready', 'success'); }
+        else throw new Error();
+      } catch { box.textContent = `Standard ${type} guidance:\n1. Raise the alarm immediately\n2. Do not panic\n3. Follow evacuation procedure\n4. Assist others to safety\n5. Contact emergency services`; }
+    }
+
+    // ===== AI CHAT =====
+    async function sendChat() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+      sendChatMsg(msg);
+    }
+
+    async function sendChatMsg(msg) {
+      const messagesEl = document.getElementById('chat-messages');
+      // User bubble
+      messagesEl.innerHTML += `<div class="flex justify-end"><div class="chat-bubble chat-user">${escHtml(msg)}</div></div>`;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      // Typing indicator
+      const typingId = 'typing-' + Date.now();
+      messagesEl.innerHTML += `<div id="${typingId}" class="flex justify-start"><div class="chat-bubble chat-ai text-slate-500 italic">AI is thinking...</div></div>`;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      chatHistory.push({ role: 'user', content: msg });
+
+      const btn = document.getElementById('btn-send-chat');
+      btn.disabled = true;
+      try {
+        const orgType = systemData?.organization_type || systemData?.organizationType || systemData?.type || 'organization';
+        const orgName = systemData?.organization_name || systemData?.organizationName || systemData?.name || '';
+        const prompt = `You are an AI emergency assistant for "${orgName}" (${orgType}).
+
+Organization context:
+- Type: ${orgType}
+- Location: ${systemData?.location || 'Unknown'}
+- Staff: ${(systemData?.staff || []).map(s => `${s.name} (${s.role})`).join(', ') || 'Not specified'}
+- Risk Types: ${(systemData?.riskTypes || []).join(', ') || 'Not specified'}
+- Evacuation Steps: ${(systemData?.template?.evacuationSteps || []).join(' → ')}
+
+Staff member question: "${msg}"
+
+Give a clear, calm, and practical emergency response. Be specific to this organization. Keep your answer concise and actionable (2-4 sentences max for simple questions, longer for complex ones).`;
+
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 500, messages: [{ role: 'user', content: prompt }] })
+        });
+
+        let aiText;
+        if (resp.ok) {
+          const d = await resp.json();
+          aiText = d.content?.[0]?.text || 'I could not generate a response.';
+        } else {
+          // Fallback to backend AI
+          const backResp = await fetch(`${API}/generate-guidance`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: msg, organizationType: orgType, staff: systemData?.staff || [], structure: systemData?.structure || {} })
+          });
+          if (backResp.ok) { const d = await backResp.json(); aiText = d.guidance || 'No response available.'; }
+          else aiText = 'AI service is currently unavailable. Please follow standard emergency procedures for your organization.';
+        }
+
+        chatHistory.push({ role: 'assistant', content: aiText });
+        document.getElementById(typingId)?.remove();
+        messagesEl.innerHTML += `<div class="flex justify-start"><div class="chat-bubble chat-ai">${escHtml(aiText)}</div></div>`;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      } catch (err) {
+        document.getElementById(typingId)?.remove();
+        messagesEl.innerHTML += `<div class="flex justify-start"><div class="chat-bubble chat-ai text-rose-400">Error: Unable to reach AI assistant.</div></div>`;
+      } finally {
+        btn.disabled = false;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+    }
+
+    // ===== ACTIVITY =====
+    async function loadActivity() {
+      try {
+        const resp = await fetch(`${API}/logs/activity?systemId=${systemID}&limit=30`);
+        if (!resp.ok) return;
+        const { logs } = await resp.json();
+        const list = document.getElementById('activity-list');
+        if (!logs?.length) { list.innerHTML = '<div class="text-slate-600 text-sm text-center py-6">No activity yet</div>'; return; }
+        const icons = { SYSTEM_CREATED: 'add_circle', SYSTEM_UPDATED: 'edit', EMERGENCY_SOS: 'emergency', ALERT_BROADCAST: 'campaign', AI_ANALYSIS: 'smart_toy', SQL_QUERY: 'database' };
+        const colors = { SYSTEM_CREATED: 'emerald', SYSTEM_UPDATED: 'sky', EMERGENCY_SOS: 'rose', ALERT_BROADCAST: 'amber', AI_ANALYSIS: 'violet', SQL_QUERY: 'slate' };
+        list.innerHTML = logs.map(l => {
+          const ic = icons[l.action] || 'history';
+          const c = colors[l.action] || 'slate';
+          return `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/2 border border-white/4">
+          <span class="material-symbols-outlined text-${c}-400 text-base flex-shrink-0">${ic}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-slate-300">${l.action.replace(/_/g, ' ')}</div>
+            <div class="text-xs text-slate-600 truncate">${l.details || '—'}</div>
+          </div>
+          <span class="text-slate-700 text-[10px] font-mono whitespace-nowrap">${new Date(l.created_at).toLocaleTimeString()}</span>
+        </div>`;
+        }).join('');
+      } catch (err) { console.warn('Activity load error:', err); }
+    }
+
+    // ===== NAV =====
+    function goToAdmin() { window.location.href = `/modules/rescue-builder/pages/admin-panel.html?systemID=${systemID}`; }
+    function goBack() {
+      if (document.referrer.includes('rescue-builder') || document.referrer.includes('admin-panel')) history.back();
+      else window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
+    }
+
+    function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  </script>
+</body>
+
+</html>
