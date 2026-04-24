@@ -2,7 +2,8 @@
 // ResQAI Crisis Portal - AI Service
 // ============================================
 
-const AI_ENDPOINT = '/api/chat';
+const BASE_URL = window.location.origin;
+const AI_ENDPOINT = `${BASE_URL}/api/chat`;
 
 /**
  * Send a message to the AI and get a response
