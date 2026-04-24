@@ -345,7 +345,7 @@
 
                 showSuccess('Login successful! Redirecting...');
                 setTimeout(() => {
-                    window.location.href = '/pages/custom-builder-dashboard.html';
+                    window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
                 }, 1500);
 
             } catch (error) {
@@ -395,7 +395,7 @@
 
                 showSuccess('Account created! Redirecting...');
                 setTimeout(() => {
-                    window.location.href = '/pages/custom-builder-dashboard.html';
+                    window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
                 }, 1500);
 
             } catch (error) {
@@ -407,7 +407,7 @@
 
         // Check if user already logged in
         if (localStorage.getItem('auth-token')) {
-            window.location.href = '/pages/custom-builder-dashboard.html';
+            window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
         }
     </script>
 </body>
