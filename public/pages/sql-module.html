@@ -489,7 +489,8 @@
     let aiGeneratedQuery = '';
     let schemaData = [];
 
-    const API = '/api/custom-system';
+    const BASE_URL = window.location.origin;
+    const API = `${BASE_URL}/api/custom-system`;
     const QUICK_QUERIES = [
       { label: '📋 All Systems', sql: 'SELECT id, organization_name, organization_type, location, status, created_at FROM custom_rescue_systems ORDER BY created_at DESC LIMIT 20' },
       { label: '🚨 Emergencies', sql: "SELECT id, description, location, severity, status, classified_type, created_at FROM emergencies ORDER BY created_at DESC LIMIT 20" },
@@ -822,7 +823,7 @@
 
     async function checkAIStatus() {
       try {
-        const resp = await fetch('/api/ai/health');
+        const resp = await fetch(`${BASE_URL}/api/ai/health`);
         if (resp.ok) {
           const data = await resp.json();
           if (data.primaryProvider !== 'None') {
