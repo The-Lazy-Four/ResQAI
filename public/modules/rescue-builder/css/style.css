@@ -1440,27 +1440,55 @@ option {
 
 .control-panel-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 680px;
     margin: 0 auto;
     text-align: center;
+    padding: 34px;
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgba(17, 19, 38, 0.95) 0%, rgba(10, 12, 24, 0.9) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .panel-header {
-    margin-bottom: 50px;
+    margin-bottom: 28px;
+}
+
+.panel-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #9fb5ff;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    background: rgba(99, 102, 241, 0.12);
 }
 
 .panel-header h1 {
-    font-size: 40px;
-    font-weight: 800;
-    margin-bottom: 30px;
-    letter-spacing: -0.5px;
+    font-size: 44px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    letter-spacing: -0.9px;
+}
+
+.panel-subtitle {
+    margin: 0 0 22px;
+    color: #9ca3af;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
 .panel-info {
-    background: rgba(25, 25, 35, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 24px;
+    background: linear-gradient(135deg, rgba(34, 38, 72, 0.55), rgba(22, 23, 46, 0.55));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 18px 22px;
     text-align: left;
 }
 
@@ -1468,8 +1496,8 @@ option {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .info-line:last-child {
@@ -1477,26 +1505,88 @@ option {
 }
 
 .info-line .label {
-    color: #888;
-    font-size: 14px;
-    font-weight: 600;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .info-line .value {
-    font-weight: 700;
-    color: #fff;
+    font-weight: 800;
+    color: #f8fafc;
+    font-size: 16px;
+    text-align: right;
+    max-width: 56%;
+    overflow-wrap: anywhere;
 }
 
 .panel-actions {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
+    margin-top: 18px;
 }
 
 .panel-actions .btn-large {
     width: 100%;
     margin: 0;
-    display: block;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 22px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.panel-actions .btn-large:hover {
+    transform: translateY(-1px);
+}
+
+.panel-actions .btn-primary {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+    box-shadow: 0 12px 28px rgba(239, 68, 68, 0.32);
+}
+
+.panel-actions .btn-secondary {
+    background: rgba(15, 23, 42, 0.72);
+    color: #e5e7eb;
+}
+
+.action-icon {
+    font-size: 19px;
+    line-height: 1;
+}
+
+.panel-footnote {
+    margin-top: 14px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+@media (max-width: 768px) {
+    .control-panel-container {
+        padding: 22px;
+        max-width: 100%;
+    }
+
+    .panel-header h1 {
+        font-size: 37px;
+    }
+
+    .info-line {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .info-line .value {
+        max-width: 100%;
+        text-align: left;
+    }
 }
 
 /* =====================================================

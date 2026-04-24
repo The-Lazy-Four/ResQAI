@@ -10,11 +10,13 @@ import axios from 'axios';
 // ==================== INITIALIZATION ====================
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const API_KEY = process.env.OPENROUTER_PRIMARY_API_KEY || process.env.OPENROUTER_API_KEY;
+const OPENROUTER_API_KEY = API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const AI_TIMEOUT = parseInt(process.env.AI_TIMEOUT || '30000');
 
 console.log('\n📋 [AI ROUTER] Environment Variables Check:');
+console.log(`   AI Key Loaded: ${!!API_KEY}`);
 console.log(`   GROQ_API_KEY: ${GROQ_API_KEY ? GROQ_API_KEY.slice(0, 20) + '...' : 'NOT SET'}`);
 console.log(`   GROQ_MODEL: ${process.env.GROQ_MODEL || 'NOT SET (will use default)'}\n`);
 
@@ -37,7 +39,7 @@ if (GROQ_API_KEY && GROQ_API_KEY.trim() && GROQ_API_KEY !== 'your-key') {
 }
 
 // OpenRouter uses HTTP
-const hasOpenRouter = OPENROUTER_API_KEY && OPENROUTER_API_KEY.trim() && OPENROUTER_API_KEY !== 'your-key';
+const hasOpenRouter = API_KEY && API_KEY.trim() && API_KEY !== 'your-key';
 if (hasOpenRouter) {
     console.log('✅ [AI ROUTER] OpenRouter configured as SECONDARY provider');
 } else {
@@ -83,7 +85,8 @@ async function callOpenRouter(prompt, language = 'en') {
     console.log('🟢 [AI] Attempting OpenRouter (Secondary)...');
 
     if (!hasOpenRouter) {
-        throw new Error('OpenRouter API key not configured');
+        console.warn('⚠️  [AI] OpenRouter key missing - returning fallback response');
+        return getFallbackResponse(language);
     }
 
     try {
@@ -98,7 +101,7 @@ async function callOpenRouter(prompt, language = 'en') {
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                        Authorization: `Bearer ${API_KEY}`,
                         'HTTP-Referer': 'http://localhost:3000',
                         'X-Title': 'ResQAI Emergency Response'
                     },

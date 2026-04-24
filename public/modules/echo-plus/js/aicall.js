@@ -141,8 +141,8 @@ window.ResQAICall = class AICallSystem {
 
         this.recognition.onend = () => {
             if (this.isActive && this.isListening) {
-                 // The mic closed unexpectedly or after a long timeout, keep it alive
-                 setTimeout(() => this._listen(), 800);
+                // The mic closed unexpectedly or after a long timeout, keep it alive
+                setTimeout(() => this._listen(), 800);
             }
         };
 
@@ -174,7 +174,7 @@ window.ResQAICall = class AICallSystem {
         this.conversation.push({ role: "assistant", content: responseText });
         this.conversation.push({ role: "assistant", content: responseText });
         this.onTranscript("AI", responseText);
-        
+
         // Start listening concurrently allowing user to barge in while AI speaks!
         this._speak(responseText);
         if (this.isActive) {
@@ -219,11 +219,11 @@ Interaction Rules:
 
 
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch(`${BASE_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: userMessage, 
+                body: JSON.stringify({
+                    message: userMessage,
                     language: this.lang,
                     context: systemPrompt,
                     isVoiceOverride: true,
@@ -232,7 +232,7 @@ Interaction Rules:
             });
             const data = await response.json();
             if (data.success && data.response) {
-                return data.response; 
+                return data.response;
             }
         } catch (e) {
             console.error("AI API Error:", e);

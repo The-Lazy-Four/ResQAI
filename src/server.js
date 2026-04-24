@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 
 // Import database initialization
 import { initMySQL } from './db/mysql.js';
+import { initDatabase } from './db/db.js';
 
 // Import API routes
 import emergencyRoutes from './api/routes/emergency.js';
@@ -59,8 +60,11 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // ==================== DATABASE INITIALIZATION ====================
 
-// Initialize MySQL (with SQLite fallback)
 console.log('\n🗄️  [DATABASE] Initializing database connections...');
+// Initialize SQLite
+await initDatabase().catch(err => console.warn('SQLite init error:', err.message));
+
+// Initialize MySQL (with SQLite fallback)
 await initMySQL().catch(err => {
     console.warn('⚠️  MySQL initialization failed, SQLite will be used:', err.message);
 });
@@ -136,10 +140,16 @@ app.use('/api/custom-system', customSystemRoutes);
 
 // Serve the dashboard for /dashboard route
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/pages/custom-builder-dashboard.html'));
+    res.sendFile(path.join(__dirname, '../public/modules/rescue-builder/pages/custom-builder-dashboard.html'));
 });
 
 // Serve the cinematic landing page as the default entry point
+app.get('/pages/:page', (req, res) => {
+    const pagePath = path.join(__dirname, '../public/pages', req.params.page);
+    if (require('fs').existsSync(pagePath)) res.sendFile(pagePath);
+    else res.sendFile(path.join(__dirname, '../public/pages/landing.html'));
+});
+
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
         res.sendFile(path.join(__dirname, '../public/pages/landing.html'));

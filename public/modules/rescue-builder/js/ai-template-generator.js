@@ -20,10 +20,11 @@ async function generateAITemplate(systemData) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
+        const BASE_URL = window.location.origin;
         console.log('[AI-TEMPLATE] Calling /api/custom-system/generate-template');
         console.log('[AI-TEMPLATE] Description:', description);
 
-        const response = await fetch('/api/custom-system/generate-template', {
+        const response = await fetch(`${BASE_URL}/api/custom-system/generate-template`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -22,8 +22,8 @@
 - `public/pages/landing.html`
 - `public/pages/module-selection.html`
 - `public/pages/guest-crisis-portal.html`
-- `public/pages/custom-builder-dashboard.html`
-- `public/pages/custom-builder-org-select.html`
+- `public/modules/rescue-builder/pages/custom-builder-dashboard.html`
+- `public/modules/rescue-builder/pages/custom-builder-org-select.html`
 
 ### Custom Builder Runtime
 - `public/modules/rescue-builder/index.html`
@@ -33,7 +33,7 @@
 
 ### Server
 - `src/server.js` serves static assets from `public/`
-- `/dashboard` now points to `public/pages/custom-builder-dashboard.html`
+- `/dashboard` now points to `public/modules/rescue-builder/pages/custom-builder-dashboard.html`
 - non-API routes fall back to `public/pages/landing.html`
 
 ### Health Check
