@@ -8,51 +8,23 @@
     <link rel="stylesheet" href="/modules/rescue-builder/css/style.css" />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23dc2626'/><text y='.9em' font-size='80' x='5'>R</text></svg>" />
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const hasWizardLaunch = params.get('entry') === 'wizard' && (params.get('type') || '').trim();
+            const hasSystemID = Boolean((params.get('systemID') || '').trim());
+
+            if (!hasWizardLaunch && !hasSystemID) {
+                window.location.replace('/modules/rescue-builder/pages/custom-builder-dashboard.html');
+            }
+        })();
+    </script>
 </head>
 
 <body>
 
     <!-- TOAST NOTIFICATIONS -->
     <div class="toast-wrap" id="toast-wrap"></div>
-
-    <!-- =====================================================
-     SCREEN 0: YOUR SYSTEMS DASHBOARD (ENTRY POINT)
-     ===================================================== -->
-    <div class="rescue-screen active" id="screen-systems-dashboard">
-        <div class="rescue-header">
-            <div class="rescue-logo">ResQAI</div>
-            <button class="btn-secondary" onclick="goBackToMainPage()">← Exit</button>
-        </div>
-
-        <div class="rescue-content">
-            <div class="dashboard-container">
-                <div class="dashboard-header">
-                    <h1>Your Rescue Systems</h1>
-                    <p>Manage and access your rescue systems</p>
-                </div>
-
-                <button class="btn-large btn-primary" id="create-system-btn"
-                    onclick="goToTypeSelection(); return false;">
-                    ➕ Create New System
-                </button>
-
-                <!-- DEBUG PANEL (Hidden by default - Press Ctrl+D to toggle) -->
-                <div id="debug-panel"
-                    style="display: none; background: #1a1a2e; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #0f0; border: 1px solid #0f0;">
-                    <div style="margin-bottom: 10px;"><strong>📊 DEBUG INFO (Press Ctrl+D to hide)</strong></div>
-                    <div id="debug-content">Loading...</div>
-                </div>
-
-                <div class="systems-grid" id="systems-list">
-                    <div class="empty-state">
-                        <div class="empty-icon">📋</div>
-                        <div class="empty-title">Loading Systems...</div>
-                        <div class="empty-text">Please wait while we load your systems</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- =====================================================
      SCREEN 1: SYSTEM CONTROL PANEL
@@ -279,8 +251,10 @@
                         <div class="upload-box">
                             <div class="upload-icon">📸</div>
                             <p>Upload your organization layout image</p>
-                            <p class="upload-hint">AI will analyze the image to understand your structure (JPG, PNG, PDF)</p>
-                            <input type="file" id="layout-image" accept="image/jpeg,image/png,image/jpg,application/pdf" />
+                            <p class="upload-hint">AI will analyze the image to understand your structure (JPG, PNG,
+                                PDF)</p>
+                            <input type="file" id="layout-image"
+                                accept="image/jpeg,image/png,image/jpg,application/pdf" />
                             <div class="upload-preview" id="upload-preview"></div>
                         </div>
 
@@ -295,7 +269,8 @@
                         <div id="layout-analysis-loading"
                             style="display: none; text-align: center; padding: 30px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; margin-bottom: 20px;">
                             <div style="font-size: 40px; margin-bottom: 12px; animation: pulse 1.5s infinite;">🔍</div>
-                            <p style="color: #a78bfa; font-weight: 600; font-size: 15px;">AI is analyzing your layout...</p>
+                            <p style="color: #a78bfa; font-weight: 600; font-size: 15px;">AI is analyzing your layout...
+                            </p>
                             <p style="color: #666; font-size: 13px; margin-top: 8px;">This may take a few seconds</p>
                         </div>
 
