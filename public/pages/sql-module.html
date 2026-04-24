@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResQAI — SQL Data Module</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: { "surface-container-lowest": "#0a0e14", "on-surface-variant": "#e4beba", "primary": "#ffb3ae", "surface-bright": "#353940", "on-primary": "#68000b", "surface-container-low": "#181c22", "outline": "#ab8986", "surface": "#10141a", "surface-container": "#1c2026", "outline-variant": "#5b403e", "on-surface": "#dfe2eb", "surface-container-high": "#262a31", "surface-tint": "#ffb3ae", "error-container": "#93000a", "secondary": "#a6e6ff", "primary-container": "#ff5352", "surface-container-highest": "#31353c", "secondary-container": "#14d1ff", "on-secondary": "#003543", "background": "#10141a", "tertiary": "#ddb7ff", "on-primary-container": "#5c0008", "error": "#ffb4ab" },
+          fontFamily: { headline: ["Space Grotesk"], body: ["Inter"], mono: ["JetBrains Mono"] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* SQL Editor */
+    .sql-editor {
+      font-family: 'JetBrains Mono', monospace;
+      background: #0d1117;
+      color: #e6edf3;
+      border: 1px solid rgba(255, 179, 174, 0.15);
+      border-radius: 10px;
+      padding: 16px;
+      resize: vertical;
+      min-height: 140px;
+      width: 100%;
+      font-size: 14px;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .sql-editor:focus {
+      border-color: rgba(255, 179, 174, 0.45);
+    }
+
+    /* Table styles */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .results-table th {
+      background: rgba(255, 83, 82, 0.12);
+      color: #ffb3ae;
+      font-family: 'Space Grotesk';
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 179, 174, 0.15);
+      position: sticky;
+      top: 0;
+    }
+
+    .results-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #c9d1d9;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .results-table tr:hover td {
+      background: rgba(255, 179, 174, 0.04);
+    }
+
+    .results-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Schema tree */
+    .schema-item {
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #8b949e;
+      transition: all 0.15s;
+    }
+
+    .schema-item:hover {
+      background: rgba(255, 179, 174, 0.06);
+      color: #ffb3ae;
+    }
+
+    .schema-item.active {
+      background: rgba(255, 83, 82, 0.12);
+      color: #ffb3ae;
+    }
+
+    .schema-col {
+      padding: 3px 12px 3px 32px;
+      font-size: 11px;
+      color: #6e7681;
+      font-family: 'JetBrains Mono';
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .schema-col .col-type {
+      color: #79c0ff;
+    }
+
+    /* Quick queries */
+    .quick-query {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #8b949e;
+      font-family: 'JetBrains Mono';
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .quick-query:hover {
+      background: rgba(255, 179, 174, 0.06);
+      border-color: rgba(255, 179, 174, 0.2);
+      color: #ffb3ae;
+    }
+
+    /* Loading shimmer */
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      pointer-events: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    .toast-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .toast-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .toast-info {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93c5fd;
+    }
+
+    /* Tabs */
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: 'Space Grotesk';
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 83, 82, 0.15);
+      border-color: rgba(255, 83, 82, 0.35);
+      color: #ffb3ae;
+    }
+
+    .tab-btn:not(.active) {
+      color: #6e7681;
+      background: transparent;
+    }
+
+    .tab-btn:not(.active):hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #8b949e;
+    }
+
+    /* Pulsing dot */
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 179, 174, 0.2);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 179, 174, 0.35);
+    }
+
+    .insights-box {
+      background: rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+      padding: 16px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      color: #93c5fd;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+
+<body class="bg-[#0a0e14] text-on-surface font-body min-h-screen">
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- Header -->
+  <header
+    class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-[#10141a]/90 backdrop-blur-md border-b border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
+    <div class="flex items-center gap-4">
+      <span class="text-primary font-black text-2xl font-headline tracking-tighter">ResQAI</span>
+      <div class="h-4 w-px bg-outline-variant/30 hidden md:block"></div>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-lg">database</span>
+        <span class="text-white font-bold font-headline text-sm tracking-wide">SQL Data Module</span>
+      </div>
+      <span id="ai-status-badge"
+        class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 text-[10px] font-headline font-bold uppercase tracking-widest">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse inline-block"></span> AI Active
+      </span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="exportResults()" id="btn-export" disabled
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 text-slate-400 text-xs font-headline uppercase tracking-widest hover:bg-white/5 transition-all disabled:opacity-40">
+        <span class="material-symbols-outlined text-sm">download</span> Export
+      </button>
+      <button onclick="window.location.href='/modules/rescue-builder/pages/custom-builder-dashboard.html'"
+        class="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-105 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-sm">arrow_back</span> Exit
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="flex pt-16 h-screen overflow-hidden">
+
+    <!-- SIDEBAR: Schema Explorer -->
+    <aside
+      class="w-64 flex-shrink-0 h-full border-r border-white/5 overflow-y-auto bg-[#10141a]/80 pt-4 hidden lg:block">
+      <div class="px-4 mb-4">
+        <div class="text-[9px] text-slate-500 uppercase tracking-[0.2em] font-headline mb-3">Schema Explorer</div>
+        <div id="schema-loading" class="space-y-2">
+          <div class="shimmer h-8 w-full"></div>
+          <div class="shimmer h-8 w-full"></div>
+          <div class="shimmer h-8 w-3/4"></div>
+        </div>
+        <div id="schema-tree" class="hidden space-y-1"></div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-6xl mx-auto p-6 space-y-6">
+
+        <!-- QUICK STATS -->
+        <div id="stats-bar" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+          <div class="shimmer h-16 rounded-xl"></div>
+        </div>
+
+        <!-- QUERY EDITOR SECTION -->
+        <div class="bg-surface-container-low/70 border border-white/5 rounded-2xl overflow-hidden">
+          <!-- Editor Header -->
+          <div class="flex items-center justify-between px-5 py-3.5 border-b border-white/5 bg-black/20">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-lg">terminal</span>
+              <span class="text-white font-bold font-headline text-sm">Query Editor</span>
+              <span class="text-[10px] text-slate-500 font-mono bg-white/5 px-2 py-0.5 rounded">SQLite</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="clearEditor()"
+                class="text-slate-500 hover:text-slate-300 text-xs font-headline uppercase tracking-wider px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all">Clear</button>
+              <button onclick="formatQuery()"
+                class="text-slate-500 hover:text-slate-300 text-xs font-headline uppercase tracking-wider px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all">Format</button>
+              <button onclick="runQuery()" id="btn-run"
+                class="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-105 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm">play_arrow</span> Run
+              </button>
+            </div>
+          </div>
+          <!-- Textarea -->
+          <div class="p-4">
+            <textarea id="sql-editor" class="sql-editor"
+              placeholder="-- Write your SELECT query here&#10;-- Example: SELECT * FROM custom_rescue_systems LIMIT 10&#10;&#10;SELECT * FROM emergencies ORDER BY created_at DESC LIMIT 20;"
+              spellcheck="false"></textarea>
+            <div class="flex items-center justify-between mt-2 px-1">
+              <span id="query-hint" class="text-[11px] text-slate-600 font-mono">Only SELECT queries are permitted for
+                security</span>
+              <div class="flex items-center gap-2">
+                <span id="row-count-badge" class="hidden text-[11px] text-emerald-400 font-mono font-bold"></span>
+                <span id="exec-time-badge" class="hidden text-[11px] text-slate-500 font-mono"></span>
+              </div>
+            </div>
+          </div>
+          <!-- Quick Queries -->
+          <div class="px-4 pb-4">
+            <div class="text-[9px] text-slate-600 uppercase tracking-[0.18em] font-headline mb-2">Quick Queries</div>
+            <div class="flex flex-wrap gap-2" id="quick-queries"></div>
+          </div>
+        </div>
+
+        <!-- AI ASSISTANT SECTION -->
+        <div class="bg-surface-container-low/70 border border-white/5 rounded-2xl overflow-hidden">
+          <div class="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-black/20">
+            <span class="material-symbols-outlined text-tertiary text-lg">smart_toy</span>
+            <span class="text-white font-bold font-headline text-sm">AI SQL Assistant</span>
+            <span
+              class="text-[10px] px-2 py-0.5 rounded-full bg-tertiary/10 border border-tertiary/30 text-tertiary font-headline uppercase tracking-wider">Powered
+              by AI</span>
+          </div>
+          <div class="p-5">
+            <div class="flex gap-3">
+              <input type="text" id="ai-question"
+                placeholder='e.g. "Show all active emergency systems created this month"'
+                class="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-tertiary/40 transition-all font-body" />
+              <button onclick="askAIAssistant()" id="btn-ai"
+                class="flex items-center gap-2 px-5 py-3 rounded-xl bg-tertiary/15 border border-tertiary/30 text-tertiary font-headline font-bold text-xs tracking-widest uppercase hover:bg-tertiary/20 transition-all whitespace-nowrap">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span> Ask AI
+              </button>
+            </div>
+            <div id="ai-suggestion" class="hidden mt-4 space-y-3">
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider font-headline">AI Generated Query</div>
+              <pre id="ai-query-preview"
+                class="bg-black/40 border border-white/8 rounded-xl p-4 text-emerald-300 font-mono text-13px overflow-x-auto text-sm"></pre>
+              <div id="ai-explanation" class="text-slate-400 text-sm leading-relaxed"></div>
+              <button onclick="useAIQuery()"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 text-xs font-headline font-bold uppercase tracking-wider hover:bg-emerald-500/15 transition-all">
+                <span class="material-symbols-outlined text-sm">check_circle</span> Use This Query
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTS SECTION -->
+        <div id="results-section" class="bg-surface-container-low/70 border border-white/5 rounded-2xl overflow-hidden">
+          <div class="flex items-center justify-between px-5 py-3.5 border-b border-white/5 bg-black/20">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-secondary text-lg">table_rows</span>
+              <span class="text-white font-bold font-headline text-sm">Results</span>
+              <span id="results-count" class="text-slate-500 text-xs font-mono"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex gap-1" id="view-tabs">
+                <button class="tab-btn active" onclick="switchView('table')" id="tab-table">Table</button>
+                <button class="tab-btn" onclick="switchView('json')" id="tab-json">JSON</button>
+                <button class="tab-btn" onclick="switchView('insights')" id="tab-insights">
+                  <span class="flex items-center gap-1"><span
+                      class="material-symbols-outlined text-xs">auto_awesome</span> AI Insights</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="results-content" class="p-5">
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+              <span class="material-symbols-outlined text-5xl text-slate-700 mb-4">table_rows</span>
+              <p class="text-slate-500 text-sm">Run a query to see results</p>
+              <p class="text-slate-700 text-xs mt-1">Try one of the quick queries above or write your own</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY LOG -->
+        <div class="bg-surface-container-low/70 border border-white/5 rounded-2xl overflow-hidden">
+          <div class="flex items-center justify-between px-5 py-3.5 border-b border-white/5 bg-black/20">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-amber-400 text-lg">history</span>
+              <span class="text-white font-bold font-headline text-sm">Query History & Activity</span>
+            </div>
+            <button onclick="clearHistory()"
+              class="text-slate-600 hover:text-slate-400 text-xs font-headline uppercase tracking-wider transition-all">Clear</button>
+          </div>
+          <div id="query-history" class="p-4 space-y-2 max-h-64 overflow-y-auto">
+            <p class="text-slate-600 text-sm text-center py-4">No queries executed yet</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ===== STATE =====
+    let currentResults = [];
+    let currentQuery = '';
+    let queryHistory = JSON.parse(localStorage.getItem('resqai_sql_history') || '[]');
+    let currentView = 'table';
+    let aiGeneratedQuery = '';
+    let schemaData = [];
+
+    const API = '/api/custom-system';
+    const QUICK_QUERIES = [
+      { label: '📋 All Systems', sql: 'SELECT id, organization_name, organization_type, location, status, created_at FROM custom_rescue_systems ORDER BY created_at DESC LIMIT 20' },
+      { label: '🚨 Emergencies', sql: "SELECT id, description, location, severity, status, classified_type, created_at FROM emergencies ORDER BY created_at DESC LIMIT 20" },
+      { label: '📢 Alerts', sql: "SELECT * FROM system_alerts ORDER BY created_at DESC LIMIT 20" },
+      { label: '⚡ Events', sql: "SELECT * FROM system_events ORDER BY created_at DESC LIMIT 20" },
+      { label: '📊 Status Count', sql: "SELECT status, COUNT(*) as count FROM custom_rescue_systems GROUP BY status" },
+      { label: '📈 Today Activity', sql: "SELECT action, details, created_at FROM activity_logs WHERE DATE(created_at) = DATE('now') ORDER BY created_at DESC" },
+      { label: '💬 Chats', sql: "SELECT user_message, bot_response, timestamp FROM chat_history ORDER BY timestamp DESC LIMIT 10" },
+    ];
+
+    // ===== INIT =====
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderQuickQueries();
+      renderQueryHistory();
+      await loadSchema();
+      await loadStats();
+      checkAIStatus();
+    });
+
+    function toast(msg, type = 'info') {
+      const el = document.getElementById('toast');
+      const div = document.createElement('div');
+      div.className = `toast-msg toast-${type}`;
+      div.textContent = msg;
+      el.appendChild(div);
+      setTimeout(() => div.remove(), 3500);
+    }
+
+    // ===== SCHEMA LOADER =====
+    async function loadSchema() {
+      try {
+        const resp = await fetch(`${API}/sql/tables`);
+        if (!resp.ok) throw new Error('Failed');
+        const data = await resp.json();
+        schemaData = data.tables || [];
+        renderSchema(schemaData);
+      } catch (e) {
+        document.getElementById('schema-loading').innerHTML = '<p class="text-slate-600 text-xs px-2">Schema unavailable</p>';
+      }
+    }
+
+    function renderSchema(tables) {
+      const tree = document.getElementById('schema-tree');
+      const loading = document.getElementById('schema-loading');
+      loading.classList.add('hidden');
+      tree.classList.remove('hidden');
+      tree.innerHTML = '';
+      tables.forEach(table => {
+        const wrapper = document.createElement('div');
+        const header = document.createElement('div');
+        header.className = 'schema-item';
+        header.innerHTML = `
+      <span class="material-symbols-outlined text-sm text-primary/60">table</span>
+      <span class="flex-1 font-mono text-sm">${table.name}</span>
+      <span class="text-[10px] text-slate-600 bg-white/5 px-1.5 py-0.5 rounded">${table.rowCount}</span>
+    `;
+        const cols = document.createElement('div');
+        cols.className = 'hidden';
+        (table.columns || []).forEach(col => {
+          const c = document.createElement('div');
+          c.className = 'schema-col';
+          c.innerHTML = `<span>${col.name}</span><span class="col-type">${col.type}</span>`;
+          cols.appendChild(c);
+        });
+        header.addEventListener('click', () => {
+          const isOpen = !cols.classList.contains('hidden');
+          cols.classList.toggle('hidden');
+          header.classList.toggle('active', !isOpen);
+          // Quick select
+          if (!isOpen) {
+            document.getElementById('sql-editor').value = `SELECT * FROM ${table.name} LIMIT 20;`;
+          }
+        });
+        wrapper.appendChild(header);
+        wrapper.appendChild(cols);
+        tree.appendChild(wrapper);
+      });
+    }
+
+    // ===== STATS BAR =====
+    async function loadStats() {
+      try {
+        const resp = await fetch(`${API}/stats/overview`);
+        if (!resp.ok) throw new Error();
+        const { stats } = await resp.json();
+        document.getElementById('stats-bar').innerHTML = `
+      ${statCard('database', 'Total Systems', stats.total_systems || 0, 'text-primary')}
+      ${statCard('check_circle', 'Active', stats.active_systems || 0, 'text-emerald-400')}
+      ${statCard('emergency', 'SOS Events', stats.total_sos || 0, 'text-rose-400')}
+      ${statCard('campaign', 'Alerts Sent', stats.total_alerts || 0, 'text-amber-400')}
+      ${statCard('flash_on', 'Today Events', stats.events_today || 0, 'text-sky-400')}
+    `;
+      } catch {
+        document.getElementById('stats-bar').innerHTML = `
+      ${statCard('database', 'Systems', '—', 'text-primary')}
+      ${statCard('check_circle', 'Active', '—', 'text-emerald-400')}
+      ${statCard('emergency', 'SOS', '—', 'text-rose-400')}
+      ${statCard('campaign', 'Alerts', '—', 'text-amber-400')}
+      ${statCard('flash_on', 'Today', '—', 'text-sky-400')}
+    `;
+      }
+    }
+
+    function statCard(icon, label, value, colorClass) {
+      return `
+    <div class="bg-surface-container-low/70 border border-white/5 rounded-xl p-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="material-symbols-outlined text-base ${colorClass}">${icon}</span>
+        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-headline">${label}</span>
+      </div>
+      <div class="text-2xl font-bold font-headline text-white">${value}</div>
+    </div>
+  `;
+    }
+
+    // ===== QUICK QUERIES =====
+    function renderQuickQueries() {
+      const container = document.getElementById('quick-queries');
+      container.innerHTML = QUICK_QUERIES.map(q => `
+    <button class="quick-query" onclick="setQuery(${JSON.stringify(q.sql)})">${q.label}</button>
+  `).join('');
+    }
+
+    function setQuery(sql) {
+      document.getElementById('sql-editor').value = sql;
+    }
+
+    // ===== QUERY RUNNER =====
+    async function runQuery() {
+      const sql = document.getElementById('sql-editor').value.trim();
+      if (!sql) { toast('Please enter a SQL query', 'error'); return; }
+      const upper = sql.toUpperCase();
+      if (!upper.startsWith('SELECT') && !upper.startsWith('WITH') && !upper.startsWith('PRAGMA')) {
+        toast('Only SELECT queries allowed for security', 'error');
+        return;
+      }
+      const btn = document.getElementById('btn-run');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span> Running...';
+      document.getElementById('results-content').innerHTML = `<div class="flex items-center gap-3 justify-center py-16 text-slate-500"><span class="material-symbols-outlined animate-spin">refresh</span> Executing query...</div>`;
+      const start = Date.now();
+      try {
+        const resp = await fetch(`${API}/sql/execute`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: sql }) });
+        const data = await resp.json();
+        const elapsed = Date.now() - start;
+        if (!resp.ok || !data.success) throw new Error(data.error || 'Query failed');
+        currentResults = data.results || [];
+        currentQuery = sql;
+        document.getElementById('row-count-badge').textContent = `${currentResults.length} rows`;
+        document.getElementById('row-count-badge').classList.remove('hidden');
+        document.getElementById('exec-time-badge').textContent = `${elapsed}ms`;
+        document.getElementById('exec-time-badge').classList.remove('hidden');
+        document.getElementById('results-count').textContent = `${currentResults.length} rows · ${elapsed}ms`;
+        document.getElementById('btn-export').disabled = false;
+        renderResults(currentView);
+        addToHistory(sql, currentResults.length, elapsed, true);
+        toast(`✅ Query returned ${currentResults.length} rows in ${elapsed}ms`, 'success');
+      } catch (err) {
+        document.getElementById('results-content').innerHTML = `
+      <div class="flex flex-col items-center justify-center py-12">
+        <span class="material-symbols-outlined text-4xl text-rose-500 mb-3">error</span>
+        <p class="text-rose-400 font-bold mb-2">Query Error</p>
+        <pre class="text-rose-300/70 text-xs bg-rose-500/5 border border-rose-500/15 rounded-xl p-4 max-w-xl w-full overflow-x-auto">${err.message}</pre>
+      </div>`;
+        addToHistory(sql, 0, Date.now() - start, false);
+        toast('Query failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">play_arrow</span> Run';
+      }
+    }
+
+    // ===== RESULT VIEWS =====
+    function switchView(view) {
+      currentView = view;
+      ['table', 'json', 'insights'].forEach(v => {
+        document.getElementById(`tab-${v}`)?.classList.toggle('active', v === view);
+      });
+      renderResults(view);
+    }
+
+    function renderResults(view) {
+      const container = document.getElementById('results-content');
+      if (!currentResults.length) { container.innerHTML = '<p class="text-slate-600 text-sm text-center py-8">No results returned</p>'; return; }
+      if (view === 'table') renderTable(container);
+      else if (view === 'json') renderJSON(container);
+      else if (view === 'insights') renderInsights(container);
+    }
+
+    function renderTable(container) {
+      if (!currentResults.length) return;
+      const cols = Object.keys(currentResults[0]);
+      container.innerHTML = `
+    <div class="overflow-x-auto rounded-xl border border-white/5">
+      <table class="results-table">
+        <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+        <tbody>${currentResults.map(row => `<tr>${cols.map(c => `<td title="${escHtml(String(row[c] ?? ''))}">${escHtml(String(row[c] ?? ''))}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+  `;
+    }
+
+    function renderJSON(container) {
+      container.innerHTML = `<pre class="bg-black/40 border border-white/8 rounded-xl p-5 text-green-300 font-mono text-xs overflow-x-auto leading-relaxed max-h-96 overflow-y-auto">${JSON.stringify(currentResults, null, 2)}</pre>`;
+    }
+
+    async function renderInsights(container) {
+      container.innerHTML = `<div class="flex items-center gap-3 justify-center py-8 text-slate-500"><span class="material-symbols-outlined animate-spin">auto_awesome</span> AI is analyzing your data...</div>`;
+      try {
+        const resp = await fetch(`${API}/sql/ai-insights`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: currentResults, query: currentQuery })
+        });
+        if (!resp.ok) throw new Error('AI unavailable');
+        const data = await resp.json();
+        container.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center gap-2 text-tertiary">
+          <span class="material-symbols-outlined text-lg">auto_awesome</span>
+          <span class="font-bold font-headline text-sm uppercase tracking-wider">AI Data Insights</span>
+          <span class="text-slate-500 text-xs font-mono">${data.rowCount} rows analyzed</span>
+        </div>
+        <div class="insights-box">${data.insights}</div>
+        <button onclick="switchView('table')" class="text-slate-500 text-xs font-headline uppercase tracking-wider hover:text-slate-300 transition-all">← Back to Table</button>
+      </div>`;
+        toast('✅ AI insights generated', 'success');
+      } catch {
+        container.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">AI insights unavailable. Check your API key configuration.</p>';
+      }
+    }
+
+    // ===== AI ASSISTANT =====
+    async function askAIAssistant() {
+      const question = document.getElementById('ai-question').value.trim();
+      if (!question) { toast('Please enter a question', 'error'); return; }
+      const btn = document.getElementById('btn-ai');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm">hourglass_empty</span> Thinking...';
+      try {
+        const schema = schemaData.map(t => ({ table: t.name, columns: (t.columns || []).map(c => `${c.name} (${c.type})`) }));
+        const resp = await fetch(`${API}/sql/ai-assist`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, schema })
+        });
+        if (!resp.ok) throw new Error('AI service unavailable');
+        const data = await resp.json();
+        aiGeneratedQuery = data.query || '';
+        document.getElementById('ai-query-preview').textContent = aiGeneratedQuery;
+        document.getElementById('ai-explanation').textContent = data.explanation || '';
+        document.getElementById('ai-suggestion').classList.remove('hidden');
+        toast('✅ AI query generated', 'success');
+      } catch (err) {
+        toast('AI assistant unavailable: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">auto_awesome</span> Ask AI';
+      }
+    }
+
+    function useAIQuery() {
+      if (aiGeneratedQuery) {
+        document.getElementById('sql-editor').value = aiGeneratedQuery;
+        document.getElementById('ai-suggestion').classList.add('hidden');
+        document.getElementById('ai-question').value = '';
+        toast('Query loaded into editor', 'info');
+      }
+    }
+
+    // ===== HISTORY =====
+    function addToHistory(sql, rows, elapsed, success) {
+      const entry = { sql, rows, elapsed, success, time: new Date().toISOString() };
+      queryHistory.unshift(entry);
+      if (queryHistory.length > 30) queryHistory.pop();
+      localStorage.setItem('resqai_sql_history', JSON.stringify(queryHistory));
+      renderQueryHistory();
+    }
+
+    function renderQueryHistory() {
+      const el = document.getElementById('query-history');
+      if (!queryHistory.length) { el.innerHTML = '<p class="text-slate-600 text-sm text-center py-4">No queries executed yet</p>'; return; }
+      el.innerHTML = queryHistory.slice(0, 15).map((h, i) => `
+    <div class="flex items-center gap-3 p-3 rounded-lg bg-white/2 border border-white/4 cursor-pointer hover:bg-white/4 transition-all group" onclick="loadFromHistory(${i})">
+      <span class="material-symbols-outlined text-sm ${h.success ? 'text-emerald-500' : 'text-rose-500'}">${h.success ? 'check_circle' : 'error'}</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-mono text-slate-400 truncate group-hover:text-slate-200 transition-colors">${escHtml(h.sql.substring(0, 80))}${h.sql.length > 80 ? '...' : ''}</p>
+        <p class="text-[10px] text-slate-600 mt-0.5">${h.rows} rows · ${h.elapsed}ms · ${new Date(h.time).toLocaleTimeString()}</p>
+      </div>
+      <span class="material-symbols-outlined text-xs text-slate-700 group-hover:text-slate-500 transition-colors">north_west</span>
+    </div>
+  `).join('');
+    }
+
+    function loadFromHistory(idx) {
+      document.getElementById('sql-editor').value = queryHistory[idx].sql;
+      toast('Query loaded from history', 'info');
+    }
+
+    function clearHistory() {
+      queryHistory = [];
+      localStorage.setItem('resqai_sql_history', '[]');
+      renderQueryHistory();
+      toast('History cleared', 'info');
+    }
+
+    // ===== UTILITIES =====
+    function clearEditor() {
+      document.getElementById('sql-editor').value = '';
+      document.getElementById('row-count-badge').classList.add('hidden');
+      document.getElementById('exec-time-badge').classList.add('hidden');
+    }
+
+    function formatQuery() {
+      let sql = document.getElementById('sql-editor').value;
+      const keywords = ['SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'HAVING', 'LIMIT', 'JOIN', 'LEFT JOIN', 'INNER JOIN', 'ON', 'AND', 'OR', 'NOT', 'IN', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER'];
+      keywords.forEach(kw => { sql = sql.replace(new RegExp(`\\b${kw}\\b`, 'gi'), kw); });
+      document.getElementById('sql-editor').value = sql;
+    }
+
+    function exportResults() {
+      if (!currentResults.length) return;
+      const cols = Object.keys(currentResults[0]);
+      const csvRows = [cols.join(','), ...currentResults.map(row => cols.map(c => `"${String(row[c] ?? '').replace(/"/g, '""')}"`).join(','))];
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `resqai_query_${Date.now()}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+      toast('CSV exported', 'success');
+    }
+
+    async function checkAIStatus() {
+      try {
+        const resp = await fetch('/api/ai/health');
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.primaryProvider !== 'None') {
+            document.getElementById('ai-status-badge').classList.remove('hidden');
+            document.getElementById('ai-status-badge').classList.add('flex');
+          }
+        }
+      } catch { }
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Enter to run
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runQuery();
+    });
+  </script>
+</body>
+
+</html>
