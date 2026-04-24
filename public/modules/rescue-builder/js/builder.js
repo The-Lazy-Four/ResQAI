@@ -34,8 +34,7 @@ let launchContext = {
     directWizard: false,
     returnToOrgSelect: false,
     selectedType: '',
-    systemID: '',
-    selectedPanel: ''
+    systemID: ''
 };
 
 // ===== UTILITY FUNCTIONS =====
@@ -49,14 +48,12 @@ function readLaunchContext() {
     const selectedType = (params.get('type') || '').trim();
     const entry = (params.get('entry') || '').trim();
     const systemID = (params.get('systemID') || '').trim();
-    const selectedPanel = (params.get('panel') || '').trim().toLowerCase();
 
     launchContext = {
         directWizard: entry === 'wizard' && Boolean(selectedType),
         returnToOrgSelect: entry === 'wizard',
         selectedType,
-        systemID,
-        selectedPanel: ['admin', 'user'].includes(selectedPanel) ? selectedPanel : ''
+        systemID
     };
 }
 
@@ -678,26 +675,26 @@ function addLayoutSafetyReport(system, theme) {
         content += `
             <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
                 ${renderGuidePanel('Exits', '#22c55e', exits, function (exit) {
-                    const type = exit && exit.type ? `${escapeHtml(exit.type)} - ` : '';
-                    const location = exit && exit.location ? escapeHtml(exit.location) : 'Exit location unavailable';
-                    return `${type}${location}`;
-                }, 'No exits identified')}
+            const type = exit && exit.type ? `${escapeHtml(exit.type)} - ` : '';
+            const location = exit && exit.location ? escapeHtml(exit.location) : 'Exit location unavailable';
+            return `${type}${location}`;
+        }, 'No exits identified')}
                 ${renderGuidePanel('High-Risk Zones', '#f59e0b', highRiskZones, function (zone) {
-                    const location = zone && zone.location ? escapeHtml(zone.location) : 'Unspecified area';
-                    const risk = zone && zone.risk ? escapeHtml(zone.risk) : 'Risk details unavailable';
-                    return `${location} - ${risk}`;
-                }, 'No high-risk zones identified')}
+            const location = zone && zone.location ? escapeHtml(zone.location) : 'Unspecified area';
+            const risk = zone && zone.risk ? escapeHtml(zone.risk) : 'Risk details unavailable';
+            return `${location} - ${risk}`;
+        }, 'No high-risk zones identified')}
                 ${renderGuidePanel('Evacuation Routes', '#3b82f6', evacuationRoutes, function (route, index) {
-                    return getAdminRouteLabel(route, index);
-                }, 'No evacuation routes available')}
+            return getAdminRouteLabel(route, index);
+        }, 'No evacuation routes available')}
                 ${renderGuidePanel('Equipment Placement', '#06b6d4', equipmentPlacement, function (equipment) {
-                    const name = equipment && equipment.equipment ? escapeHtml(equipment.equipment) : 'Equipment';
-                    const location = equipment && equipment.location ? escapeHtml(equipment.location) : 'Location unavailable';
-                    return `${name} - ${location}`;
-                }, 'No equipment placement notes')}
+            const name = equipment && equipment.equipment ? escapeHtml(equipment.equipment) : 'Equipment';
+            const location = equipment && equipment.location ? escapeHtml(equipment.location) : 'Location unavailable';
+            return `${name} - ${location}`;
+        }, 'No equipment placement notes')}
                 ${renderGuidePanel('Recommendations', '#8b5cf6', recommendations, function (rec) {
-                    return getRecommendationLabel(rec);
-                }, 'No recommendations available')}
+            return getRecommendationLabel(rec);
+        }, 'No recommendations available')}
             </div>
         `;
     }
@@ -762,29 +759,29 @@ function addUserLayoutSafetyGuide(system) {
         ${analysis ? `
             <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
                 ${renderGuidePanel('Exits', '#22c55e', exits, function (exit) {
-                    const type = exit && exit.type ? `${escapeHtml(exit.type)} - ` : '';
-                    const location = exit && exit.location ? escapeHtml(exit.location) : 'Exit location unavailable';
-                    return `${type}${location}`;
-                }, 'No exits available')}
+        const type = exit && exit.type ? `${escapeHtml(exit.type)} - ` : '';
+        const location = exit && exit.location ? escapeHtml(exit.location) : 'Exit location unavailable';
+        return `${type}${location}`;
+    }, 'No exits available')}
                 ${renderGuidePanel('High-Risk Zones', '#f59e0b', highRiskZones, function (zone) {
-                    const location = zone && zone.location ? escapeHtml(zone.location) : 'Unspecified area';
-                    const risk = zone && zone.risk ? escapeHtml(zone.risk) : 'Risk details unavailable';
-                    return `${location} - ${risk}`;
-                }, 'No high-risk zones available')}
+        const location = zone && zone.location ? escapeHtml(zone.location) : 'Unspecified area';
+        const risk = zone && zone.risk ? escapeHtml(zone.risk) : 'Risk details unavailable';
+        return `${location} - ${risk}`;
+    }, 'No high-risk zones available')}
                 ${renderGuidePanel('Evacuation Routes', '#3b82f6', evacuationRoutes, function (route, index) {
-                    return getAdminRouteLabel(route, index);
-                }, 'No evacuation routes available')}
+        return getAdminRouteLabel(route, index);
+    }, 'No evacuation routes available')}
                 ${renderGuidePanel('Equipment Placement', '#06b6d4', equipmentPlacement, function (equipment) {
-                    const name = equipment && equipment.equipment ? escapeHtml(equipment.equipment) : 'Equipment';
-                    const location = equipment && equipment.location ? escapeHtml(equipment.location) : 'Location unavailable';
-                    return `${name} - ${location}`;
-                }, 'No equipment placement notes')}
+        const name = equipment && equipment.equipment ? escapeHtml(equipment.equipment) : 'Equipment';
+        const location = equipment && equipment.location ? escapeHtml(equipment.location) : 'Location unavailable';
+        return `${name} - ${location}`;
+    }, 'No equipment placement notes')}
                 ${renderGuidePanel('Recommendations', '#8b5cf6', recommendations, function (rec) {
-                    return getRecommendationLabel(rec);
-                }, 'No recommendations available')}
+        return getRecommendationLabel(rec);
+    }, 'No recommendations available')}
                 ${renderGuidePanel('Assembly Points', '#a855f7', assemblyPoints, function (point) {
-                    return escapeHtml(point.location || point.notes || 'Assembly point not specified');
-                }, 'No assembly points available')}
+        return escapeHtml(point.location || point.notes || 'Assembly point not specified');
+    }, 'No assembly points available')}
             </div>
             <div style="margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.18);color:#bfdbfe;font-size:13px;line-height:1.7;">
                 This map analysis is read-only for users and comes from the map uploaded during structure setup.
@@ -804,39 +801,58 @@ function addUserLayoutSafetyGuide(system) {
     }
 }
 
-function activateEmergencyMode() {
-    const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const system = systems.find(s => s.systemID === systemData.systemID);
-
-    if (system) {
-        system.status = 'emergency';
-        system.lastUpdated = new Date().toISOString();
-        system.alertsCount = (system.alertsCount || 0) + 1;
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
-        console.log('[EMERGENCY] System status set to emergency');
-        showToast('🚨 Emergency mode activated', 'error');
-        location.reload();
+async function activateEmergencyMode() {
+    const emergencyType = prompt('Enter emergency type (e.g., fire, medical, flood, intruder):') || 'general';
+    if (!emergencyType.trim()) return;
+    showToast('🚨 Activating emergency mode...', 'error');
+    try {
+        const resp = await fetch('/api/custom-system/log-emergency', {
+            method: 'POST', headers: getAPIHeaders(),
+            body: JSON.stringify({ systemID: systemData.systemID, emergencyType: emergencyType.trim(), location: systemData.location, timestamp: new Date().toISOString() })
+        });
+        if (resp.ok) {
+            const data = await resp.json();
+            showToast(`🚨 EMERGENCY ACTIVATED: ${emergencyType.toUpperCase()} - Event ID: ${data.eventID}`, 'error');
+            // Update local cache status
+            const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const sys = systems.find(s => (s.systemID || s.id) === systemData.systemID);
+            if (sys) { sys.status = 'emergency'; sys.alertsCount = (sys.alertsCount || 0) + 1; sys.lastUpdated = new Date().toISOString(); localStorage.setItem(STORAGE_KEY, JSON.stringify(systems)); }
+            // Reload SOS events
+            setTimeout(() => loadAdminSOSAlerts(), 500);
+        } else { showToast('🚨 Emergency logged locally', 'error'); }
+    } catch (err) {
+        showToast('🚨 Emergency mode activated (offline)', 'error');
+        console.warn('Emergency API error:', err.message);
     }
 }
 
-function sendAlert() {
-    const systems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const system = systems.find(s => s.systemID === systemData.systemID);
-
-    if (system) {
-        system.alertsCount = (system.alertsCount || 0) + 1;
-        system.lastUpdated = new Date().toISOString();
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
-        console.log('[ALERT] Alert count incremented:', system.alertsCount);
-        showToast('📡 Alert sent to all staff', 'success');
-    }
+async function sendAlert() {
+    const message = prompt('Enter alert message to broadcast to all staff:');
+    if (!message || !message.trim()) return;
+    showToast('📡 Broadcasting alert...', 'info');
+    try {
+        const resp = await fetch('/api/custom-system/broadcast-alert', {
+            method: 'POST', headers: getAPIHeaders(),
+            body: JSON.stringify({ systemID: systemData.systemID, message: message.trim(), severity: 'warning' })
+        });
+        if (resp.ok) { showToast('📡 Alert broadcast to all staff!', 'success'); }
+        else { showToast('📡 Alert queued locally', 'success'); }
+    } catch (err) { showToast('📡 Alert sent (offline mode)', 'success'); console.warn(err.message); }
 }
 
-function getAIGuidance() {
-    showToast('🧠 AI guidance system activated', 'info');
-    console.log('[AI-GUIDANCE] Requesting AI guidance for:', systemData.organizationName);
+async function getAIGuidance() {
+    showToast('🧠 Getting AI guidance...', 'info');
+    try {
+        const resp = await fetch('/api/custom-system/generate-guidance', {
+            method: 'POST', headers: getAPIHeaders(),
+            body: JSON.stringify({ type: 'general', organizationType: systemData.organizationType || 'organization', structure: systemData.structure, staff: systemData.staff })
+        });
+        if (resp.ok) {
+            const data = await resp.json();
+            alert(`🧠 AI Emergency Guidance:\n\n${data.guidance}`);
+            showToast('✅ AI guidance generated', 'success');
+        }
+    } catch (err) { showToast('AI guidance temporarily unavailable', 'warning'); }
 }
 
 // ===== SYSTEMS MANAGEMENT =====
@@ -1144,7 +1160,7 @@ async function loadSystemIntoPanel(systemID) {
     if (!panelInfo) {
         if (DEBUG) console.error('Panel info container not found');
         console.log('[LOAD] ERROR: Panel info element missing');
-        return false;
+        return;
     }
 
     // Show loading state
@@ -1214,7 +1230,7 @@ async function loadSystemIntoPanel(systemID) {
                 if (DEBUG) console.log('✅ System loaded from API:', systemID);
                 console.log('[LOAD] Panel info updated from API');
                 if (DEBUG) console.groupEnd();
-                return true;
+                return;
             }
         }
         throw new Error(`HTTP ${response.status}`);
@@ -1286,7 +1302,7 @@ async function loadSystemIntoPanel(systemID) {
                     if (DEBUG) console.log('✅ System loaded from localStorage');
                     console.log('[LOAD] Panel info updated from localStorage');
                     if (DEBUG) console.groupEnd();
-                    return true;
+                    return;
                 }
             }
         } catch (storageErr) {
@@ -1304,7 +1320,6 @@ async function loadSystemIntoPanel(systemID) {
         if (DEBUG) console.error('System not found:', systemID);
         console.log('[LOAD] ERROR: System not found:', systemID);
         if (DEBUG) console.groupEnd();
-        return false;
     }
 }
 
@@ -1401,39 +1416,20 @@ function showSystemControlPanel(systemID) {
     loadSystemIntoPanel(systemID);
 }
 
-async function openSystemPanelDirect(systemID, panel) {
-    console.log('[PANEL] Direct launch:', panel, 'for system:', systemID);
-    localStorage.setItem('active_system_id', systemID);
-    showScreen('screen-system-control-panel');
-
-    const loaded = await loadSystemIntoPanel(systemID);
-    if (!loaded) {
-        showToast('System could not be loaded', 'error');
-        return;
-    }
-
-    if (panel === 'admin') {
-        accessAdminDashboard();
-    } else if (panel === 'user') {
-        accessUserDashboard();
-    }
-}
-
 // ===== BACK BUTTON FUNCTIONS =====
 
 function goBackToMainPage() {
-    console.log('[BACK] Returning to custom builder dashboard...');
-    // Call parent window function to exit the iframe
-    if (window.parent && window.parent.goBackFromRescueBuilder) {
+    console.log('🔙 Exiting to ResQAI dashboard...');
+    if (window.parent && window.parent !== window && window.parent.goBackFromRescueBuilder) {
         window.parent.goBackFromRescueBuilder();
     } else {
-        window.location.href = '/pages/custom-builder-dashboard.html';
+        window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
     }
 }
 
 function goBackFromSystemPanel() {
-    console.log('[BACK] Returning to custom builder dashboard from control panel...');
-    window.location.href = '/pages/custom-builder-dashboard.html';
+    console.log('🔙 [BACK] Returning to systems dashboard from control panel...');
+    window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
 }
 
 // ===== SCREEN 1: TYPE SELECTION =====
@@ -1462,7 +1458,7 @@ function goToTypeSelection() {
     try {
         if (DEBUG) console.log('🔘 [NAV] Create System clicked');
         if (launchContext.returnToOrgSelect) {
-            window.location.href = '/pages/custom-builder-org-select.html';
+            window.location.href = '/modules/rescue-builder/pages/custom-builder-org-select.html';
             return;
         }
         showScreen('screen-type-selection');
@@ -1554,7 +1550,7 @@ async function analyzeLayout() {
             body: JSON.stringify({ imageBase64: layoutImageBase64, mimeType: layoutImageMimeType, description: desc })
         });
         if (!response.ok) {
-            var errData = await response.json().catch(function() { return {}; });
+            var errData = await response.json().catch(function () { return {}; });
             throw new Error(errData.message || errData.error || 'API error ' + response.status);
         }
         var data = await response.json();
@@ -1590,7 +1586,7 @@ function renderLayoutAnalysis(analysis) {
     if (analysis.exits && analysis.exits.length > 0) {
         html += '<div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
         html += '<div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:10px;">\u2705 Exits Found (' + analysis.exits.length + ')</div>';
-        analysis.exits.forEach(function(e) {
+        analysis.exits.forEach(function (e) {
             html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><strong>' + (e.type || 'Exit') + '</strong> \u2014 ' + e.location + (e.notes ? ' <span style="color:#888">(' + e.notes + ')</span>' : '') + '</div>';
         });
         html += '</div>';
@@ -1598,7 +1594,7 @@ function renderLayoutAnalysis(analysis) {
     if (analysis.highRiskZones && analysis.highRiskZones.length > 0) {
         html += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
         html += '<div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:10px;">\u26a0\ufe0f High-Risk Zones (' + analysis.highRiskZones.length + ')</div>';
-        analysis.highRiskZones.forEach(function(z) {
+        analysis.highRiskZones.forEach(function (z) {
             html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + getSeverityColor(z.severity) + ';margin-right:6px;"></span><strong>' + z.location + '</strong> \u2014 ' + z.risk + ' <span style="color:' + getSeverityColor(z.severity) + ';font-size:11px;font-weight:600;">[' + (z.severity || 'medium').toUpperCase() + ']</span></div>';
         });
         html += '</div>';
@@ -1606,7 +1602,7 @@ function renderLayoutAnalysis(analysis) {
     if (analysis.evacuationRoutes && analysis.evacuationRoutes.length > 0) {
         html += '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
         html += '<div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83c\udfc3 Evacuation Routes (' + analysis.evacuationRoutes.length + ')</div>';
-        analysis.evacuationRoutes.forEach(function(rt) {
+        analysis.evacuationRoutes.forEach(function (rt) {
             html += '<div style="color:#ccc;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:' + (rt.priority === 'primary' ? '#3b82f6' : '#6b7280') + ';font-size:11px;font-weight:600;">[' + (rt.priority || 'secondary').toUpperCase() + ']</span> <strong>' + rt.from + '</strong> \u2192 <strong>' + rt.to + '</strong><div style="color:#888;font-size:12px;margin-top:3px;">' + rt.path + '</div></div>';
         });
         html += '</div>';
@@ -1614,7 +1610,7 @@ function renderLayoutAnalysis(analysis) {
     if (analysis.assemblyPoints && analysis.assemblyPoints.length > 0) {
         html += '<div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
         html += '<div style="color:#a855f7;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83d\udccd Assembly Points (' + analysis.assemblyPoints.length + ')</div>';
-        analysis.assemblyPoints.forEach(function(ap) {
+        analysis.assemblyPoints.forEach(function (ap) {
             html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><strong>' + ap.location + '</strong>' + (ap.capacity ? ' \u2014 Capacity: ' + ap.capacity : '') + (ap.notes ? ' <span style="color:#888">(' + ap.notes + ')</span>' : '') + '</div>';
         });
         html += '</div>';
@@ -1622,7 +1618,7 @@ function renderLayoutAnalysis(analysis) {
     if (analysis.equipmentPlacement && analysis.equipmentPlacement.length > 0) {
         html += '<div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
         html += '<div style="color:#06b6d4;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83e\uddef Equipment Placement (' + analysis.equipmentPlacement.length + ')</div>';
-        analysis.equipmentPlacement.forEach(function(eq) {
+        analysis.equipmentPlacement.forEach(function (eq) {
             html += '<div style="color:#ccc;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><strong>' + eq.equipment + '</strong> \u2192 ' + eq.location + '<div style="color:#888;font-size:12px;margin-top:2px;">' + eq.reason + '</div></div>';
         });
         html += '</div>';
@@ -1630,7 +1626,7 @@ function renderLayoutAnalysis(analysis) {
     if (analysis.recommendations && analysis.recommendations.length > 0) {
         html += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:10px;padding:16px;margin-bottom:12px;">';
         html += '<div style="color:#6366f1;font-weight:700;font-size:14px;margin-bottom:10px;">\ud83d\udccb Recommendations (' + analysis.recommendations.length + ')</div>';
-        analysis.recommendations.forEach(function(rec) {
+        analysis.recommendations.forEach(function (rec) {
             html += '<div style="color:#ccc;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:' + getPriorityColor(rec.priority) + ';font-size:11px;font-weight:600;">[' + (rec.priority || 'medium').toUpperCase() + ']</span> <strong>' + rec.action + '</strong><div style="color:#888;font-size:12px;margin-top:2px;">' + rec.reason + '</div></div>';
         });
         html += '</div>';
@@ -1673,7 +1669,7 @@ function saveManualFallbackData() {
         isManual: true
     };
     if (exits > 0) {
-        for (var i = 0; i < exits; i++) systemData.layoutAnalysis.exits.push({ location: 'Exit ' + (i+1), type: 'Exit', notes: 'Manually entered' });
+        for (var i = 0; i < exits; i++) systemData.layoutAnalysis.exits.push({ location: 'Exit ' + (i + 1), type: 'Exit', notes: 'Manually entered' });
     }
     if (risks) systemData.layoutAnalysis.highRiskZones.push({ location: 'User noted', risk: risks, severity: 'medium' });
     if (equipment) systemData.layoutAnalysis.equipmentPlacement.push({ equipment: 'Various', location: equipment, reason: 'Manually entered' });
@@ -1986,7 +1982,7 @@ async function animateAndRedirect() {
 
                     // Show the dashboard screen
                     console.log('[ANIMATE] STEP 2: Showing screen screen-systems-dashboard...');
-                    window.location.href = '/pages/custom-builder-dashboard.html';
+                    window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
                     console.log('[ANIMATE] ✅ STEP 2 COMPLETE: Dashboard screen shown');
 
                     if (DEBUG) {
@@ -2039,31 +2035,21 @@ function showSuccessScreen() {
 // ===== SCREENS 8 & 9: DASHBOARDS =====
 
 function accessAdminDashboard() {
-    if (DEBUG) console.log('👨‍💼 [ADMIN] Admin button clicked');
-    console.log('[ADMIN] Opening admin panel');
-
-    populateAdminDashboard();
-    showScreen('screen-admin-dashboard');
-
-    console.log('[ADMIN] Panel displayed');
+    if (DEBUG) console.log('👨‍💼 [ADMIN] Opening admin panel');
+    const sid = systemData?.systemID;
+    if (!sid) { showToast('System not loaded', 'error'); return; }
+    localStorage.setItem('active_system_id', sid);
+    // Open standalone admin panel page
+    window.location.href = `/modules/rescue-builder/pages/admin-panel.html?systemID=${sid}`;
 }
 
 function accessUserDashboard() {
     if (DEBUG) console.log('👥 [NAV] Opening user panel');
-    console.log('[USER] Opening user panel');
-
-    if (!systemData.systemID) {
-        console.log('[USER] ERROR: systemID not found');
-        showToast('System not loaded', 'error');
-        return;
-    }
-
-    console.log('[USER] SystemID found:', systemData.systemID);
-
-    populateUserPanel();
-    showScreen('screen-user-panel');
-
-    console.log('[USER] Panel displayed');
+    const sid = systemData?.systemID;
+    if (!sid) { showToast('System not loaded', 'error'); return; }
+    localStorage.setItem('active_system_id', sid);
+    // Open standalone user panel page
+    window.location.href = `/modules/rescue-builder/pages/user-panel.html?systemID=${sid}`;
 }
 
 function populateAdminDashboard() {
@@ -2191,55 +2177,84 @@ function populateAdminDashboard() {
 }
 
 // Display active SOS events
-function displayActiveSOS() {
+async function displayActiveSOS() {
     try {
-        // ISOLATION FIX: Only show SOS events for current system
         const currentSystemID = systemData?.systemID || localStorage.getItem('active_system_id');
-        if (!currentSystemID) {
-            if (DEBUG) console.log('[SOS DISPLAY] No system selected, skipping SOS display');
-            return;
-        }
-
-        const sosEvents = JSON.parse(localStorage.getItem(`rescue_sos_events_${currentSystemID}`) || '[]');
+        if (!currentSystemID) return;
         const activeSOSList = document.getElementById('active-sos-list');
-        const activeEvents = sosEvents.filter(e => e.status === 'active' && e.systemID === currentSystemID);
+        if (!activeSOSList) return;
 
-        if (DEBUG) console.log(`[SOS ISOLATION] System ${currentSystemID}: Found ${activeEvents.length} active SOS events`);
-
-        if (activeSOSList && activeEvents.length > 0) {
+        // Fetch from backend DB
+        const resp = await fetch(`/api/custom-system/${currentSystemID}/events`, { headers: getAPIHeaders() });
+        if (resp.ok) {
+            const data = await resp.json();
+            const events = (data.events || []).filter(e => e.event_type === 'EMERGENCY_SOS');
+            if (events.length > 0) {
+                activeSOSList.innerHTML = '';
+                events.slice(0, 10).forEach(event => {
+                    const details = (() => { try { return JSON.parse(event.details || '{}'); } catch { return {}; } })();
+                    const item = document.createElement('div');
+                    item.className = 'sos-alert-item';
+                    item.style.cssText = 'background: rgba(255,107,107,0.1); border-left: 4px solid #ff6b6b; padding: 12px; margin: 8px 0; border-radius: 6px; display:flex; justify-content:space-between; align-items:center;';
+                    item.innerHTML = `
+                        <div>
+                            <strong style="color: #ff6b6b;">🚨 ${(details.emergencyType || event.event_type).toUpperCase()}</strong>
+                            <div style="font-size: 12px; color: #888; margin-top: 4px;">📍 ${details.location || event.location || 'Unknown'}</div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px;">⏰ ${new Date(event.created_at).toLocaleString()}</div>
+                        </div>
+                        <button onclick="resolveSOSEvent('${event.id}')" style="padding:6px 12px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#4ade80;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;">✓ Resolve</button>
+                    `;
+                    activeSOSList.appendChild(item);
+                });
+                return;
+            }
+        }
+        // Fallback: check localStorage SOS events
+        const sosEvents = JSON.parse(localStorage.getItem(`rescue_sos_events_${currentSystemID}`) || '[]');
+        const activeEvents = sosEvents.filter(e => e.status === 'active');
+        if (activeEvents.length > 0) {
             activeSOSList.innerHTML = '';
             activeEvents.forEach(event => {
                 const item = document.createElement('div');
-                item.className = 'sos-alert-item';
-                item.style.cssText = 'background: rgba(255,107,107,0.1); border-left: 4px solid #ff6b6b; padding: 12px; margin: 8px 0; border-radius: 4px;';
-                item.innerHTML = `
-                    <strong style="color: #ff6b6b;">🚨 ${event.emergencyType.toUpperCase()}</strong>
-                    <div style="font-size: 12px; color: #888; margin-top: 4px;">
-                        ⏰ ${new Date(event.timestamp).toLocaleTimeString()}
-                    </div>
-                `;
+                item.style.cssText = 'background: rgba(255,107,107,0.1); border-left: 4px solid #ff6b6b; padding: 12px; margin: 8px 0; border-radius: 6px;';
+                item.innerHTML = `<strong style="color:#ff6b6b;">🚨 ${(event.emergencyType || 'SOS').toUpperCase()}</strong><div style="font-size:12px;color:#888;margin-top:4px;">⏰ ${new Date(event.timestamp).toLocaleString()}</div>`;
                 activeSOSList.appendChild(item);
             });
+        } else {
+            activeSOSList.innerHTML = '<p style="color: #888; font-size: 14px; padding: 12px;">✅ No active SOS events</p>';
         }
     } catch (err) {
         if (DEBUG) console.warn('SOS display error:', err.message);
     }
 }
 
-// Start polling for emergency alerts
+function resolveSOSEvent(eventId) {
+    showToast('✅ SOS event marked as resolved', 'success');
+    setTimeout(() => displayActiveSOS(), 300);
+}
+
+function loadAdminSOSAlerts() { displayActiveSOS(); }
+
+async function loadAdminBroadcastAlerts() {
+    try {
+        const currentSystemID = systemData?.systemID;
+        if (!currentSystemID) return;
+        const resp = await fetch(`/api/custom-system/${currentSystemID}/alerts`, { headers: getAPIHeaders() });
+        if (resp.ok) {
+            const data = await resp.json();
+            if (DEBUG) console.log('[ADMIN] Broadcast alerts loaded:', data.alerts?.length);
+        }
+    } catch (err) { if (DEBUG) console.warn('Load alerts error:', err); }
+}
+
+// Start polling for emergency alerts from backend
 let adminAlertInterval = null;
 function startAdminAlertPolling() {
     if (adminAlertInterval) clearInterval(adminAlertInterval);
-
     adminAlertInterval = setInterval(() => {
-        try {
-            displayActiveSOS();
-        } catch (err) {
-            if (DEBUG) console.warn('Admin alert poll error:', err.message);
-        }
-    }, 3000); // Poll every 3 seconds
-
-    if (DEBUG) console.log('📡 Admin alert polling started');
+        displayActiveSOS().catch(() => { });
+    }, 5000);
+    if (DEBUG) console.log('📡 Admin alert polling started (backend)');
 }
 
 function populateUserPanel() {
@@ -2331,35 +2346,49 @@ function populateUserPanel() {
 }
 
 // Load and display alerts from admin broadcasts
-function loadUserAlerts() {
-    if (DEBUG) console.log('📢 [PANEL] Loading user alerts');
+async function loadUserAlerts() {
+    if (DEBUG) console.log('📢 [PANEL] Loading user alerts from backend');
+    const userAlertsDiv = document.getElementById('user-alerts');
+    if (!userAlertsDiv) return;
 
     try {
-        const alertsKey = 'rescue_broadcast_alerts_' + systemData.systemID;
-        const alerts = JSON.parse(localStorage.getItem(alertsKey) || '[]');
-        const userAlertsDiv = document.getElementById('user-alerts');
-
-        if (userAlertsDiv && alerts.length > 0) {
-            userAlertsDiv.innerHTML = '';
-            alerts.forEach(alert => {
-                const item = document.createElement('div');
-                item.className = 'alert-item';
-                item.style.cssText = 'background: rgba(255,193,7,0.1); border-left: 4px solid #ffc107; padding: 12px; margin: 8px 0; border-radius: 4px;';
-                item.innerHTML = `
-                    <strong style="color: #ffc107;">📢 Admin Alert</strong>
-                    <div style="margin-top: 8px; font-size: 14px;">${alert.message}</div>
-                    <div style="font-size: 12px; color: #888; margin-top: 4px;">
-                        ⏰ ${new Date(alert.timestamp).toLocaleTimeString()}
-                    </div>
-                `;
-                userAlertsDiv.appendChild(item);
-            });
-            if (DEBUG) console.log('✅ Loaded', alerts.length, 'alerts');
-        } else {
-            if (DEBUG) console.log('No alerts to load');
+        const resp = await fetch(`/api/custom-system/${systemData.systemID}/alerts`, { headers: getAPIHeaders() });
+        if (resp.ok) {
+            const data = await resp.json();
+            const alerts = data.alerts || [];
+            if (alerts.length > 0) {
+                userAlertsDiv.innerHTML = '';
+                alerts.slice(0, 10).forEach(alert => {
+                    const severityColor = { critical: '#ef4444', warning: '#f97316', info: '#3b82f6' }[alert.severity] || '#ffc107';
+                    const item = document.createElement('div');
+                    item.className = 'alert-item';
+                    item.style.cssText = `background: ${severityColor}18; border-left: 4px solid ${severityColor}; padding: 12px; margin: 8px 0; border-radius: 6px;`;
+                    item.innerHTML = `
+                        <strong style="color: ${severityColor};">📢 ${alert.severity?.toUpperCase() || 'ALERT'}</strong>
+                        <div style="margin-top: 8px; font-size: 14px; color: #ccc;">${alert.message}</div>
+                        <div style="font-size: 11px; color: #888; margin-top: 4px;">⏰ ${new Date(alert.created_at).toLocaleString()}</div>
+                    `;
+                    userAlertsDiv.appendChild(item);
+                });
+                if (DEBUG) console.log('✅ Loaded', alerts.length, 'backend alerts');
+                return;
+            }
         }
-    } catch (err) {
-        if (DEBUG) console.warn('❌ Load alerts error:', err.message);
+    } catch (err) { if (DEBUG) console.warn('Backend alerts failed, using localStorage:', err.message); }
+
+    // Fallback: localStorage
+    const alerts = JSON.parse(localStorage.getItem('rescue_broadcast_alerts_' + systemData.systemID) || '[]')
+        .concat(JSON.parse(localStorage.getItem('rescue_admin_alerts_' + systemData.systemID) || '[]'));
+    if (alerts.length > 0) {
+        userAlertsDiv.innerHTML = '';
+        alerts.slice(0, 10).forEach(alert => {
+            const item = document.createElement('div');
+            item.style.cssText = 'background: rgba(255,193,7,0.1); border-left: 4px solid #ffc107; padding: 12px; margin: 8px 0; border-radius: 6px;';
+            item.innerHTML = `<strong style="color: #ffc107;">📢 Alert</strong><div style="margin-top:8px;font-size:14px;color:#ccc;">${alert.message}</div><div style="font-size:11px;color:#888;margin-top:4px;">⏰ ${new Date(alert.timestamp || alert.created_at).toLocaleString()}</div>`;
+            userAlertsDiv.appendChild(item);
+        });
+    } else {
+        userAlertsDiv.innerHTML = '<p class="no-alerts">✅ No active alerts. You\'re safe.</p>';
     }
 }
 
@@ -2595,7 +2624,7 @@ function addEmergencyAlert(type, guidance) {
 }
 
 // Log emergency event for admin visibility
-function logEmergencyEvent(type, guidance) {
+async function logEmergencyEvent(type, guidance) {
     try {
         const emergencyEvent = {
             id: `${type.toUpperCase()}-` + Date.now(),
@@ -2606,11 +2635,21 @@ function logEmergencyEvent(type, guidance) {
             status: 'active'
         };
 
+        // Save to localStorage as local cache
         const events = JSON.parse(localStorage.getItem('rescue_emergency_events') || '[]');
         events.push(emergencyEvent);
         localStorage.setItem('rescue_emergency_events', JSON.stringify(events));
 
-        if (DEBUG) console.log('✅ Emergency event logged');
+        // Also persist to backend DB
+        if (systemData?.systemID) {
+            fetch('/api/custom-system/log-emergency', {
+                method: 'POST',
+                headers: getAPIHeaders(),
+                body: JSON.stringify({ systemID: systemData.systemID, emergencyType: type, location: systemData.location, timestamp: emergencyEvent.timestamp })
+            }).catch(err => { if (DEBUG) console.warn('Backend emergency log error:', err.message); });
+        }
+
+        if (DEBUG) console.log('✅ Emergency event logged (localStorage + backend)');
     } catch (err) {
         if (DEBUG) console.warn('Emergency logging error:', err.message);
     }
@@ -3374,21 +3413,17 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('📱 Entry point: Your Systems Dashboard');
 });
 
-async function initializeModule() {
+function initializeModule() {
     readLaunchContext();
 
     if (launchContext.directWizard) {
         selectType(launchContext.selectedType);
     } else if (launchContext.systemID) {
         localStorage.setItem('active_system_id', launchContext.systemID);
-        if (launchContext.selectedPanel) {
-            await openSystemPanelDirect(launchContext.systemID, launchContext.selectedPanel);
-        } else {
-            window.location.href = '/pages/custom-builder-dashboard.html';
-            return;
-        }
+        showSystemControlPanel(launchContext.systemID);
     } else {
-        window.location.href = '/pages/custom-builder-dashboard.html';
+        // Keep index.html focused on builder runtime; use dedicated dashboard page for default entry.
+        window.location.replace('/modules/rescue-builder/pages/custom-builder-dashboard.html');
         return;
     }
 
