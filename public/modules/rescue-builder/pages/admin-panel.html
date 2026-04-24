@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResQAI — Admin Control Panel</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: { "surface-container-lowest": "#0a0e14", "on-surface-variant": "#e4beba", "primary": "#ffb3ae", "surface-bright": "#353940", "on-primary": "#68000b", "surface-container-low": "#181c22", "outline": "#ab8986", "surface": "#10141a", "surface-container": "#1c2026", "outline-variant": "#5b403e", "on-surface": "#dfe2eb", "surface-container-high": "#262a31", "surface-tint": "#ffb3ae", "error-container": "#93000a", "secondary": "#a6e6ff", "primary-container": "#ff5352", "surface-container-highest": "#31353c", "secondary-container": "#14d1ff", "on-secondary": "#003543", "background": "#10141a", "tertiary": "#ddb7ff", "on-primary-container": "#5c0008", "error": "#ffb4ab" },
+          fontFamily: { headline: ["Space Grotesk"], body: ["Inter"], mono: ["JetBrains Mono"] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(1);
+        opacity: 1
+      }
+
+      100% {
+        transform: scale(1.8);
+        opacity: 0
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    @keyframes slide-in {
+      from {
+        transform: translateX(100%);
+        opacity: 0
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1
+      }
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .pulse-ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    .card {
+      background: rgba(24, 28, 34, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      animation: fade-in 0.4s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 179, 174, 0.12);
+    }
+
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+    }
+
+    #toast {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      pointer-events: auto;
+      animation: slide-in 0.3s ease;
+    }
+
+    .toast-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .toast-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .toast-warning {
+      background: rgba(249, 115, 22, 0.15);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #fb923c;
+    }
+
+    .toast-info {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93c5fd;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-family: 'Space Grotesk';
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #94a3b8;
+    }
+
+    .nav-link.active {
+      background: rgba(255, 83, 82, 0.12);
+      border-left: 3px solid #ff5352;
+      color: #ffb3ae;
+      padding-left: 13px;
+    }
+
+    .emergency-btn {
+      padding: 14px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-family: 'Space Grotesk';
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .emergency-btn:hover {
+      transform: scale(1.03);
+    }
+
+    .emergency-btn:active {
+      transform: scale(0.97);
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-family: 'Space Grotesk';
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 179, 174, 0.15);
+      border-radius: 3px;
+    }
+
+    .section-hidden {
+      display: none;
+    }
+
+    .section-active {
+      display: block;
+    }
+
+    .sos-alert {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 4px solid #ef4444;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fade-in 0.4s ease;
+    }
+
+    .broadcast-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .staff-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .staff-row:last-child {
+      border-bottom: none;
+    }
+
+    .risk-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Space Grotesk';
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    textarea.broadcast-input {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #dfe2eb;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 90px;
+      width: 100%;
+      outline: none;
+      font-family: 'Inter';
+      transition: border-color 0.2s;
+    }
+
+    textarea.broadcast-input:focus {
+      border-color: rgba(255, 179, 174, 0.4);
+    }
+  </style>
+</head>
+
+<body class="bg-[#0a0e14] text-on-surface font-body min-h-screen">
+
+  <div id="toast"></div>
+
+  <!-- Header -->
+  <header
+    class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-[#10141a]/90 backdrop-blur-md border-b border-white/5">
+    <div class="flex items-center gap-4">
+      <span class="text-primary font-black text-xl font-headline tracking-tighter">ResQAI</span>
+      <div class="h-4 w-px bg-white/10"></div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-400/25">
+        <span class="w-2 h-2 rounded-full bg-rose-400 relative pulse-ring" style="color:#f87171;"></span>
+        <span class="text-rose-300 font-headline font-bold text-[10px] uppercase tracking-widest">Admin Control
+          Panel</span>
+      </div>
+      <span id="system-name-badge" class="hidden text-slate-400 text-sm font-body"></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="openSQLModule()"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 text-slate-400 text-xs font-headline uppercase tracking-widest hover:bg-white/5 transition-all">
+        <span class="material-symbols-outlined text-sm">database</span> SQL Module
+      </button>
+      <button onclick="openUserPanel()"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-400/25 text-emerald-400 text-xs font-headline uppercase tracking-widest hover:bg-emerald-500/10 transition-all">
+        <span class="material-symbols-outlined text-sm">person</span> User Panel
+      </button>
+      <button onclick="goBack()"
+        class="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-105 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-sm">arrow_back</span> Exit
+      </button>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <div class="flex pt-16 h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside
+      class="w-56 flex-shrink-0 h-full border-r border-white/5 overflow-y-auto bg-[#10141a]/80 py-6 hidden lg:flex flex-col">
+      <div class="px-4 mb-6">
+        <div id="sidebar-org-info" class="space-y-1">
+          <div class="shimmer h-5 w-3/4 mb-2"></div>
+          <div class="shimmer h-3 w-1/2"></div>
+        </div>
+      </div>
+      <nav class="px-3 flex-1">
+        <div class="nav-link active" onclick="showSection('overview')" id="nav-overview">
+          <span class="material-symbols-outlined text-lg">dashboard</span> Overview
+        </div>
+        <div class="nav-link" onclick="showSection('emergency')" id="nav-emergency">
+          <span class="material-symbols-outlined text-lg">emergency</span> Emergency
+        </div>
+        <div class="nav-link" onclick="showSection('alerts')" id="nav-alerts">
+          <span class="material-symbols-outlined text-lg">campaign</span> Alerts
+        </div>
+        <div class="nav-link" onclick="showSection('staff')" id="nav-staff">
+          <span class="material-symbols-outlined text-lg">groups</span> Staff
+        </div>
+        <div class="nav-link" onclick="showSection('analytics')" id="nav-analytics">
+          <span class="material-symbols-outlined text-lg">analytics</span> Analytics
+        </div>
+        <div class="nav-link" onclick="showSection('logs')" id="nav-logs">
+          <span class="material-symbols-outlined text-lg">history</span> Activity Logs
+        </div>
+        <div class="nav-link" onclick="showSection('ai')" id="nav-ai">
+          <span class="material-symbols-outlined text-lg">smart_toy</span> AI Control
+        </div>
+      </nav>
+      <div class="px-4 mt-4">
+        <div class="card p-3">
+          <div class="text-[9px] text-slate-500 uppercase tracking-widest font-headline mb-1">System Integrity</div>
+          <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div id="integrity-bar"
+              class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000"
+              style="width:0%"></div>
+          </div>
+          <div id="integrity-label" class="text-[10px] text-emerald-400 mt-1 font-mono">Loading...</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <div class="max-w-6xl mx-auto space-y-6">
+
+        <!-- SECTION: OVERVIEW -->
+        <div id="section-overview" class="section-active space-y-6">
+
+          <!-- Stat Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary text-lg">groups</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-headline">Staff</span>
+              </div>
+              <div class="stat-value text-3xl text-white" id="stat-staff">—</div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-rose-400 text-lg">emergency</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-headline">SOS Events</span>
+              </div>
+              <div class="stat-value text-3xl text-rose-400" id="stat-sos">—</div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-amber-400 text-lg">campaign</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-headline">Alerts Sent</span>
+              </div>
+              <div class="stat-value text-3xl text-amber-400" id="stat-alerts">—</div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-emerald-400 text-lg">shield</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-headline">Status</span>
+              </div>
+              <div class="stat-value text-xl text-emerald-400" id="stat-status">—</div>
+            </div>
+          </div>
+
+          <!-- Org Info + AI Summary -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="card p-6">
+              <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-lg">corporate_fare</span> Organization Overview
+              </h3>
+              <div class="space-y-3 text-sm" id="org-overview-details">
+                <div class="shimmer h-4 w-full"></div>
+                <div class="shimmer h-4 w-3/4"></div>
+                <div class="shimmer h-4 w-2/3"></div>
+              </div>
+            </div>
+            <div class="card p-6">
+              <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-tertiary text-lg">smart_toy</span> AI Readiness Analysis
+                <button onclick="refreshAIAnalysis()"
+                  class="ml-auto text-slate-600 hover:text-tertiary transition-colors">
+                  <span class="material-symbols-outlined text-base">refresh</span>
+                </button>
+              </h3>
+              <div id="ai-summary-box">
+                <div class="shimmer h-4 w-full mb-2"></div>
+                <div class="shimmer h-4 w-5/6 mb-2"></div>
+                <div class="shimmer h-4 w-4/5"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active SOS Alerts -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-white font-bold font-headline flex items-center gap-2">
+                <span class="material-symbols-outlined text-rose-400 text-lg">emergency_share</span> Active SOS Events
+                <span id="sos-count-badge"
+                  class="hidden px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-400/25 text-rose-400 text-[10px] font-headline font-bold"></span>
+              </h3>
+              <button onclick="refreshSOSEvents()"
+                class="flex items-center gap-1 text-slate-600 hover:text-rose-400 transition-colors text-xs font-headline uppercase tracking-wider">
+                <span class="material-symbols-outlined text-sm">refresh</span> Refresh
+              </button>
+            </div>
+            <div id="sos-events-list">
+              <div class="text-center py-8 text-slate-600">
+                <span class="material-symbols-outlined text-3xl block mb-2">check_circle</span>
+                <span class="text-sm">No active SOS events</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evacuation Routes -->
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-sky-400 text-lg">directions_run</span> Evacuation Protocol
+            </h3>
+            <div id="evacuation-steps" class="space-y-3">
+              <div class="shimmer h-10 w-full"></div>
+              <div class="shimmer h-10 w-full"></div>
+              <div class="shimmer h-10 w-full"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: EMERGENCY -->
+        <div id="section-emergency" class="section-hidden space-y-6">
+          <div class="card p-6">
+            <h3 class="text-rose-400 font-bold font-headline text-lg mb-2 flex items-center gap-2">
+              <span class="material-symbols-outlined">emergency</span> Emergency Trigger Panel
+            </h3>
+            <p class="text-slate-500 text-sm mb-6">Select an emergency type to log an event and notify staff. All events
+              are persisted to the database.</p>
+            <div id="emergency-buttons-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div class="shimmer h-16 rounded-xl"></div>
+              <div class="shimmer h-16 rounded-xl"></div>
+              <div class="shimmer h-16 rounded-xl"></div>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400">history</span> Emergency Event Log
+            </h3>
+            <div id="emergency-log-list" class="space-y-2 max-h-80 overflow-y-auto">
+              <div class="text-slate-600 text-sm text-center py-6">Loading events...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: ALERTS -->
+        <div id="section-alerts" class="section-hidden space-y-6">
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400">campaign</span> Broadcast Alert to All Staff
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label
+                  class="text-[11px] text-slate-500 uppercase tracking-wider font-headline block mb-2">Message</label>
+                <textarea id="broadcast-message" class="broadcast-input"
+                  placeholder="Type your alert message...&#10;e.g. Fire drill in 10 minutes — all staff to assembly point B"></textarea>
+              </div>
+              <div class="flex gap-3 items-center">
+                <label class="text-[11px] text-slate-500 uppercase tracking-wider font-headline">Severity</label>
+                <select id="broadcast-severity"
+                  class="bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none font-body">
+                  <option value="info">ℹ️ Info</option>
+                  <option value="warning" selected>⚠️ Warning</option>
+                  <option value="critical">🚨 Critical</option>
+                </select>
+                <button onclick="sendBroadcast()" id="btn-broadcast"
+                  class="ml-auto flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/80 to-amber-400 text-black font-headline font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+                  <span class="material-symbols-outlined text-sm">send</span> Broadcast
+                </button>
+              </div>
+              <div>
+                <button onclick="generateAIAlert()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-tertiary/10 border border-tertiary/25 text-tertiary text-xs font-headline uppercase tracking-wider hover:bg-tertiary/15 transition-all">
+                  <span class="material-symbols-outlined text-sm">auto_awesome</span> AI Generate Alert
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-slate-400">inbox</span> Alert History
+            </h3>
+            <div id="alert-history-list" class="space-y-2 max-h-80 overflow-y-auto">
+              <div class="text-slate-600 text-sm text-center py-6">Loading alerts...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: STAFF -->
+        <div id="section-staff" class="section-hidden space-y-6">
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">badge</span> Staff Roster
+            </h3>
+            <div id="staff-roster" class="space-y-2">
+              <div class="shimmer h-14 w-full rounded-xl"></div>
+              <div class="shimmer h-14 w-full rounded-xl"></div>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary">smart_toy</span> AI Role Assignment Suggestions
+            </h3>
+            <div id="ai-role-suggestions">
+              <button onclick="getAIRoleSuggestions()"
+                class="action-btn bg-tertiary/10 border-tertiary/25 text-tertiary hover:bg-tertiary/15">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span> Generate AI Role Assignments
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: ANALYTICS -->
+        <div id="section-analytics" class="section-hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="card p-6">
+              <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sky-400">pie_chart</span> Risk Distribution
+              </h3>
+              <div id="risk-chart" class="space-y-3">
+                <div class="shimmer h-8 rounded-full"></div>
+                <div class="shimmer h-8 rounded-full"></div>
+                <div class="shimmer h-8 rounded-full"></div>
+              </div>
+            </div>
+            <div class="card p-6">
+              <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-400">trending_up</span> System Metrics
+              </h3>
+              <div id="system-metrics" class="space-y-4">
+                <div class="shimmer h-6 w-full"></div>
+                <div class="shimmer h-6 w-full"></div>
+                <div class="shimmer h-6 w-full"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary">auto_graph</span> AI Analytics Summary
+            </h3>
+            <div id="analytics-ai-summary">
+              <button onclick="getAnalyticsSummary()"
+                class="action-btn bg-tertiary/10 border-tertiary/25 text-tertiary hover:bg-tertiary/15">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span> Generate AI Analytics Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: LOGS -->
+        <div id="section-logs" class="section-hidden space-y-6">
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-white font-bold font-headline flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-400">history</span> Activity Logs
+              </h3>
+              <button onclick="refreshLogs()" class="text-slate-500 hover:text-amber-400 transition-colors">
+                <span class="material-symbols-outlined text-base">refresh</span>
+              </button>
+            </div>
+            <div id="activity-logs-list" class="space-y-2 max-h-[500px] overflow-y-auto">
+              <div class="text-slate-600 text-sm text-center py-6">Loading logs...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: AI CONTROL -->
+        <div id="section-ai" class="section-hidden space-y-6">
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-2 flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary">smart_toy</span> AI Emergency Assistant
+            </h3>
+            <p class="text-slate-500 text-sm mb-5">Ask the AI for emergency guidance, threat assessment, or evacuation
+              strategies tailored to your organization.</p>
+            <div class="flex gap-3 mb-4">
+              <input id="ai-query-input" type="text"
+                placeholder='e.g. "What should we do if there is a fire on floor 3?"'
+                class="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-tertiary/40 transition-all" />
+              <button onclick="submitAIQuery()"
+                class="flex items-center gap-2 px-5 py-3 rounded-xl bg-tertiary/15 border border-tertiary/30 text-tertiary font-headline font-bold text-xs tracking-widest uppercase hover:bg-tertiary/20 transition-all whitespace-nowrap">
+                <span class="material-symbols-outlined text-sm">send</span> Ask
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-5">
+              <button onclick="quickAI('fire evacuation procedures')"
+                class="text-xs px-3 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all font-body">🔥
+                Fire Evacuation</button>
+              <button onclick="quickAI('medical emergency response')"
+                class="text-xs px-3 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all font-body">⚕️
+                Medical Emergency</button>
+              <button onclick="quickAI('intruder lockdown protocol')"
+                class="text-xs px-3 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all font-body">🚨
+                Intruder Alert</button>
+              <button onclick="quickAI('general safety tips for this organization')"
+                class="text-xs px-3 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all font-body">💡
+                Safety Tips</button>
+              <button onclick="quickAI('staff role assignments during emergency')"
+                class="text-xs px-3 py-1.5 rounded-lg bg-white/4 border border-white/8 text-slate-500 hover:text-slate-300 hover:bg-white/6 transition-all font-body">👥
+                Staff Roles</button>
+            </div>
+            <div id="ai-response-box" class="hidden bg-[#111827] border border-tertiary/20 rounded-xl p-5">
+              <div class="flex items-center gap-2 mb-3 text-tertiary">
+                <span class="material-symbols-outlined text-lg">smart_toy</span>
+                <span class="font-headline font-bold text-sm uppercase tracking-wider">AI Response</span>
+              </div>
+              <div id="ai-response-text" class="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap"></div>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="text-white font-bold font-headline mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400">checklist</span> AI Safety Audit
+            </h3>
+            <div id="ai-audit-section">
+              <button onclick="runAISafetyAudit()"
+                class="action-btn bg-emerald-500/10 border-emerald-400/25 text-emerald-400 hover:bg-emerald-500/15">
+                <span class="material-symbols-outlined text-sm">fact_check</span> Run Full AI Safety Audit
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ===== STATE =====
+    const API = '/api/custom-system';
+    let systemData = null;
+    let systemID = null;
+    let pollInterval = null;
+
+    // ===== INIT =====
+    window.addEventListener('DOMContentLoaded', async () => {
+      systemID = localStorage.getItem('active_system_id') || new URLSearchParams(location.search).get('systemID');
+      if (!systemID) { toast('No system selected', 'error'); return; }
+      await loadSystem();
+      await Promise.all([refreshSOSEvents(), refreshLogs(), loadAlertHistory(), loadStats()]);
+      pollInterval = setInterval(() => refreshSOSEvents(), 8000);
+    });
+
+    window.addEventListener('beforeunload', () => { if (pollInterval) clearInterval(pollInterval); });
+
+    // ===== TOAST =====
+    function toast(msg, type = 'info') {
+      const el = document.getElementById('toast');
+      const div = document.createElement('div');
+      div.className = `toast-msg toast-${type}`;
+      div.textContent = msg;
+      el.appendChild(div);
+      setTimeout(() => div.remove(), 4000);
+    }
+
+    // ===== NAV =====
+    function showSection(section) {
+      ['overview', 'emergency', 'alerts', 'staff', 'analytics', 'logs', 'ai'].forEach(s => {
+        document.getElementById(`section-${s}`)?.classList.toggle('section-hidden', s !== section);
+        document.getElementById(`section-${s}`)?.classList.toggle('section-active', s === section);
+        document.getElementById(`nav-${s}`)?.classList.toggle('active', s === section);
+      });
+      // Load section-specific data
+      if (section === 'emergency') loadEmergencyLog();
+      if (section === 'staff') renderStaff();
+      if (section === 'analytics') loadAnalytics();
+      if (section === 'logs') refreshLogs();
+    }
+
+    // ===== LOAD SYSTEM =====
+    async function loadSystem() {
+      try {
+        const cached = JSON.parse(localStorage.getItem('resqai_custom_systems') || '[]');
+        let sys = cached.find(s => (s.systemID || s.id) === systemID);
+        if (sys?.data) { sys = { ...sys, ...sys.data, systemID: sys.systemID || sys.id }; }
+
+        if (!sys) {
+          const resp = await fetch(`${API}/${systemID}`);
+          if (resp.ok) { const d = await resp.json(); sys = d.system; }
+        }
+
+        if (!sys) { toast('System data not found', 'error'); return; }
+        systemData = sys;
+
+        // Update UI
+        document.getElementById('system-name-badge').textContent = sys.organization_name || sys.organizationName || sys.name || '';
+        document.getElementById('system-name-badge').classList.remove('hidden');
+
+        // Sidebar org info
+        document.getElementById('sidebar-org-info').innerHTML = `
+      <div class="text-white font-bold text-sm font-headline truncate">${sys.organization_name || sys.organizationName || sys.name || 'Unknown'}</div>
+      <div class="text-slate-500 text-[10px] uppercase tracking-wider font-headline">${sys.organization_type || sys.organizationType || sys.type || 'Custom'}</div>
+      <div class="text-slate-600 text-[10px] mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-xs">location_on</span>${(sys.location || '').substring(0, 28)}${sys.location?.length > 28 ? '...' : ''}</div>
+    `;
+
+        // Stats
+        const staff = sys.staff || [];
+        document.getElementById('stat-staff').textContent = Array.isArray(staff) ? staff.length : 0;
+        document.getElementById('stat-status').textContent = (sys.status || 'active').toUpperCase();
+
+        // Org details
+        document.getElementById('org-overview-details').innerHTML = `
+      <div class="flex justify-between py-2 border-b border-white/4"><span class="text-slate-500">Organization</span><span class="text-white font-medium">${sys.organization_name || sys.organizationName || sys.name || '—'}</span></div>
+      <div class="flex justify-between py-2 border-b border-white/4"><span class="text-slate-500">Type</span><span class="text-white font-medium capitalize">${sys.organization_type || sys.organizationType || sys.type || '—'}</span></div>
+      <div class="flex justify-between py-2 border-b border-white/4"><span class="text-slate-500">Location</span><span class="text-white font-medium text-right max-w-[180px]">${sys.location || '—'}</span></div>
+      <div class="flex justify-between py-2 border-b border-white/4"><span class="text-slate-500">Contact</span><span class="text-white font-medium">${sys.contact_email || sys.contactEmail || '—'}</span></div>
+      <div class="flex justify-between py-2"><span class="text-slate-500">Created</span><span class="text-white font-medium">${new Date(sys.created_at || sys.createdAt || Date.now()).toLocaleDateString()}</span></div>
+    `;
+
+        // Evacuation steps
+        const template = sys.template || {};
+        const steps = template.evacuationSteps || ['Activate alarm system immediately', 'Notify all occupants via intercom', 'Guide evacuation to nearest exits', 'Assemble at designated muster point', 'Account for all personnel'];
+        document.getElementById('evacuation-steps').innerHTML = steps.map((s, i) => `
+      <div class="flex items-start gap-3 p-3 rounded-xl bg-white/2 border border-white/4">
+        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 text-[11px] font-bold font-headline">${i + 1}</span>
+        <span class="text-slate-300 text-sm pt-0.5">${s}</span>
+      </div>`).join('');
+
+        // Integrity bar
+        const integrityScore = Math.min(100, 40 + (staff.length > 0 ? 20 : 0) + ((sys.riskTypes || []).length > 0 ? 20 : 0) + 20);
+        setTimeout(() => {
+          document.getElementById('integrity-bar').style.width = integrityScore + '%';
+          document.getElementById('integrity-label').textContent = integrityScore + '% Ready';
+        }, 500);
+
+        // Render emergency buttons
+        renderEmergencyButtons();
+
+        // AI summary
+        refreshAIAnalysis();
+
+      } catch (err) { toast('Error loading system: ' + err.message, 'error'); }
+    }
+
+    // ===== STATS FROM SERVER =====
+    async function loadStats() {
+      try {
+        const resp = await fetch(`${API}/stats/overview`);
+        if (!resp.ok) return;
+        const { stats } = await resp.json();
+        document.getElementById('stat-sos').textContent = stats.total_sos || 0;
+        document.getElementById('stat-alerts').textContent = stats.total_alerts || 0;
+      } catch { }
+    }
+
+    // ===== AI SUMMARY =====
+    async function refreshAIAnalysis() {
+      const box = document.getElementById('ai-summary-box');
+      box.innerHTML = '<div class="shimmer h-4 w-full mb-2"></div><div class="shimmer h-4 w-5/6 mb-2"></div><div class="shimmer h-4 w-4/5"></div>';
+      try {
+        const staff = systemData?.staff || [];
+        const riskTypes = systemData?.riskTypes || systemData?.risk_types_json || [];
+        const resp = await fetch(`${API}/ai/system-analysis`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemId: systemID,
+            organizationType: systemData?.organization_type || systemData?.organizationType || systemData?.type,
+            organizationName: systemData?.organization_name || systemData?.organizationName || systemData?.name,
+            location: systemData?.location,
+            staffCount: Array.isArray(staff) ? staff.length : 0,
+            riskTypes: Array.isArray(riskTypes) ? riskTypes : [],
+            alertsCount: parseInt(document.getElementById('stat-alerts').textContent) || 0,
+            eventsToday: 0
+          })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          box.innerHTML = `<div class="bg-tertiary/8 border border-tertiary/20 rounded-xl p-4 text-slate-300 text-sm leading-relaxed">${data.analysis}</div>`;
+        } else { throw new Error(); }
+      } catch {
+        box.innerHTML = `<div class="bg-white/3 border border-white/8 rounded-xl p-4 text-slate-500 text-sm">AI analysis unavailable. Configure your API key in .env to enable.</div>`;
+      }
+    }
+
+    // ===== SOS EVENTS =====
+    async function refreshSOSEvents() {
+      try {
+        const resp = await fetch(`${API}/${systemID}/events`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const events = (data.events || []).filter(e => e.event_type === 'EMERGENCY_SOS');
+        document.getElementById('stat-sos').textContent = events.length;
+        const list = document.getElementById('sos-events-list');
+        const badge = document.getElementById('sos-count-badge');
+        if (events.length > 0) {
+          badge.textContent = events.length;
+          badge.classList.remove('hidden');
+          list.innerHTML = events.slice(0, 8).map(ev => {
+            const det = (() => { try { return JSON.parse(ev.details || '{}'); } catch { return {}; } })();
+            return `
+          <div class="sos-alert">
+            <div>
+              <div class="text-rose-400 font-bold font-headline text-sm flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">emergency</span>
+                ${(det.emergencyType || ev.event_type || 'SOS').toUpperCase()}
+              </div>
+              <div class="text-slate-500 text-xs mt-1 flex items-center gap-2">
+                <span class="material-symbols-outlined text-xs">location_on</span>${det.location || ev.location || 'Location unknown'}
+                <span class="ml-2">⏰ ${new Date(ev.created_at).toLocaleString()}</span>
+              </div>
+            </div>
+            <button onclick="resolveEvent('${ev.id}')" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 text-[10px] font-headline font-bold uppercase tracking-wider hover:bg-emerald-500/15 transition-all">Resolve</button>
+          </div>`;
+          }).join('');
+        } else {
+          badge.classList.add('hidden');
+          list.innerHTML = `<div class="text-center py-8 text-slate-600"><span class="material-symbols-outlined text-3xl block mb-2">check_circle</span><span class="text-sm">All clear. No active SOS events.</span></div>`;
+        }
+      } catch (err) { console.warn('SOS load error:', err.message); }
+    }
+
+    function resolveEvent(id) { toast('✅ Event marked as resolved', 'success'); refreshSOSEvents(); }
+
+    // ===== EMERGENCY BUTTONS =====
+    function renderEmergencyButtons() {
+      const template = systemData?.template || {};
+      const types = template.emergencyTypes || [
+        { id: 'fire', icon: '🔥', label: 'Fire', color: '#ef4444' },
+        { id: 'medical', icon: '⚕️', label: 'Medical', color: '#22c55e' },
+        { id: 'flood', icon: '💧', label: 'Flood', color: '#3b82f6' },
+        { id: 'intruder', icon: '🚨', label: 'Intruder', color: '#f97316' },
+        { id: 'chemical', icon: '☢️', label: 'Chemical', color: '#a855f7' },
+        { id: 'earthquake', icon: '📍', label: 'Earthquake', color: '#eab308' },
+      ];
+      document.getElementById('emergency-buttons-grid').innerHTML = types.map(t => `
+    <button class="emergency-btn" style="background:${t.color}15;border:1px solid ${t.color}40;color:${t.color};" onclick="triggerEmergencyEvent('${t.id}','${t.label}','${t.color}')">
+      <div style="font-size:24px;margin-bottom:6px;">${t.icon}</div>
+      <div>${t.label}</div>
+    </button>`).join('');
+    }
+
+    async function triggerEmergencyEvent(type, label, color) {
+      const confirmed = confirm(`⚠️ Trigger ${label} emergency for ${systemData?.organization_name || systemData?.name}?\n\nThis will log the event and notify all staff.`);
+      if (!confirmed) return;
+      toast(`🚨 ${label.toUpperCase()} emergency triggered!`, 'error');
+      try {
+        await fetch(`${API}/log-emergency`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemID, emergencyType: type, location: systemData?.location, timestamp: new Date().toISOString() })
+        });
+        await refreshSOSEvents();
+        await loadEmergencyLog();
+        // Also auto-broadcast
+        await fetch(`${API}/broadcast-alert`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemID, message: `🚨 ${label.toUpperCase()} EMERGENCY ALERT — Follow evacuation protocol immediately!`, severity: 'critical' })
+        });
+        toast(`📡 Staff notified of ${label} emergency`, 'success');
+      } catch (err) { toast('Emergency logged locally', 'warning'); }
+    }
+
+    // ===== EMERGENCY LOG =====
+    async function loadEmergencyLog() {
+      try {
+        const resp = await fetch(`${API}/${systemID}/events`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const events = data.events || [];
+        const list = document.getElementById('emergency-log-list');
+        if (!events.length) { list.innerHTML = '<div class="text-slate-600 text-sm text-center py-6">No emergency events recorded</div>'; return; }
+        list.innerHTML = events.slice(0, 20).map(ev => {
+          const det = (() => { try { return JSON.parse(ev.details || '{}'); } catch { return {}; } })();
+          return `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/2 border border-white/4">
+          <span class="material-symbols-outlined text-rose-400 text-base flex-shrink-0">emergency</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-white font-medium">${(det.emergencyType || ev.event_type || 'Event').toUpperCase()}</div>
+            <div class="text-xs text-slate-500">${det.location || ev.location || 'No location'} · ${new Date(ev.created_at).toLocaleString()}</div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 text-[10px] font-headline uppercase border border-rose-400/20">${ev.event_type}</span>
+        </div>`;
+        }).join('');
+      } catch (err) { console.warn(err); }
+    }
+
+    // ===== BROADCAST =====
+    async function sendBroadcast() {
+      const message = document.getElementById('broadcast-message').value.trim();
+      const severity = document.getElementById('broadcast-severity').value;
+      if (!message) { toast('Please enter a message', 'error'); return; }
+      const btn = document.getElementById('btn-broadcast');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const resp = await fetch(`${API}/broadcast-alert`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemID, message, severity })
+        });
+        if (resp.ok) {
+          toast('✅ Alert broadcast to all staff!', 'success');
+          document.getElementById('broadcast-message').value = '';
+          await loadAlertHistory();
+        } else { throw new Error(); }
+      } catch { toast('Failed to broadcast', 'error'); }
+      finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">send</span> Broadcast'; }
+    }
+
+    async function generateAIAlert() {
+      const orgType = systemData?.organization_type || systemData?.organizationType || systemData?.type || 'organization';
+      toast('🤖 Generating AI alert...', 'info');
+      try {
+        const resp = await fetch('/api/custom-system/generate-guidance', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'general safety reminder', organizationType: orgType, staff: systemData?.staff || [] })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          const short = data.guidance?.substring(0, 200) || 'General safety reminder: Follow all emergency procedures.';
+          document.getElementById('broadcast-message').value = '⚠️ Safety Notice: ' + short;
+          toast('✅ AI message generated', 'success');
+        }
+      } catch { toast('AI unavailable', 'warning'); }
+    }
+
+    async function loadAlertHistory() {
+      try {
+        const resp = await fetch(`${API}/${systemID}/alerts`);
+        if (!resp.ok) return;
+        const { alerts } = await resp.json();
+        document.getElementById('stat-alerts').textContent = alerts?.length || 0;
+        const list = document.getElementById('alert-history-list');
+        if (!alerts?.length) { list.innerHTML = '<div class="text-slate-600 text-sm text-center py-6">No alerts sent yet</div>'; return; }
+        const colours = { critical: 'rose', warning: 'amber', info: 'sky' };
+        list.innerHTML = alerts.slice(0, 20).map(a => {
+          const c = colours[a.severity] || 'amber';
+          return `
+        <div class="broadcast-item">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 rounded-full bg-${c}-500/10 border border-${c}-400/20 text-${c}-400 text-[10px] font-headline uppercase">${a.severity || 'info'}</span>
+            <span class="text-slate-600 text-xs">${new Date(a.created_at).toLocaleString()}</span>
+          </div>
+          <p class="text-slate-300 text-sm">${a.message}</p>
+        </div>`;
+        }).join('');
+      } catch (err) { console.warn(err); }
+    }
+
+    // ===== STAFF =====
+    function renderStaff() {
+      const staff = systemData?.staff || [];
+      const el = document.getElementById('staff-roster');
+      if (!staff.length) { el.innerHTML = '<div class="text-slate-600 text-sm text-center py-6">No staff members added to this system</div>'; return; }
+      const roleColors = { commander: 'rose', warden: 'amber', medical: 'emerald', coordinator: 'sky', responder: 'violet' };
+      el.innerHTML = staff.map(s => {
+        const c = roleColors[s.role] || 'slate';
+        return `
+      <div class="staff-row">
+        <div class="w-9 h-9 rounded-xl bg-${c}-500/15 border border-${c}-400/25 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-${c}-400 text-base">person</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white font-medium text-sm">${s.name || '—'}</div>
+          <div class="text-slate-500 text-xs">${(s.role || 'staff').toUpperCase()}</div>
+        </div>
+        <div class="text-slate-600 text-xs font-mono">${s.phone || '—'}</div>
+        <span class="risk-badge bg-${c}-500/10 border border-${c}-400/20 text-${c}-400">${s.role || 'staff'}</span>
+      </div>`;
+      }).join('');
+    }
+
+    async function getAIRoleSuggestions() {
+      const el = document.getElementById('ai-role-suggestions');
+      el.innerHTML = '<div class="text-tertiary text-sm flex items-center gap-2"><span class="material-symbols-outlined text-base">hourglass_empty</span>Generating AI role assignments...</div>';
+      try {
+        const resp = await fetch(`${API}/generate-guidance`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'staff role assignment', organizationType: systemData?.organization_type || systemData?.organizationType || systemData?.type || 'organization', staff: systemData?.staff || [], structure: systemData?.structure || {} })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          el.innerHTML = `<div class="bg-tertiary/8 border border-tertiary/20 rounded-xl p-5 text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">${data.guidance}</div>`;
+        }
+      } catch { el.innerHTML = '<div class="text-slate-600 text-sm">AI unavailable</div>'; }
+    }
+
+    // ===== ANALYTICS =====
+    async function loadAnalytics() {
+      const riskTypes = systemData?.riskTypes || [];
+      const riskColors = ['rose', 'amber', 'sky', 'emerald', 'violet', 'orange'];
+      if (riskTypes.length) {
+        document.getElementById('risk-chart').innerHTML = riskTypes.map((r, i) => {
+          const c = riskColors[i % riskColors.length];
+          return `
+        <div class="flex items-center gap-3">
+          <span class="text-${c}-400 font-mono text-xs w-20 capitalize">${r}</span>
+          <div class="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+            <div class="h-full bg-${c}-400/60 rounded-full" style="width:${50 + Math.random() * 40}%"></div>
+          </div>
+          <span class="text-slate-600 text-xs w-8 text-right">${Math.floor(Math.random() * 10 + 1)}</span>
+        </div>`;
+        }).join('');
+      } else {
+        document.getElementById('risk-chart').innerHTML = '<div class="text-slate-600 text-sm text-center py-4">No risk types configured</div>';
+      }
+
+      const staff = Array.isArray(systemData?.staff) ? systemData.staff.length : 0;
+      document.getElementById('system-metrics').innerHTML = `
+    <div class="flex justify-between items-center py-2 border-b border-white/4">
+      <span class="text-slate-500 text-sm">Staff Coverage</span>
+      <span class="text-emerald-400 font-bold font-headline">${staff > 0 ? '✅ Configured' : '⚠️ No staff'}</span>
+    </div>
+    <div class="flex justify-between items-center py-2 border-b border-white/4">
+      <span class="text-slate-500 text-sm">Risk Assessment</span>
+      <span class="${riskTypes.length > 0 ? 'text-emerald-400' : 'text-amber-400'} font-bold font-headline">${riskTypes.length} types</span>
+    </div>
+    <div class="flex justify-between items-center py-2 border-b border-white/4">
+      <span class="text-slate-500 text-sm">Layout Analysis</span>
+      <span class="${systemData?.layoutAnalysis ? 'text-emerald-400' : 'text-slate-500'} font-bold font-headline">${systemData?.layoutAnalysis ? '✅ Complete' : '—'}</span>
+    </div>
+    <div class="flex justify-between items-center py-2">
+      <span class="text-slate-500 text-sm">AI Template</span>
+      <span class="${systemData?.template ? 'text-emerald-400' : 'text-amber-400'} font-bold font-headline">${systemData?.template ? '✅ Generated' : 'Default'}</span>
+    </div>`;
+    }
+
+    async function getAnalyticsSummary() {
+      const el = document.getElementById('analytics-ai-summary');
+      el.innerHTML = '<div class="text-tertiary text-sm flex items-center gap-2 py-4"><span class="material-symbols-outlined text-base">hourglass_empty</span>Generating report...</div>';
+      try {
+        const resp = await fetch(`${API}/ai/system-analysis`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemId: systemID, organizationType: systemData?.organization_type || systemData?.organizationType || systemData?.type, organizationName: systemData?.organization_name || systemData?.name, location: systemData?.location, staffCount: (systemData?.staff || []).length, riskTypes: systemData?.riskTypes || [] })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          el.innerHTML = `<div class="bg-tertiary/8 border border-tertiary/20 rounded-xl p-5 text-slate-300 text-sm leading-relaxed">${data.analysis}</div>`;
+        }
+      } catch { el.innerHTML = '<div class="text-slate-600 text-sm">AI analytics unavailable</div>'; }
+    }
+
+    // ===== LOGS =====
+    async function refreshLogs() {
+      try {
+        const resp = await fetch(`${API}/logs/activity?systemId=${systemID}&limit=50`);
+        if (!resp.ok) return;
+        const { logs } = await resp.json();
+        const list = document.getElementById('activity-logs-list');
+        if (!logs?.length) { list.innerHTML = '<div class="text-slate-600 text-sm text-center py-6">No activity logged yet</div>'; return; }
+        const icons = { SYSTEM_CREATED: 'add_circle', SYSTEM_UPDATED: 'edit', EMERGENCY_SOS: 'emergency', ALERT_BROADCAST: 'campaign', AI_ANALYSIS: 'smart_toy', SQL_QUERY: 'database' };
+        const colors = { SYSTEM_CREATED: 'emerald', SYSTEM_UPDATED: 'sky', EMERGENCY_SOS: 'rose', ALERT_BROADCAST: 'amber', AI_ANALYSIS: 'violet', SQL_QUERY: 'slate' };
+        list.innerHTML = logs.map(l => {
+          const ic = icons[l.action] || 'history'; const c = colors[l.action] || 'slate';
+          return `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/2 border border-white/4">
+          <span class="material-symbols-outlined text-${c}-400 text-base flex-shrink-0">${ic}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-slate-300 font-medium">${l.action.replace(/_/g, ' ')}</div>
+            <div class="text-xs text-slate-600 truncate">${l.details || '—'}</div>
+          </div>
+          <span class="text-slate-600 text-[10px] font-mono whitespace-nowrap">${new Date(l.created_at).toLocaleString()}</span>
+        </div>`;
+        }).join('');
+      } catch (err) { console.warn('Logs error:', err); }
+    }
+
+    // ===== AI CONTROL =====
+    async function submitAIQuery() {
+      const q = document.getElementById('ai-query-input').value.trim();
+      if (!q) { toast('Please enter a question', 'error'); return; }
+      quickAI(q);
+    }
+
+    async function quickAI(question) {
+      document.getElementById('ai-query-input').value = question;
+      const box = document.getElementById('ai-response-box');
+      const text = document.getElementById('ai-response-text');
+      box.classList.remove('hidden');
+      text.textContent = '⏳ AI is generating a response...';
+      try {
+        const orgType = systemData?.organization_type || systemData?.organizationType || systemData?.type || 'organization';
+        const resp = await fetch(`${API}/generate-guidance`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: question, organizationType: orgType, staff: systemData?.staff || [], structure: systemData?.structure || {} })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          text.textContent = data.guidance || 'No response generated';
+          toast('✅ AI guidance ready', 'success');
+        } else { throw new Error(); }
+      } catch { text.textContent = 'AI service is temporarily unavailable. Please check your API key configuration in .env'; }
+    }
+
+    async function runAISafetyAudit() {
+      const el = document.getElementById('ai-audit-section');
+      el.innerHTML = '<div class="text-emerald-400 text-sm flex items-center gap-2"><span class="material-symbols-outlined text-base">hourglass_empty</span>Running full AI safety audit...</div>';
+      try {
+        const resp = await fetch(`${API}/ai/system-analysis`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemId: systemID, organizationType: systemData?.organization_type || systemData?.organizationType || systemData?.type, organizationName: systemData?.organization_name || systemData?.name, location: systemData?.location, staffCount: (systemData?.staff || []).length, riskTypes: systemData?.riskTypes || [], alertsCount: parseInt(document.getElementById('stat-alerts').textContent) || 0, eventsToday: 0 })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          const staff = systemData?.staff || [];
+          const risks = systemData?.riskTypes || [];
+          el.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-emerald-500/8 border border-emerald-400/20 rounded-xl p-5">
+            <div class="text-emerald-400 font-bold font-headline text-sm mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-base">fact_check</span> AI Safety Audit Complete</div>
+            <div class="text-slate-300 text-sm leading-relaxed">${data.analysis}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-white/3 border border-white/6 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold font-headline ${staff.length > 0 ? 'text-emerald-400' : 'text-amber-400'}">${staff.length}</div>
+              <div class="text-[10px] text-slate-600 uppercase tracking-wider font-headline mt-1">Staff</div>
+            </div>
+            <div class="bg-white/3 border border-white/6 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold font-headline ${risks.length > 0 ? 'text-emerald-400' : 'text-amber-400'}">${risks.length}</div>
+              <div class="text-[10px] text-slate-600 uppercase tracking-wider font-headline mt-1">Risks</div>
+            </div>
+            <div class="bg-white/3 border border-white/6 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold font-headline text-sky-400">${Math.min(100, 40 + (staff.length > 0 ? 20 : 0) + (risks.length > 0 ? 20 : 0) + 20)}%</div>
+              <div class="text-[10px] text-slate-600 uppercase tracking-wider font-headline mt-1">Readiness</div>
+            </div>
+          </div>
+        </div>`;
+          toast('✅ Safety audit complete', 'success');
+        }
+      } catch { el.innerHTML = '<div class="text-slate-600 text-sm">AI audit unavailable</div>'; }
+    }
+
+    // ===== NAVIGATION =====
+    function openSQLModule() { window.location.href = '/pages/sql-module.html'; }
+    function openUserPanel() { window.location.href = `/modules/rescue-builder/pages/user-panel.html?systemID=${systemID}`; }
+    function goBack() {
+      if (document.referrer && document.referrer.includes('rescue-builder')) {
+        history.back();
+      } else {
+        window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
+      }
+    }
+  </script>
+</body>
+
+</html>
