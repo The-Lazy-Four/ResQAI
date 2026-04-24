@@ -87,7 +87,7 @@ CORE --> SYSTEM
 
 | Frontend Area | Purpose | Key Files |
 |---|---|---|
-| App Entry + Navigation | Entry flow, module selection, transitions | public/pages/landing.html, public/pages/module-selection.html, public/pages/custom-builder-dashboard.html |
+| App Entry + Navigation | Entry flow, module selection, transitions | public/pages/landing.html, public/pages/module-selection.html, public/modules/rescue-builder/pages/custom-builder-dashboard.html |
 | Rapid Crisis Protocol | Guest-facing crisis portal entry and standalone experience | public/pages/guest-crisis-portal.html |
 | EcoPlus Module | Hotel/resort emergency workflows (guest + admin) | public/modules/echo-plus/index.html, public/modules/echo-plus/js/app.js, public/modules/echo-plus/js/module.js, public/modules/echo-plus/js/ai-safe.js |
 | SQBitain (Custom Builder) | Multi-step rescue system builder with admin/user panels | public/modules/rescue-builder/index.html, public/modules/rescue-builder/js/builder.js, public/modules/rescue-builder/js/templates.js |
