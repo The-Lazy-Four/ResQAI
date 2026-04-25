@@ -160,7 +160,7 @@ router.get('/:systemID', optionalAuth, async (req, res) => {
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-// LIST USER SYSTEMS
+// LIST USER SYSTEMS (auto-generates system_code for legacy systems)
 router.get('/user/list', optionalAuth, async (req, res) => {
     try {
         const userID = req.user?.userID;
@@ -170,6 +170,21 @@ router.get('/user/list', optionalAuth, async (req, res) => {
         } else {
             const db = await getDatabase();
             systems = await new Promise((resolve, reject) => { db.all(`SELECT id, system_code, admin_id, organization_name, organization_type, location, status, created_at FROM custom_rescue_systems ORDER BY created_at DESC LIMIT 100`, (err, rows) => err ? reject(err) : resolve(rows || [])); });
+
+            // Backfill system_code for legacy systems that don't have one
+            for (const sys of systems) {
+                if (!sys.system_code) {
+                    const newCode = generateSystemCode();
+                    await new Promise((resolve) => {
+                        db.run(`UPDATE custom_rescue_systems SET system_code = ? WHERE id = ?`, [newCode, sys.id], (err) => {
+                            if (err) console.warn('[BACKFILL] Could not set system_code:', err.message);
+                            else console.log(`✅ [BACKFILL] Generated system_code ${newCode} for system ${sys.id}`);
+                            resolve();
+                        });
+                    });
+                    sys.system_code = newCode;
+                }
+            }
         }
         res.json({ success: true, count: systems.length, systems: systems || [] });
     } catch (error) { res.status(500).json({ error: error.message, systems: [] }); }

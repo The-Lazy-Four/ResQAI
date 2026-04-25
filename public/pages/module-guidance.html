@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI - Module Guidance</title>
+    <meta name="theme-color" content="#050505">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/landing.css">
+    <style>
+        body {
+            background-color: #050505;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .page-header {
+            padding: 80px 5% 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(to bottom, rgba(220, 38, 38, 0.05), transparent);
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        .page-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .content-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 5%;
+            flex-grow: 1;
+            width: 100%;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 32px;
+            transition: color 0.3s ease;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+
+        /* Modules Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 32px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .module-card:hover, .module-card.active {
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .module-card.active::before {
+            background: linear-gradient(90deg, #dc2626, #ef4444);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+
+        .module-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        /* Details Section */
+        .details-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 40px;
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .details-container.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .detail-list li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        .detail-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #dc2626;
+            font-size: 20px;
+            line-height: 1;
+            top: -2px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 16px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <a href="/" class="back-link">← Back to Home</a>
+            <h1 class="page-title">Module Guidance</h1>
+            <div class="page-subtitle">Select a module to view its detailed documentation.</div>
+        </div>
+    </header>
+
+    <main class="content-container">
+        
+        <div class="modules-grid">
+            <div class="module-card" onclick="showDetails('crisis')">
+                <div class="module-title">Crisis Portal</div>
+                <div style="color: rgba(255,255,255,0.5); font-size: 14px;">Public Emergency System</div>
+            </div>
+            <div class="module-card" onclick="showDetails('hotel')">
+                <div class="module-title">EcoPlus (Hotel)</div>
+                <div style="color: rgba(255,255,255,0.5); font-size: 14px;">Hotel & Resort Safety</div>
+            </div>
+            <div class="module-card" onclick="showDetails('custom')">
+                <div class="module-title">Custom Builder</div>
+                <div style="color: rgba(255,255,255,0.5); font-size: 14px;">Personalized Systems</div>
+            </div>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+            Click on a module above to see detailed guidance and features.
+        </div>
+
+        <!-- Details Containers -->
+        <div id="details-crisis" class="details-container">
+            <div class="detail-title">Crisis Portal</div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">What this module does</div>
+                <ul class="detail-list">
+                    <li>Provides a comprehensive dashboard for immediate public emergency tracking and response.</li>
+                </ul>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">Key features</div>
+                <ul class="detail-list">
+                    <li>Real-time emergency detection and alerts</li>
+                    <li>SOS triggering with AI voice + guidance</li>
+                    <li>Live map and evacuation support</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">How to use</div>
+                <ul class="detail-list">
+                    <li>Access the Command Center during an incident.</li>
+                    <li>Follow the AI-generated real-time instructions.</li>
+                    <li>Use the SOS trigger for immediate critical assistance.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">Real-life benefit</div>
+                <ul class="detail-list">
+                    <li>Best for public and large-scale environments to coordinate rapid evacuations and mass alerts.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="details-hotel" class="details-container">
+            <div class="detail-title">EcoPlus (Hotel Module)</div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">What this module does</div>
+                <ul class="detail-list">
+                    <li>A specialized interface designed to handle emergencies within hospitality and high-rise structures.</li>
+                </ul>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">Key features</div>
+                <ul class="detail-list">
+                    <li>Designed for hotels and resorts</li>
+                    <li>AI CCTV monitoring (fire, smoke, weapon detection)</li>
+                    <li>Staff coordination and guest safety</li>
+                    <li>Multi-floor emergency management</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">How to use</div>
+                <ul class="detail-list">
+                    <li>Monitor the smart dashboard for automated CCTV alerts.</li>
+                    <li>Deploy staff dynamically across different floors.</li>
+                    <li>Broadcast safety messages directly to guest room devices.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">Real-life benefit</div>
+                <ul class="detail-list">
+                    <li>Saves lives by allowing hotel security to pinpoint threats instantly and manage localized evacuations safely.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="details-custom" class="details-container">
+            <div class="detail-title">Custom Rescue Builder</div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">What this module does</div>
+                <ul class="detail-list">
+                    <li>A flexible platform enabling organizations to build private, tailored emergency response systems.</li>
+                </ul>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">Key features</div>
+                <ul class="detail-list">
+                    <li>Admin builds custom emergency systems</li>
+                    <li>Users join via access code</li>
+                    <li>Personalized safety guidance</li>
+                    <li>Suitable for schools, offices, campuses</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">How to use</div>
+                <ul class="detail-list">
+                    <li>Admins create the system layout and invite users via unique codes.</li>
+                    <li>Users input their access code to sync with the organization's network.</li>
+                    <li>Follow the custom procedures designated by the admin during a crisis.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-section-title">Real-life benefit</div>
+                <ul class="detail-list">
+                    <li>Empowers schools and corporate campuses to maintain closed-loop safety networks specific to their building layouts.</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showDetails(moduleId) {
+            // Hide all details
+            document.querySelectorAll('.details-container').forEach(el => {
+                el.classList.remove('show');
+            });
+            
+            // Hide empty state
+            document.getElementById('empty-state').style.display = 'none';
+
+            // Remove active class from all cards
+            document.querySelectorAll('.module-card').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected details
+            document.getElementById('details-' + moduleId).classList.add('show');
+            
+            // Add active class to clicked card
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

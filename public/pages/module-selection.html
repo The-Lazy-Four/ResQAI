@@ -272,34 +272,60 @@
             </div>
         </section>
     </main>
-    <!-- Footer -->
-    <footer class="w-full py-12 px-8 bg-[#0a0e14] border-t border-white/5">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
-            <div class="flex flex-col gap-2">
-                <span class="text-lg font-bold text-slate-100 font-headline tracking-tighter">RESQAI <span
-                        class="text-primary">TACTICAL</span></span>
-                <p class="font-['Inter'] text-[10px] tracking-widest uppercase text-slate-500">© 2024 RESQAI TACTICAL
-                    SYSTEMS. ALL RIGHTS RESERVED.</p>
-            </div>
-            <div class="flex gap-8">
-                <a class="font-['Inter'] text-xs tracking-widest uppercase text-slate-500 hover:text-purple-400 transition-colors"
-                    href="#">Security Protocols</a>
-                <a class="font-['Inter'] text-xs tracking-widest uppercase text-slate-500 hover:text-purple-400 transition-colors"
-                    href="#">Privacy Policy</a>
-                <a class="font-['Inter'] text-xs tracking-widest uppercase text-slate-500 hover:text-purple-400 transition-colors"
-                    href="#">System Status</a>
-                <a class="font-['Inter'] text-xs tracking-widest uppercase text-slate-500 hover:text-purple-400 transition-colors"
-                    href="#">Command Center</a>
-            </div>
-            <div class="flex gap-4">
-                <div
-                    class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant/20 flex items-center justify-center text-slate-400 hover:text-primary transition-colors cursor-pointer">
-                    <span class="material-symbols-outlined text-lg">terminal</span>
+    
+    <!-- ============================================
+         GLOBAL FOOTER
+         ============================================ -->
+    <link rel="stylesheet" href="/styles/footer.css">
+    <footer class="resq-footer">
+        <div class="resq-footer-container">
+            <!-- Column 1: Branding -->
+            <div class="resq-footer-col">
+                <div class="resq-footer-logo-container">
+                    <div class="resq-footer-logo-dot"></div>
+                    <span class="resq-footer-logo-text">ResQAI</span>
                 </div>
-                <div
-                    class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant/20 flex items-center justify-center text-slate-400 hover:text-secondary transition-colors cursor-pointer">
-                    <span class="material-symbols-outlined text-lg">satellite_alt</span>
+                <div class="resq-footer-tagline">AI-Powered Emergency Response System</div>
+                <div class="resq-footer-desc">
+                    Built for the moments that decide everything. Instant AI-guided actions when it matters most.
                 </div>
+            </div>
+
+            <!-- Column 2: Platform Links -->
+            <div class="resq-footer-col">
+                <h4 class="resq-footer-heading">Platform</h4>
+                <a href="/modules/crisis-portal/pages/command-center.html" class="resq-footer-link">Command Center</a>
+                <a href="/pages/module-selection.html" class="resq-footer-link">Live Intel</a>
+                <a href="/pages/module-selection.html" class="resq-footer-link">Deployment</a>
+                <a href="/pages/module-selection.html" class="resq-footer-link">Signal Hub</a>
+                <a href="/pages/module-selection.html" class="resq-footer-link">Archive</a>
+            </div>
+
+            <!-- Column 3: Resources -->
+            <div class="resq-footer-col">
+                <h4 class="resq-footer-heading">Resources</h4>
+                <a href="/pages/privacy-policy.html" class="resq-footer-link">Privacy Policy</a>
+                <a href="/pages/faq.html" class="resq-footer-link">FAQs</a>
+                <a href="#" class="resq-footer-link" onclick="alert('System Status: Operational - All Systems Go'); return false;">System Status</a>
+                <a href="/pages/module-guidance.html" class="resq-footer-link">Module Guidance</a>
+            </div>
+
+            <!-- Column 4: Contact / Info -->
+            <div class="resq-footer-col">
+                <h4 class="resq-footer-heading">System Info</h4>
+                <div class="resq-footer-info-item">Email: <span>support@resqai.org</span></div>
+                <div class="resq-footer-info-item">Version: <span>v2.0</span></div>
+                <div class="resq-footer-info-item">Location: <span>Global Node</span></div>
+            </div>
+        </div>
+
+        <div class="resq-footer-bottom">
+            <div class="resq-footer-copyright">
+                &copy; 2026 ResQAI. All rights reserved. Secure Backend Processing.
+            </div>
+            <div class="resq-footer-status">
+                <div class="resq-footer-status-dot"></div>
+                <span>All Systems Operational</span>
             </div>
         </div>
     </footer>

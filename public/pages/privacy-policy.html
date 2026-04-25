@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI - Privacy Policy</title>
+    <meta name="theme-color" content="#050505">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/landing.css">
+    <style>
+        body {
+            background-color: #050505;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .page-header {
+            padding: 80px 5% 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(to bottom, rgba(220, 38, 38, 0.05), transparent);
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        .page-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 5%;
+            flex-grow: 1;
+            width: 100%;
+        }
+        .content-block {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .content-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(220, 38, 38, 0.05);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+        .content-text {
+            font-size: 15px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 24px;
+        }
+        .content-text:last-child {
+            margin-bottom: 0;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 32px;
+            transition: color 0.3s ease;
+        }
+        .back-link:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <a href="/" class="back-link">← Back to Home</a>
+            <h1 class="page-title">Privacy Policy</h1>
+            <div class="page-subtitle">Effective Date: 2026</div>
+        </div>
+    </header>
+
+    <main class="content-container">
+        <div class="content-block">
+            <div class="content-text">
+                <strong>We value user safety and data privacy.</strong> ResQAI collects only essential operational data such as location (for emergency routing), system interaction logs, and user-provided inputs during crisis situations.
+            </div>
+            <div class="content-text">
+                No sensitive personal data is sold or shared with third parties. All AI responses are processed securely via backend APIs. Local fallback systems may temporarily store minimal data for system continuity.
+            </div>
+            <div class="content-text">
+                By using ResQAI, users consent to real-time processing of emergency-related inputs to ensure rapid response and safety guidance.
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER INJECTED VIA SCRIPT LATER (but we can add it here too) -->
+    </body>
+</html>
