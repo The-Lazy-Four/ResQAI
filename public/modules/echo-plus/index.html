@@ -8,109 +8,546 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/hotel-safe.css" />
   <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f8ef7'/><text y='.9em' font-size='80' x='10'>E</text></svg>" />
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff5352'/><text y='.9em' font-size='80' x='10'>E</text></svg>" />
   <style>
     @keyframes chatSlideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes chatPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-      50% { box-shadow: 0 0 0 6px rgba(239,68,68,0.25); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.25);
+      }
     }
-    .chat-msg-wrap { display: flex; margin-bottom: 12px; }
-    .chat-feed { display: flex; flex-direction: column; }
-    .chat-panel-input:focus { outline: none; border-color: #4f8ef7; }
+
+    .chat-msg-wrap {
+      display: flex;
+      margin-bottom: 12px;
+    }
+
+    .chat-feed {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-panel-input:focus {
+      outline: none;
+      border-color: #ff6f61;
+    }
 
     /* ═══ AI CCTV SURVEILLANCE — embedded in admin-main ═══ */
-    .cctv-section { display:flex; flex-direction:column; gap:10px; }
-    .cctv-header  { display:flex; align-items:center; justify-content:space-between; }
-    .cctv-title   { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#9ca3af; display:flex; align-items:center; gap:6px; }
-    .cctv-ctrl    { display:flex; gap:6px; }
-    .cctv-btn     { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px; border:none; transition:all .2s; }
-    .cctv-btn-add { background:rgba(0,212,255,.12); color:#00d4ff; border:1px solid rgba(0,212,255,.3); }
-    .cctv-btn-add:hover { background:rgba(0,212,255,.22); }
-    .cctv-btn-siren { background:rgba(255,0,67,.12); color:#ff0043; border:1px solid rgba(255,0,67,.3); }
-    .cctv-btn-siren:hover { background:rgba(255,0,67,.22); }
-    .cctv-btn-siren.on { background:#ff0043; color:#fff; animation:cctvSirenPulse 1s infinite; }
-    @keyframes cctvSirenPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,0,67,.5)} 50%{box-shadow:0 0 0 8px rgba(255,0,67,0)} }
-    .cctv-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; }
-    .cctv-tile { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:10px; overflow:hidden; transition:border-color .3s,box-shadow .3s; }
-    .cctv-tile.fire-alert  { border-color:#ff4500; box-shadow:0 0 18px rgba(255,69,0,.4); }
-    .cctv-tile.smoke-alert { border-color:#ff9900; box-shadow:0 0 18px rgba(255,153,0,.35); }
-    .cctv-tile-hdr { display:flex; align-items:center; justify-content:space-between; padding:6px 10px; border-bottom:1px solid rgba(255,255,255,.06); }
-    .cctv-cam-name { font-size:11px; font-weight:700; display:flex; align-items:center; gap:5px; }
-    .cctv-rec { width:7px; height:7px; border-radius:50%; background:#ff0043; animation:cctvRec 1.2s infinite; }
-    @keyframes cctvRec { 0%,100%{opacity:1} 50%{opacity:.25} }
-    .cctv-badge { font-size:9px; font-weight:700; padding:2px 7px; border-radius:20px; }
-    .cctv-badge-normal { background:rgba(0,255,135,.12); color:#00ff87; border:1px solid rgba(0,255,135,.25); }
-    .cctv-badge-fire   { background:rgba(255,69,0,.2); color:#ff4500; border:1px solid rgba(255,69,0,.5); animation:cctvFlash .5s infinite alternate; }
-    .cctv-badge-smoke  { background:rgba(255,153,0,.18); color:#ff9900; border:1px solid rgba(255,153,0,.45); animation:cctvFlash .7s infinite alternate; }
-    @keyframes cctvFlash { from{opacity:.6} to{opacity:1} }
-    .cctv-feed  { position:relative; background:#000; height:150px; }
-    .cctv-feed video { width:100%; height:100%; object-fit:cover; display:block; }
-    .cctv-overlay { position:absolute; inset:0; background:rgba(10,14,39,.78); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; font-size:11px; color:#7986cb; z-index:5; }
-    .cctv-bar-wrap { padding:6px 10px; }
-    .cctv-bar-lbls { display:flex; justify-content:space-between; font-size:10px; color:#6b7280; margin-bottom:3px; }
-    .cctv-bar-track { height:4px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; }
-    .cctv-bar-fill  { height:100%; width:0%; background:#00ff87; border-radius:3px; transition:width .3s; }
-    .cctv-bar-fill.orange { background:#ff9900; }
-    .cctv-bar-fill.red    { background:#ff4500; }
+    .cctv-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cctv-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cctv-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cctv-ctrl {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cctv-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: none;
+      transition: all .2s;
+    }
+
+    .cctv-btn-add {
+      background: rgba(0, 212, 255, .12);
+      color: #00d4ff;
+      border: 1px solid rgba(0, 212, 255, .3);
+    }
+
+    .cctv-btn-add:hover {
+      background: rgba(0, 212, 255, .22);
+    }
+
+    .cctv-btn-siren {
+      background: rgba(255, 0, 67, .12);
+      color: #ff0043;
+      border: 1px solid rgba(255, 0, 67, .3);
+    }
+
+    .cctv-btn-siren:hover {
+      background: rgba(255, 0, 67, .22);
+    }
+
+    .cctv-btn-siren.on {
+      background: #ff0043;
+      color: #fff;
+      animation: cctvSirenPulse 1s infinite;
+    }
+
+    @keyframes cctvSirenPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 67, .5)
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(255, 0, 67, 0)
+      }
+    }
+
+    .cctv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .cctv-tile {
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color .3s, box-shadow .3s;
+    }
+
+    .cctv-tile.fire-alert {
+      border-color: #ff4500;
+      box-shadow: 0 0 18px rgba(255, 69, 0, .4);
+    }
+
+    .cctv-tile.smoke-alert {
+      border-color: #ff9900;
+      box-shadow: 0 0 18px rgba(255, 153, 0, .35);
+    }
+
+    .cctv-tile-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .cctv-cam-name {
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cctv-rec {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ff0043;
+      animation: cctvRec 1.2s infinite;
+    }
+
+    @keyframes cctvRec {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    .cctv-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .cctv-badge-normal {
+      background: rgba(0, 255, 135, .12);
+      color: #00ff87;
+      border: 1px solid rgba(0, 255, 135, .25);
+    }
+
+    .cctv-badge-fire {
+      background: rgba(255, 69, 0, .2);
+      color: #ff4500;
+      border: 1px solid rgba(255, 69, 0, .5);
+      animation: cctvFlash .5s infinite alternate;
+    }
+
+    .cctv-badge-smoke {
+      background: rgba(255, 153, 0, .18);
+      color: #ff9900;
+      border: 1px solid rgba(255, 153, 0, .45);
+      animation: cctvFlash .7s infinite alternate;
+    }
+
+    @keyframes cctvFlash {
+      from {
+        opacity: .6
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    .cctv-feed {
+      position: relative;
+      background: #000;
+      height: 150px;
+    }
+
+    .cctv-feed video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cctv-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 14, 39, .78);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #7986cb;
+      z-index: 5;
+    }
+
+    .cctv-bar-wrap {
+      padding: 6px 10px;
+    }
+
+    .cctv-bar-lbls {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 3px;
+    }
+
+    .cctv-bar-track {
+      height: 4px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .cctv-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #00ff87;
+      border-radius: 3px;
+      transition: width .3s;
+    }
+
+    .cctv-bar-fill.orange {
+      background: #ff9900;
+    }
+
+    .cctv-bar-fill.red {
+      background: #ff4500;
+    }
 
     /* ── AI SCAN LINE ── */
     .cctv-scan-line {
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 45%, rgba(0,212,255,0.15) 50%, transparent 55%);
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 45%, rgba(0, 212, 255, 0.15) 50%, transparent 55%);
       background-size: 100% 20px;
-      z-index: 8; pointer-events: none;
+      z-index: 8;
+      pointer-events: none;
       opacity: 0.35;
       animation: cctv-scan-move 4s linear infinite;
     }
+
     @keyframes cctv-scan-move {
-      from { transform: translateY(-100%); }
-      to { transform: translateY(100%); }
+      from {
+        transform: translateY(-100%);
+      }
+
+      to {
+        transform: translateY(100%);
+      }
     }
 
     .cctv-fps-badge {
-      position: absolute; top: 0.4rem; right: 0.5rem;
-      font-family: monospace; font-size: 0.6rem; color: rgba(255,255,255,0.3);
-      z-index: 6; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;
+      position: absolute;
+      top: 0.4rem;
+      right: 0.5rem;
+      font-family: monospace;
+      font-size: 0.6rem;
+      color: rgba(255, 255, 255, 0.3);
+      z-index: 6;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1px 4px;
+      border-radius: 3px;
     }
 
-    .cctv-add-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:150px; border:2px dashed rgba(255,255,255,.1); border-radius:10px; cursor:pointer; color:#6b7280; transition:all .2s; font-size:12px; }
-    .cctv-add-tile:hover { border-color:#00d4ff; color:#00d4ff; background:rgba(0,212,255,.04); }
-    .cctv-add-tile i { font-size:1.6rem; }
-    .cctv-stats { display:flex; gap:8px; }
-    .cctv-stat  { flex:1; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:8px; padding:8px 10px; text-align:center; }
-    .cctv-stat-val { font-size:1.3rem; font-weight:800; color:#00d4ff; }
-    .cctv-stat-val.fire  { color:#ff4500; }
-    .cctv-stat-val.smoke { color:#ff9900; }
-    .cctv-stat-lbl { font-size:9px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
-    .cctv-incident-list { display:flex; flex-direction:column; gap:5px; max-height:180px; overflow-y:auto; scrollbar-width:thin; }
-    .cctv-inc-item { display:flex; gap:8px; padding:6px 8px; background:rgba(255,255,255,.02); border-left:3px solid rgba(255,255,255,.1); border-radius:5px; align-items:flex-start; }
-    .cctv-inc-item.fire  { border-color:#ff4500; }
-    .cctv-inc-item.smoke { border-color:#ff9900; }
-    .cctv-inc-type { font-size:11px; font-weight:700; }
-    .cctv-inc-meta { font-size:10px; color:#6b7280; }
-    .cctv-inc-conf { font-size:10px; color:#00d4ff; }
-    .cctv-ai-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; background:rgba(0,212,255,.1); color:#00d4ff; border:1px solid rgba(0,212,255,.25); }
-    .cctv-ai-pill.ready  { background:rgba(0,255,135,.1); color:#00ff87; border-color:rgba(0,255,135,.3); }
-    .cctv-ai-pill.error  { background:rgba(255,0,67,.1); color:#ff0043; border-color:rgba(255,0,67,.3); }
-    #cctvSnapshotModal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.88); backdrop-filter:blur(8px); align-items:center; justify-content:center; }
-    #cctvSnapshotModal.open { display:flex; }
-    .cctv-snap-box { background:#111827; border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:20px; max-width:520px; width:92vw; position:relative; }
-    .cctv-snap-close { position:absolute; top:10px; right:12px; background:none; border:none; color:#9ca3af; font-size:1.2rem; cursor:pointer; }
-    .cctv-snap-box img { width:100%; border-radius:8px; margin-top:10px; }
-    .cctv-siren-row { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:rgba(255,0,67,.08); border:1px solid rgba(255,0,67,.2); border-radius:8px; }
-    .cctv-siren-status { font-size:11px; color:#ff0043; font-weight:700; }
-    .cctv-threshold-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
-    .cctv-thr { background:rgba(255,255,255,.03); border-radius:6px; padding:6px 8px; display:flex; flex-direction:column; }
-    .cctv-thr-lbl { font-size:9px; color:#6b7280; }
-    .cctv-thr-val { font-size:13px; font-weight:800; }
-    .cctv-thr-val.fire  { color:#ff4500; }
-    .cctv-thr-val.smoke { color:#ff9900; }
-    .cctv-thr-val.blue  { color:#00d4ff; }
-    .cctv-thr-val.amber { color:#f59e0b; }
+    .cctv-add-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 150px;
+      border: 2px dashed rgba(255, 255, 255, .1);
+      border-radius: 10px;
+      cursor: pointer;
+      color: #6b7280;
+      transition: all .2s;
+      font-size: 12px;
+    }
+
+    .cctv-add-tile:hover {
+      border-color: #00d4ff;
+      color: #00d4ff;
+      background: rgba(0, 212, 255, .04);
+    }
+
+    .cctv-add-tile i {
+      font-size: 1.6rem;
+    }
+
+    .cctv-stats {
+      display: flex;
+      gap: 8px;
+    }
+
+    .cctv-stat {
+      flex: 1;
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .cctv-stat-val {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #00d4ff;
+    }
+
+    .cctv-stat-val.fire {
+      color: #ff4500;
+    }
+
+    .cctv-stat-val.smoke {
+      color: #ff9900;
+    }
+
+    .cctv-stat-lbl {
+      font-size: 9px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-top: 2px;
+    }
+
+    .cctv-incident-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 180px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .cctv-inc-item {
+      display: flex;
+      gap: 8px;
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, .02);
+      border-left: 3px solid rgba(255, 255, 255, .1);
+      border-radius: 5px;
+      align-items: flex-start;
+    }
+
+    .cctv-inc-item.fire {
+      border-color: #ff4500;
+    }
+
+    .cctv-inc-item.smoke {
+      border-color: #ff9900;
+    }
+
+    .cctv-inc-type {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .cctv-inc-meta {
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    .cctv-inc-conf {
+      font-size: 10px;
+      color: #00d4ff;
+    }
+
+    .cctv-ai-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(0, 212, 255, .1);
+      color: #00d4ff;
+      border: 1px solid rgba(0, 212, 255, .25);
+    }
+
+    .cctv-ai-pill.ready {
+      background: rgba(0, 255, 135, .1);
+      color: #00ff87;
+      border-color: rgba(0, 255, 135, .3);
+    }
+
+    .cctv-ai-pill.error {
+      background: rgba(255, 0, 67, .1);
+      color: #ff0043;
+      border-color: rgba(255, 0, 67, .3);
+    }
+
+    #cctvSnapshotModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, .88);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #cctvSnapshotModal.open {
+      display: flex;
+    }
+
+    .cctv-snap-box {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 520px;
+      width: 92vw;
+      position: relative;
+    }
+
+    .cctv-snap-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .cctv-snap-box img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .cctv-siren-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: rgba(255, 0, 67, .08);
+      border: 1px solid rgba(255, 0, 67, .2);
+      border-radius: 8px;
+    }
+
+    .cctv-siren-status {
+      font-size: 11px;
+      color: #ff0043;
+      font-weight: 700;
+    }
+
+    .cctv-threshold-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .cctv-thr {
+      background: rgba(255, 255, 255, .03);
+      border-radius: 6px;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cctv-thr-lbl {
+      font-size: 9px;
+      color: #6b7280;
+    }
+
+    .cctv-thr-val {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .cctv-thr-val.fire {
+      color: #ff4500;
+    }
+
+    .cctv-thr-val.smoke {
+      color: #ff9900;
+    }
+
+    .cctv-thr-val.blue {
+      color: #00d4ff;
+    }
+
+    .cctv-thr-val.amber {
+      color: #f59e0b;
+    }
   </style>
 </head>
 
@@ -123,6 +560,11 @@
      SCREEN 1: LANDING
      ===================================================== -->
   <div class="echo-screen echo-active" id="screen-landing">
+    <div class="landing-topbar">
+      <a class="resqai-back-btn" href="../../pages/module-selection.html">← Back to ResQAI</a>
+      <div class="landing-runtime-pill">● ECHO+ v2.0 · Hotel Emergency Module</div>
+    </div>
+
     <div class="landing-inner">
       <div class="echo-logo">
         <div class="echo-logo-mark">E+</div>
@@ -145,6 +587,8 @@
           <div class="role-name">I'm a Guest</div>
           <div class="role-desc">Access emergency alerts, floor map, and personalized voice guidance for your room.
           </div>
+          <div class="role-meta">Fast onboarding · Voice assist · Multi-language</div>
+          <div class="role-cta">Enter Guest Mode <span>→</span></div>
         </div>
         <div class="role-card admin-card" onclick="goAdmin()">
           <span class="role-arrow">›</span>
@@ -152,6 +596,23 @@
           <div class="role-name">Admin / Staff</div>
           <div class="role-desc">Full emergency command center. Trigger alerts, coordinate staff, monitor all floors.
           </div>
+          <div class="role-meta">Live floor map · Staff routing · Alert orchestration</div>
+          <div class="role-cta">Open Command Center <span>→</span></div>
+        </div>
+      </div>
+
+      <div class="landing-metrics">
+        <div class="landing-metric-card">
+          <div class="landing-metric-value">24/7</div>
+          <div class="landing-metric-label">Monitoring</div>
+        </div>
+        <div class="landing-metric-card">
+          <div class="landing-metric-value">3s</div>
+          <div class="landing-metric-label">Avg Response</div>
+        </div>
+        <div class="landing-metric-card">
+          <div class="landing-metric-value">12+</div>
+          <div class="landing-metric-label">Language Support</div>
         </div>
       </div>
 
@@ -215,12 +676,11 @@
       <div class="step-sub">Enter your details to access emergency guidance.</div>
 
       <!-- Hotel preview -->
-      <div
-        style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r3);padding:14px 16px;margin-bottom:22px;display:flex;align-items:center;gap:12px">
-        <div style="font-size:24px">🏨</div>
+      <div class="hotel-preview-card">
+        <div class="hotel-preview-icon">🏨</div>
         <div>
-          <div style="font-weight:600;font-size:15px" id="login-hotel-name">Hotel</div>
-          <div style="font-size:12px;color:var(--text2)" id="login-hotel-loc">City</div>
+          <div class="hotel-preview-name" id="login-hotel-name">Hotel</div>
+          <div class="hotel-preview-loc" id="login-hotel-loc">City</div>
         </div>
       </div>
 
@@ -239,12 +699,11 @@
 
       <div class="error-msg" id="login-error"></div>
 
-      <div style="margin-top:4px">
+      <div class="echo-mt-4">
         <button class="btn-primary" onclick="guestLogin()">Access Emergency System →</button>
       </div>
 
-      <div
-        style="margin-top:12px;padding:12px 14px;background:var(--blue-dim);border:1px solid rgba(79,142,247,0.2);border-radius:var(--r3);font-size:12px;color:var(--text2)">
+      <div class="echo-demo-hint">
         💡 Demo: Room <strong>203</strong> · Code <strong>V3344</strong> (Hotel: Oberoi Grand)
       </div>
     </div>
@@ -256,12 +715,11 @@
   <div class="echo-screen" id="screen-guest-dashboard">
     <div class="guest-dash-header">
       <div>
-        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">ECHO<span
-            style="color:var(--blue)">+</span></div>
-        <div style="font-size:11px;color:var(--text3)" id="gdash-hotel">Hotel</div>
+        <div class="gdash-brand">ECHO<span>+</span></div>
+        <div class="gdash-hotel-text" id="gdash-hotel">Hotel</div>
       </div>
-      <div style="font-size:12px;color:var(--text2)" id="gdash-city"></div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div class="gdash-city-text" id="gdash-city"></div>
+      <div class="gdash-header-controls">
         <div class="lang-switcher">
           <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
           <button class="lang-btn" data-lang="hi" onclick="setLang('hi')">हि</button>
@@ -291,7 +749,7 @@
 
       <!-- MAIN APP LAYOUT WRAPPER -->
       <div class="guest-app-layout">
-        
+
         <!-- STATUS ROW -->
         <div class="dash-row status-row-wrap">
           <div class="status-card-premium" id="gdash-status-card">
@@ -299,7 +757,8 @@
               <div class="status-dot-large"></div>
               <div class="status-title" id="gdash-status-title">All Systems Normal</div>
             </div>
-            <div class="status-message" id="gdash-status-msg">Welcome. No active emergencies detected in your immediate zone.</div>
+            <div class="status-message" id="gdash-status-msg">Welcome. No active emergencies detected in your immediate
+              zone.</div>
           </div>
         </div>
 
@@ -308,7 +767,7 @@
           <div class="alert-ticker">
             <div class="ticker-label">LIVE ALERTS <span class="notif-badge" id="guest-notif-count">0</span></div>
             <div class="ticker-feed" id="guest-notif-feed">
-               <div class="ticker-item">Standing by for system updates...</div>
+              <div class="ticker-item">Standing by for system updates...</div>
             </div>
           </div>
         </div>
@@ -323,7 +782,7 @@
                 <span></span><span></span><span></span>
               </span>
             </div>
-            
+
             <!-- STANDBY CONTENT -->
             <div id="ai-standby-content">
               <div class="tile-content" id="gdash-instruction">
@@ -361,10 +820,11 @@
           <div class="dash-tile map-tile-compact">
             <div class="tile-label">📍 Live Map</div>
             <div class="mini-map-container" style="position: relative;">
-               <svg id="guest-map-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" style="width:100%; border-radius: 8px; background: rgba(0,0,0,0.2);"></svg>
-               <div class="map-overlay-controls">
-                 <button class="map-zoom-btn" onclick="zoomMap()" title="Zoom Map">🔍</button>
-               </div>
+              <svg id="guest-map-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg"
+                style="width:100%; border-radius: 8px; background: rgba(0,0,0,0.2);"></svg>
+              <div class="map-overlay-controls">
+                <button class="map-zoom-btn" onclick="zoomMap()" title="Zoom Map">🔍</button>
+              </div>
             </div>
             <div class="map-legend-compact">
               <span class="leg-pt leg-danger"></span> Danger
@@ -377,10 +837,14 @@
           <div class="dash-tile sos-tile">
             <div class="tile-label">🚨 SOS Report</div>
             <div class="sos-grid">
-               <button class="sos-btn fire" onclick="guestTriggerEmergency('fire')"><span class="icon">🔥</span> Fire</button>
-               <button class="sos-btn med" onclick="guestTriggerEmergency('medical')"><span class="icon">🏥</span> Med</button>
-               <button class="sos-btn quake" onclick="guestTriggerEmergency('earthquake')"><span class="icon">🌍</span> Quake</button>
-               <button class="sos-btn sec" onclick="guestTriggerEmergency('suspicious')"><span class="icon">⚠️</span> Sec</button>
+              <button class="sos-btn fire" onclick="guestTriggerEmergency('fire')"><span class="icon">🔥</span>
+                Fire</button>
+              <button class="sos-btn med" onclick="guestTriggerEmergency('medical')"><span class="icon">🏥</span>
+                Med</button>
+              <button class="sos-btn quake" onclick="guestTriggerEmergency('earthquake')"><span class="icon">🌍</span>
+                Quake</button>
+              <button class="sos-btn sec" onclick="guestTriggerEmergency('suspicious')"><span class="icon">⚠️</span>
+                Sec</button>
             </div>
           </div>
 
@@ -389,11 +853,13 @@
             <div class="tile-label">💬 Chat Hub</div>
             <div id="chat-feed-guest" class="chat-main-feed mini-feed"></div>
             <div class="chat-input-row">
-               <button class="vbtn-glass-sq" id="chat-mic-guest" onclick="startVoiceRecording('guest')">🎤</button>
-               <input id="chat-input-guest" class="chat-mini-input" onkeydown="chatInputKeydown(event,'guest','guest')" type="text" placeholder="Staff..." />
-               <button class="mini-send-btn" onclick="chatSend('guest','guest')">➤</button>
+              <button class="vbtn-glass-sq" id="chat-mic-guest" onclick="startVoiceRecording('guest')">🎤</button>
+              <input id="chat-input-guest" class="chat-mini-input" onkeydown="chatInputKeydown(event,'guest','guest')"
+                type="text" placeholder="Staff..." />
+              <button class="mini-send-btn" onclick="chatSend('guest','guest')">➤</button>
             </div>
-            <div style="display:none"><input type="file" id="chat-img-guest" onchange="handleImageUpload(event,'guest')" /></div>
+            <div style="display:none"><input type="file" id="chat-img-guest"
+                onchange="handleImageUpload(event,'guest')" /></div>
           </div>
         </div>
 
@@ -402,47 +868,47 @@
           <div class="staff-card-modern">
             <div class="tile-label">👥 Nearby Responders</div>
             <div id="nearby-staff-container" class="nearby-staff-list-horizontal">
-               <div class="staff-placeholder">Scanning for nearest personnel...</div>
+              <div class="staff-placeholder">Scanning for nearest personnel...</div>
             </div>
           </div>
         </div>
 
         <!-- COLLAPSIBLE INFO SECTION -->
         <div class="dash-row info-row">
-           <div class="collapsible-info-card">
-              <div class="info-header" onclick="toggleInfo()">
-                 <span>📋 Escape Plans & Contacts</span>
-                 <span id="info-arrow">▼</span>
-              </div>
-              <div class="info-body" id="info-body-content" style="display:none;">
-                  <div class="plan-split">
-                    <div class="plan-col">
-                      <div class="plan-label">Evacuation</div>
-                      <div class="plan-item">🚶 East Wing: Use Stairwell B</div>
-                      <div class="plan-item">🚶 West Wing: Use Stairwell A</div>
-                    </div>
-                    <div class="plan-col">
-                      <div class="plan-label">Emergency Desk</div>
-                      <div class="contact-grid">
-                         <div class="c-item">🔥 101</div>
-                         <div class="c-item">🚑 108</div>
-                         <div class="c-item">🛎 0</div>
-                      </div>
-                    </div>
+          <div class="collapsible-info-card">
+            <div class="info-header" onclick="toggleInfo()">
+              <span>📋 Escape Plans & Contacts</span>
+              <span id="info-arrow">▼</span>
+            </div>
+            <div class="info-body" id="info-body-content" style="display:none;">
+              <div class="plan-split">
+                <div class="plan-col">
+                  <div class="plan-label">Evacuation</div>
+                  <div class="plan-item">🚶 East Wing: Use Stairwell B</div>
+                  <div class="plan-item">🚶 West Wing: Use Stairwell A</div>
+                </div>
+                <div class="plan-col">
+                  <div class="plan-label">Emergency Desk</div>
+                  <div class="contact-grid">
+                    <div class="c-item">🔥 101</div>
+                    <div class="c-item">🚑 108</div>
+                    <div class="c-item">🛎 0</div>
                   </div>
+                </div>
               </div>
-           </div>
+            </div>
+          </div>
         </div>
 
       </div>
     </div>
 
 
-      </div>
-    </div>
+  </div>
+  </div>
 
   </div>
-    </div>
+  </div>
   </div>
 
   <!-- =====================================================
@@ -459,15 +925,14 @@
         <input class="form-input" id="admin-pass-input" type="password" placeholder="Enter password" />
       </div>
       <div class="error-msg" id="admin-login-error"></div>
-      <div style="margin-top:4px">
+      <div class="echo-mt-4">
         <button class="btn-primary" onclick="adminLogin()">Access Command Center →</button>
       </div>
-      <div style="margin-top:12px;text-align:center">
+      <div class="echo-center echo-mt-12">
         <button class="btn-secondary" onclick="goLanding()">← Back to Home</button>
       </div>
-      <div
-        style="margin-top:16px;padding:10px 14px;background:var(--blue-dim);border:1px solid rgba(79,142,247,0.2);border-radius:var(--r3);font-size:12px;color:var(--text2);text-align:center">
-        Demo password: <strong style="color:var(--blue)">echo2024</strong>
+      <div class="echo-demo-hint echo-center echo-mt-16">
+        Demo password: <strong class="echo-accent-blue">echo2024</strong>
       </div>
     </div>
   </div>
@@ -478,23 +943,19 @@
   <div class="echo-screen" id="screen-admin-dashboard">
     <!-- Header -->
     <div class="admin-header">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div
-            style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f8ef7,#7c5bf7);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px">
-            E+</div>
-          <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">ECHO<span
-              style="color:var(--blue)">+</span> <span
-              style="font-size:12px;font-weight:500;color:var(--text3)">Admin</span></div>
+      <div class="admin-head-left">
+        <div class="admin-brand-wrap">
+          <div class="admin-brand-mark">E+</div>
+          <div class="admin-brand-title">ECHO<span>+</span> <span class="admin-brand-sub">Admin</span></div>
         </div>
-        <div style="width:1px;height:24px;background:var(--border)"></div>
-        <div>
-          <div style="font-size:12px;font-weight:700" id="admin-status-text" style="color:var(--medical)">OPERATIONAL
+        <div class="admin-divider"></div>
+        <div class="admin-site-meta">
+          <div class="admin-site-status" id="admin-status-text">OPERATIONAL
           </div>
-          <div style="font-size:11px;color:var(--text3)">Grand Royal Hotel, Kolkata</div>
+          <div class="admin-site-hotel">Grand Royal Hotel, Kolkata</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div class="admin-head-right">
         <div class="lang-switcher">
           <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
           <button class="lang-btn" data-lang="hi" onclick="setLang('hi')">हि</button>
@@ -503,6 +964,11 @@
         <button class="btn-secondary" onclick="clearEmergency()">✕ Clear Alert</button>
         <button class="btn-secondary" onclick="goLanding()">Exit</button>
       </div>
+    </div>
+
+    <div id="system-status-banner" class="system-status-banner system-normal" role="status" aria-live="polite">
+      <span class="status-dot"></span>
+      <span class="status-text">ALL SYSTEMS NORMAL</span>
     </div>
 
     <div class="admin-body">
@@ -551,9 +1017,9 @@
           </div>
         </div>
 
-        <div class="sidebar-section" style="flex:1">
+        <div class="sidebar-section sidebar-fill">
           <div class="sidebar-label">Demo Scenarios</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="scenario-stack">
             <div class="scenario-card fire" onclick="runScenario('sc1')">
               <div class="scenario-type">Fire</div>
               <div class="scenario-name">Fire in Room 203</div>
@@ -594,34 +1060,35 @@
         <div class="admin-map-card">
           <div class="map-header">
             <div class="map-title">Hotel Floor Map — Live View</div>
-            <div style="font-size:11px;color:var(--text3)">All 6 floors · 72 rooms</div>
+            <div class="map-meta">All 6 floors · 72 rooms</div>
           </div>
           <svg id="admin-map-svg" viewBox="0 0 580 320" xmlns="http://www.w3.org/2000/svg" class="admin-map-svg"></svg>
           <div class="map-legend">
             <div class="legend-i">
-              <div class="legend-sq" style="background:#ff4d4d"></div>Danger Zone
+              <div class="legend-sq legend-danger"></div>Danger Zone
             </div>
             <div class="legend-i">
-              <div class="legend-sq" style="background:#00d97e"></div>Safe Exit
+              <div class="legend-sq legend-safe"></div>Safe Exit
             </div>
             <div class="legend-i">
-              <div class="legend-sq" style="background:#4f8ef7"></div>Evac Route
+              <div class="legend-sq legend-route"></div>Evac Route
             </div>
             <div class="legend-i">
-              <div class="legend-sq" style="background:#111827"></div>Clear
+              <div class="legend-sq legend-clear"></div>Clear
             </div>
           </div>
         </div>
 
         <!-- AI Instruction -->
-        <div style="background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+        <div class="ai-instruction-card">
           <div class="ai-label">
             ⬡ Gemini AI Decision Engine
+            <span class="ai-live-chip processing">PROCESSING</span>
             <span class="ai-dots" id="ai-think-admin"
               style="display:none"><span></span><span></span><span></span></span>
           </div>
           <div class="ai-text" id="admin-ai-text">No active emergency. All systems nominal. Ready to respond.</div>
-          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <div class="ai-actions-row">
             <button class="vbtn vbtn-primary" id="admin-speak-btn" onclick="speakInstruction('admin')">🔊
               Broadcast</button>
             <button class="vbtn vbtn-secondary" onclick="window.speechSynthesis.cancel()">■ Stop</button>
@@ -630,40 +1097,54 @@
 
         <!-- Notifications -->
         <div class="admin-map-card">
-          <div class="panel-header"
-            style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-header admin-feed-header">
             <div class="map-title">Live Alert Feed</div>
             <div class="panel-badge blue" id="admin-notif-count">0</div>
           </div>
-          <div class="notif-feed" id="admin-notif-feed" style="max-height:160px;overflow-y:auto">
-            <div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">All clear</div>
+          <div class="notif-feed admin-feed-list" id="admin-notif-feed">
+            <div class="admin-feed-empty">All clear</div>
           </div>
         </div>
 
         <!-- ═══ AI CCTV SURVEILLANCE — Live Camera Detection ═══ -->
-        <div class="admin-map-card" style="display:flex;flex-direction:column;gap:12px;padding:14px;">
+        <div class="admin-map-card cctv-ai-card" style="display:flex;flex-direction:column;gap:12px;padding:14px;">
 
           <!-- Header row -->
           <div class="cctv-header">
             <div class="cctv-title">
               📷 AI Camera Surveillance
+              <span class="ai-live-chip live">LIVE</span>
               <div id="cctvAIPill" class="cctv-ai-pill">
                 <div class="spinner" style="width:10px;height:10px;border-width:2px;"></div>
                 <span id="cctvAIText">AI Model: Standby</span>
               </div>
             </div>
             <div class="cctv-ctrl">
-              <button class="cctv-btn cctv-btn-add" onclick="cctvAddCamera()"><i class="fas fa-plus"></i> Add Camera</button>
-              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn" onclick="cctvToggleSiren()"><i class="fas fa-volume-mute"></i> Siren OFF</button>
+              <button class="cctv-btn cctv-btn-add" onclick="cctvAddCamera()"><i class="fas fa-plus"></i> Add
+                Camera</button>
+              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn" onclick="cctvToggleSiren()"><i
+                  class="fas fa-volume-mute"></i> Siren OFF</button>
             </div>
           </div>
 
           <!-- Stats strip -->
           <div class="cctv-stats">
-            <div class="cctv-stat"><div class="cctv-stat-val" id="cctvStatCams">0</div><div class="cctv-stat-lbl">📷 Cameras</div></div>
-            <div class="cctv-stat"><div class="cctv-stat-val fire" id="cctvStatFire">0</div><div class="cctv-stat-lbl">🔥 Fire</div></div>
-            <div class="cctv-stat"><div class="cctv-stat-val smoke" id="cctvStatSmoke">0</div><div class="cctv-stat-lbl">💨 Smoke</div></div>
-            <div class="cctv-stat"><div class="cctv-stat-val" id="cctvStatTotal">0</div><div class="cctv-stat-lbl">🔔 Total</div></div>
+            <div class="cctv-stat">
+              <div class="cctv-stat-val" id="cctvStatCams">0</div>
+              <div class="cctv-stat-lbl">📷 Cameras</div>
+            </div>
+            <div class="cctv-stat">
+              <div class="cctv-stat-val fire" id="cctvStatFire">0</div>
+              <div class="cctv-stat-lbl">🔥 Fire</div>
+            </div>
+            <div class="cctv-stat">
+              <div class="cctv-stat-val smoke" id="cctvStatSmoke">0</div>
+              <div class="cctv-stat-lbl">💨 Smoke</div>
+            </div>
+            <div class="cctv-stat">
+              <div class="cctv-stat-val" id="cctvStatTotal">0</div>
+              <div class="cctv-stat-lbl">🔔 Total</div>
+            </div>
           </div>
 
           <!-- Camera grid -->
@@ -681,23 +1162,31 @@
                 <div class="cctv-siren-status" id="cctvSirenStatus">🔕 SIREN OFF</div>
                 <div style="font-size:9px;color:#6b7280;margin-top:2px;">Auto-triggers on detection</div>
               </div>
-              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn2" onclick="cctvToggleSiren()" style="padding:4px 8px;font-size:10px;">Activate</button>
+              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn2" onclick="cctvToggleSiren()"
+                style="padding:4px 8px;font-size:10px;">Activate</button>
             </div>
             <div class="cctv-threshold-grid" style="flex:1;min-width:180px;">
-              <div class="cctv-thr"><span class="cctv-thr-lbl">🔥 Fire Threshold</span><span class="cctv-thr-val fire">80%</span></div>
-              <div class="cctv-thr"><span class="cctv-thr-lbl">💨 Smoke Threshold</span><span class="cctv-thr-val smoke">75%</span></div>
-              <div class="cctv-thr"><span class="cctv-thr-lbl">🔄 Scan Interval</span><span class="cctv-thr-val blue">500ms</span></div>
-              <div class="cctv-thr"><span class="cctv-thr-lbl">⏱ Debounce</span><span class="cctv-thr-val amber">30 sec</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">🔥 Fire Threshold</span><span
+                  class="cctv-thr-val fire">80%</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">💨 Smoke Threshold</span><span
+                  class="cctv-thr-val smoke">75%</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">🔄 Scan Interval</span><span
+                  class="cctv-thr-val blue">500ms</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">⏱ Debounce</span><span class="cctv-thr-val amber">30
+                  sec</span></div>
             </div>
           </div>
 
           <!-- Incident feed -->
           <div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;">⚠ Incident Feed</div>
+              <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;">⚠
+                Incident Feed</div>
               <div style="display:flex;gap:6px;align-items:center;">
-                <span id="cctvIncBadge" style="display:none;background:rgba(255,0,67,.2);color:#ff0043;border:1px solid rgba(255,0,67,.35);font-size:9px;padding:1px 7px;border-radius:20px;font-weight:700;">0</span>
-                <button onclick="cctvClearAll()" style="font-size:10px;padding:2px 8px;border-radius:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9ca3af;cursor:pointer;">Clear</button>
+                <span id="cctvIncBadge"
+                  style="display:none;background:rgba(255,0,67,.2);color:#ff0043;border:1px solid rgba(255,0,67,.35);font-size:9px;padding:1px 7px;border-radius:20px;font-weight:700;">0</span>
+                <button onclick="cctvClearAll()"
+                  style="font-size:10px;padding:2px 8px;border-radius:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9ca3af;cursor:pointer;">Clear</button>
               </div>
             </div>
             <div class="cctv-incident-list" id="cctvIncidentList">
@@ -737,12 +1226,14 @@
               <button class="vbtn vbtn-secondary" style="flex:1;text-align:center"
                 onclick="speakDirectional('Turn right. Take the right stairwell to Exit B.')">▶ Right</button>
             </div>
-            <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:12px;">Spatial voice commands for directional evacuation guidance broadcast to all guests.</div>
-            
+            <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:12px;">Spatial voice commands
+              for directional evacuation guidance broadcast to all guests.</div>
+
             <button onclick="
               renderMultiGuestSimulatorUI(); 
               broadcastEmergency({ type: 'fire', floor: 2, zone: 'east' });
-            " style="width: 100%; padding: 12px; background: rgba(79, 142, 247, 0.2); color: #4f8ef7; border-radius: 8px; border: 1px solid rgba(79, 142, 247, 0.4); font-weight: bold; cursor: pointer; transition: all 0.2s;">
+            "
+              style="width: 100%; padding: 12px; background: rgba(255, 111, 97, 0.2); color: #ff6f61; border-radius: 8px; border: 1px solid rgba(255, 111, 97, 0.4); font-weight: bold; cursor: pointer; transition: all 0.2s;">
               🔥 Simulate Multi-User Broadcast
             </button>
             <div id="multi-guest-container" style="margin-top: 15px;"></div>
@@ -782,34 +1273,59 @@
 
         <!-- ADMIN COMM HUB PANEL -->
         <div class="admin-right-section" style="padding:0;">
-          <div style="padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
+          <div
+            style="padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
             <div class="sidebar-label" style="margin:0;">💬 Comm Hub</div>
             <div style="font-size:10px;color:#4b5563;">Live · All Roles</div>
           </div>
           <!-- Target selector -->
           <div style="display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.06);">
-            <button id="ctarget-all-admin" onclick="setChatTarget('all','admin')" style="flex:1;padding:5px;border-radius:6px;font-size:11px;border:1px solid rgba(79,142,247,0.6);background:rgba(79,142,247,0.3);color:#4f8ef7;cursor:pointer;transition:0.2s;">👥 All</button>
-            <button id="ctarget-admin-admin" onclick="setChatTarget('admin','admin')" style="flex:1;padding:5px;border-radius:6px;font-size:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#6b7280;cursor:pointer;transition:0.2s;">🛡️ Admin</button>
-            <button id="ctarget-staff-admin" onclick="setChatTarget('staff','admin')" style="flex:1;padding:5px;border-radius:6px;font-size:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#6b7280;cursor:pointer;transition:0.2s;">👷 Staff</button>
+            <button id="ctarget-all-admin" onclick="setChatTarget('all','admin')"
+              style="flex:1;padding:5px;border-radius:6px;font-size:11px;border:1px solid rgba(255,111,97,0.6);background:rgba(255,111,97,0.3);color:#ff6f61;cursor:pointer;transition:0.2s;">👥
+              All</button>
+            <button id="ctarget-admin-admin" onclick="setChatTarget('admin','admin')"
+              style="flex:1;padding:5px;border-radius:6px;font-size:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#6b7280;cursor:pointer;transition:0.2s;">🛡️
+              Admin</button>
+            <button id="ctarget-staff-admin" onclick="setChatTarget('staff','admin')"
+              style="flex:1;padding:5px;border-radius:6px;font-size:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#6b7280;cursor:pointer;transition:0.2s;">👷
+              Staff</button>
           </div>
           <!-- Feed -->
-          <div id="chat-feed-admin" class="chat-feed" style="height:200px;overflow-y:auto;padding:12px;scrollbar-width:thin;"></div>
+          <div id="chat-feed-admin" class="chat-feed"
+            style="height:200px;overflow-y:auto;padding:12px;scrollbar-width:thin;"></div>
           <!-- Quick Replies -->
-          <div style="display:flex;gap:6px;padding:6px 12px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
-            <button onclick="adminQuickReply('Please proceed to nearest exit calmly.')" style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;font-size:10px;cursor:pointer;">➤ Evacuate calmly</button>
-            <button onclick="adminQuickReply('Help is on the way. Stay in your room.')" style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;font-size:10px;cursor:pointer;">➤ Stay in room</button>
-            <button onclick="adminQuickReply('All clear — situation resolved.')" style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;font-size:10px;cursor:pointer;">✅ All clear</button>
+          <div
+            style="display:flex;gap:6px;padding:6px 12px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
+            <button onclick="adminQuickReply('Please proceed to nearest exit calmly.')"
+              style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;font-size:10px;cursor:pointer;">➤
+              Evacuate calmly</button>
+            <button onclick="adminQuickReply('Help is on the way. Stay in your room.')"
+              style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;font-size:10px;cursor:pointer;">➤
+              Stay in room</button>
+            <button onclick="adminQuickReply('All clear — situation resolved.')"
+              style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;font-size:10px;cursor:pointer;">✅
+              All clear</button>
           </div>
           <!-- Emergency Alert Button -->
           <div style="padding:6px 12px;">
-            <button onclick="chatSend('admin','admin',true)" style="width:100%;padding:8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:8px;color:#ef4444;font-weight:700;font-size:11px;cursor:pointer;">🚨 Broadcast Emergency Alert</button>
+            <button onclick="chatSend('admin','admin',true)"
+              style="width:100%;padding:8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:8px;color:#ef4444;font-weight:700;font-size:11px;cursor:pointer;">🚨
+              Broadcast Emergency Alert</button>
           </div>
           <!-- Input row -->
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06);">
-            <input id="chat-input-admin" class="chat-panel-input" onkeydown="chatInputKeydown(event,'admin','admin')" type="text" placeholder="Message all..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:13px;font-family:inherit;" />
-            <button id="chat-mic-admin" onclick="startVoiceRecording('admin')" title="Voice Message" style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;cursor:pointer;font-size:14px;">🎤</button>
-            <label style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;">📷<input type="file" accept="image/*" onchange="handleImageUpload(event,'admin')" style="display:none;"/></label>
-            <button onclick="chatSend('admin','admin')" style="width:32px;height:32px;border-radius:8px;background:rgba(79,142,247,0.3);border:1px solid rgba(79,142,247,0.5);color:#4f8ef7;cursor:pointer;font-size:14px;">➤</button>
+          <div
+            style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06);">
+            <input id="chat-input-admin" class="chat-panel-input" onkeydown="chatInputKeydown(event,'admin','admin')"
+              type="text" placeholder="Message all..."
+              style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:13px;font-family:inherit;" />
+            <button id="chat-mic-admin" onclick="startVoiceRecording('admin')" title="Voice Message"
+              style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;cursor:pointer;font-size:14px;">🎤</button>
+            <label
+              style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;">📷<input
+                type="file" accept="image/*" onchange="handleImageUpload(event,'admin')"
+                style="display:none;" /></label>
+            <button onclick="chatSend('admin','admin')"
+              style="width:32px;height:32px;border-radius:8px;background:rgba(255,111,97,0.3);border:1px solid rgba(255,111,97,0.5);color:#ff6f61;cursor:pointer;font-size:14px;">➤</button>
           </div>
         </div>
       </div>
@@ -863,6 +1379,42 @@
       } else {
         console.warn('⚠️ [EcoPlus] No active screen found - Module may not be rendering');
       }
+
+      initSystemStatusBanner();
+    }
+
+    // UI-only banner sync from existing state elements (no business logic changes)
+    function initSystemStatusBanner() {
+      if (window.__ecoStatusBannerInit) return;
+      const banner = document.getElementById('system-status-banner');
+      const bannerText = banner ? banner.querySelector('.status-text') : null;
+      const alertCountEl = document.getElementById('admin-alert-count');
+      const adminStatusEl = document.getElementById('admin-status-text');
+      if (!banner || !bannerText || !alertCountEl || !adminStatusEl) return;
+      window.__ecoStatusBannerInit = true;
+
+      const sync = () => {
+        const count = Number.parseInt((alertCountEl.textContent || '0').trim(), 10) || 0;
+        const status = (adminStatusEl.textContent || '').trim().toUpperCase();
+
+        banner.classList.remove('system-normal', 'system-warning', 'system-critical');
+
+        if (count > 0 || /FIRE|CRITICAL|EMERGENCY|ALERT|EVAC/.test(status)) {
+          banner.classList.add('system-critical');
+          bannerText.textContent = 'FIRE DETECTED - EVACUATE AFFECTED FLOORS';
+        } else if (/CAUTION|MONITOR|WATCH/.test(status)) {
+          banner.classList.add('system-warning');
+          bannerText.textContent = 'CAUTION MODE - MONITORING IN PROGRESS';
+        } else {
+          banner.classList.add('system-normal');
+          bannerText.textContent = 'ALL SYSTEMS NORMAL';
+        }
+      };
+
+      sync();
+      setInterval(sync, 1500);
+      new MutationObserver(sync).observe(alertCountEl, { childList: true, subtree: true, characterData: true });
+      new MutationObserver(sync).observe(adminStatusEl, { childList: true, subtree: true, characterData: true });
     }
 
     // Monitor for errors
@@ -877,430 +1429,430 @@
 
   <!-- ═══ AI CCTV SURVEILLANCE JS — Enhanced Accuracy Engine ═══ -->
   <script>
-  (function() {
-    // ─────────────────────────────────────────────────────────────
-    // YOUR TRAINED MODEL — Teachable Machine (fire/smoke detector)
-    // ─────────────────────────────────────────────────────────────
-    const MODEL_URL     = 'https://teachablemachine.withgoogle.com/models/bdcvqg_7Z/';
+    (function () {
+      // ─────────────────────────────────────────────────────────────
+      // YOUR TRAINED MODEL — Teachable Machine (fire/smoke detector)
+      // ─────────────────────────────────────────────────────────────
+      const MODEL_URL = 'https://teachablemachine.withgoogle.com/models/bdcvqg_7Z/';
 
-    // ── Accuracy-tuned thresholds ───────────────────────────────
-    // Raw single-frame thresholds are intentionally lower;
-    // the SMOOTHED EMA value must cross CONFIRM_THRESH to fire.
-    const FIRE_RAW_THRESH   = 0.55;   // single-frame pre-filter
-    const SMOKE_RAW_THRESH  = 0.50;
-    const FIRE_CONFIRM      = 0.72;   // smoothed EMA must reach this
-    const SMOKE_CONFIRM     = 0.65;
-    const EMA_ALPHA         = 0.30;   // EMA smoothing (0=no update, 1=instant)
-    const CONSEC_NEEDED     = 3;      // consecutive above-raw frames needed before confirm check
-    const SCAN_INTERVAL     = 350;    // ms between frames (faster = more temporal data)
-    const DEBOUNCE_SECS     = 30;     // seconds before same cam re-triggers
-    const WARMUP_FRAMES     = 5;      // skip first N frames per camera (sensor stabilisation)
-    const INPUT_SIZE        = 224;    // Teachable Machine always uses 224×224
+      // ── Accuracy-tuned thresholds ───────────────────────────────
+      // Raw single-frame thresholds are intentionally lower;
+      // the SMOOTHED EMA value must cross CONFIRM_THRESH to fire.
+      const FIRE_RAW_THRESH = 0.55;   // single-frame pre-filter
+      const SMOKE_RAW_THRESH = 0.50;
+      const FIRE_CONFIRM = 0.72;   // smoothed EMA must reach this
+      const SMOKE_CONFIRM = 0.65;
+      const EMA_ALPHA = 0.30;   // EMA smoothing (0=no update, 1=instant)
+      const CONSEC_NEEDED = 3;      // consecutive above-raw frames needed before confirm check
+      const SCAN_INTERVAL = 350;    // ms between frames (faster = more temporal data)
+      const DEBOUNCE_SECS = 30;     // seconds before same cam re-triggers
+      const WARMUP_FRAMES = 5;      // skip first N frames per camera (sensor stabilisation)
+      const INPUT_SIZE = 224;    // Teachable Machine always uses 224×224
 
-    // ── Runtime state ───────────────────────────────────────────
-    let tmModel      = null;
-    let modelReady   = false;
-    let modelLoading = false;
-    let sirenActive  = false;
-    let sirenCtx     = null;
-    let cameras      = [];
-    let incidents    = [];
-    let stats        = { fire:0, smoke:0, total:0 };
-    let camCounter   = 0;
+      // ── Runtime state ───────────────────────────────────────────
+      let tmModel = null;
+      let modelReady = false;
+      let modelLoading = false;
+      let sirenActive = false;
+      let sirenCtx = null;
+      let cameras = [];
+      let incidents = [];
+      let stats = { fire: 0, smoke: 0, total: 0 };
+      let camCounter = 0;
 
-    // ── AI status pill ───────────────────────────────────────────
-    function setAIPill(state) {
-      const pill = document.getElementById('cctvAIPill');
-      const txt  = document.getElementById('cctvAIText');
-      if (!pill || !txt) return;
-      const sp = pill.querySelector('.spinner');
-      pill.className = 'cctv-ai-pill' + (state==='ready' ? ' ready' : state==='error' ? ' error' : '');
-      if (state === 'loading') { if(sp) sp.style.display=''; txt.textContent = 'AI: Loading…'; }
-      else if (state === 'ready') { if(sp) sp.style.display='none'; txt.textContent = '🤖 Model Ready ✅ (Enhanced)'; }
-      else { if(sp) sp.style.display='none'; txt.textContent = '❌ AI Model Failed'; }
-    }
-
-    // ── Script loader ─────────────────────────────────────────────
-    function injectScript(src) {
-      return new Promise((res, rej) => {
-        if (document.querySelector('script[src="' + src + '"]')) { res(); return; }
-        const s = document.createElement('script');
-        s.src = src; s.onload = res; s.onerror = () => rej(new Error('Failed: ' + src));
-        document.head.appendChild(s);
-      });
-    }
-
-    // ── Load TM model ─────────────────────────────────────────────
-    async function loadModel() {
-      if (modelLoading || modelReady) return;
-      modelLoading = true;
-      setAIPill('loading');
-      try {
-        await injectScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js');
-        await injectScript('https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js');
-        tmModel    = await tmImage.load(MODEL_URL + 'model.json', MODEL_URL + 'metadata.json');
-        // ── Warm up model with a blank tensor to pre-compile WebGL shaders ──
-        const warmupCanvas = document.createElement('canvas');
-        warmupCanvas.width = warmupCanvas.height = INPUT_SIZE;
-        await tmModel.predict(warmupCanvas);
-        modelReady   = true;
-        modelLoading = false;
-        setAIPill('ready');
-        cameras.forEach(beginLoop);
-        console.log('[CCTV] ✅ Model ready — classes:', tmModel.getTotalClasses());
-      } catch(err) {
-        modelLoading = false;
-        setAIPill('error');
-        cameras.forEach(showTileError);
-        console.error('[CCTV] ❌ Model load failed:', err);
+      // ── AI status pill ───────────────────────────────────────────
+      function setAIPill(state) {
+        const pill = document.getElementById('cctvAIPill');
+        const txt = document.getElementById('cctvAIText');
+        if (!pill || !txt) return;
+        const sp = pill.querySelector('.spinner');
+        pill.className = 'cctv-ai-pill' + (state === 'ready' ? ' ready' : state === 'error' ? ' error' : '');
+        if (state === 'loading') { if (sp) sp.style.display = ''; txt.textContent = 'AI: Loading…'; }
+        else if (state === 'ready') { if (sp) sp.style.display = 'none'; txt.textContent = '🤖 Model Ready ✅ (Enhanced)'; }
+        else { if (sp) sp.style.display = 'none'; txt.textContent = '❌ AI Model Failed'; }
       }
-    }
 
-    // ── Add camera ────────────────────────────────────────────────
-    window.cctvAddCamera = async function() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'environment' },
-          audio: false
+      // ── Script loader ─────────────────────────────────────────────
+      function injectScript(src) {
+        return new Promise((res, rej) => {
+          if (document.querySelector('script[src="' + src + '"]')) { res(); return; }
+          const s = document.createElement('script');
+          s.src = src; s.onload = res; s.onerror = () => rej(new Error('Failed: ' + src));
+          document.head.appendChild(s);
         });
-        camCounter++;
-        const cam = {
-          id:          'cctvcam-' + Date.now(),
-          name:        'Camera ' + camCounter,
-          stream,
-          videoEl:     null,
-          loopActive:  false,
-          frameCount:  0,                    // warmup counter
-          lastTrigger: { Fire:0, Smoke:0 },
-          // EMA smoothed scores per class
-          ema:         { Fire:0, Smoke:0, Normal:0 },
-          // consecutive above-raw-thresh frame counters
-          consec:      { Fire:0, Smoke:0 },
-          // last raw scores for display
-          raw:         { fire:0, smoke:0, norm:0 }
-        };
-        cameras.push(cam);
-        buildTile(cam, stream);
-        updateStats();
-        if (!modelReady && !modelLoading) loadModel();
-      } catch(e) {
-        alert('Camera access denied — please allow camera permission in your browser.');
       }
-    };
 
-    function buildTile(cam, stream) {
-      const grid   = document.getElementById('cctvCameraGrid');
-      const addBtn = document.getElementById('cctvAddBtn');
-      const tile   = document.createElement('div');
-      tile.className = 'cctv-tile'; tile.id = 'cctv-tile-' + cam.id;
-      tile.innerHTML =
-        '<div class="cctv-tile-hdr">' +
+      // ── Load TM model ─────────────────────────────────────────────
+      async function loadModel() {
+        if (modelLoading || modelReady) return;
+        modelLoading = true;
+        setAIPill('loading');
+        try {
+          await injectScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js');
+          await injectScript('https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js');
+          tmModel = await tmImage.load(MODEL_URL + 'model.json', MODEL_URL + 'metadata.json');
+          // ── Warm up model with a blank tensor to pre-compile WebGL shaders ──
+          const warmupCanvas = document.createElement('canvas');
+          warmupCanvas.width = warmupCanvas.height = INPUT_SIZE;
+          await tmModel.predict(warmupCanvas);
+          modelReady = true;
+          modelLoading = false;
+          setAIPill('ready');
+          cameras.forEach(beginLoop);
+          console.log('[CCTV] ✅ Model ready — classes:', tmModel.getTotalClasses());
+        } catch (err) {
+          modelLoading = false;
+          setAIPill('error');
+          cameras.forEach(showTileError);
+          console.error('[CCTV] ❌ Model load failed:', err);
+        }
+      }
+
+      // ── Add camera ────────────────────────────────────────────────
+      window.cctvAddCamera = async function () {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' },
+            audio: false
+          });
+          camCounter++;
+          const cam = {
+            id: 'cctvcam-' + Date.now(),
+            name: 'Camera ' + camCounter,
+            stream,
+            videoEl: null,
+            loopActive: false,
+            frameCount: 0,                    // warmup counter
+            lastTrigger: { Fire: 0, Smoke: 0 },
+            // EMA smoothed scores per class
+            ema: { Fire: 0, Smoke: 0, Normal: 0 },
+            // consecutive above-raw-thresh frame counters
+            consec: { Fire: 0, Smoke: 0 },
+            // last raw scores for display
+            raw: { fire: 0, smoke: 0, norm: 0 }
+          };
+          cameras.push(cam);
+          buildTile(cam, stream);
+          updateStats();
+          if (!modelReady && !modelLoading) loadModel();
+        } catch (e) {
+          alert('Camera access denied — please allow camera permission in your browser.');
+        }
+      };
+
+      function buildTile(cam, stream) {
+        const grid = document.getElementById('cctvCameraGrid');
+        const addBtn = document.getElementById('cctvAddBtn');
+        const tile = document.createElement('div');
+        tile.className = 'cctv-tile'; tile.id = 'cctv-tile-' + cam.id;
+        tile.innerHTML =
+          '<div class="cctv-tile-hdr">' +
           '<div class="cctv-cam-name"><span class="cctv-rec"></span>' + cam.name + '</div>' +
           '<span class="cctv-badge cctv-badge-normal" id="cctv-badge-' + cam.id + '">NORMAL</span>' +
-        '</div>' +
-        '<div class="cctv-feed">' +
+          '</div>' +
+          '<div class="cctv-feed">' +
           '<video id="cctv-video-' + cam.id + '" autoplay muted playsinline></video>' +
           '<div class="cctv-overlay" id="cctv-ov-' + cam.id + '">' +
-            '<div class="spinner" style="width:18px;height:18px;border-width:2px;"></div>' +
-            '<span>Waiting for AI…</span>' +
+          '<div class="spinner" style="width:18px;height:18px;border-width:2px;"></div>' +
+          '<span>Waiting for AI…</span>' +
           '</div>' +
           '<div class="cctv-scan-line"></div>' +
           '<div class="cctv-fps-badge" id="cctv-fps-' + cam.id + '">AI: -- FPS</div>' +
-        '</div>' +
-        '<div class="cctv-bar-wrap">' +
+          '</div>' +
+          '<div class="cctv-bar-wrap">' +
           '<div class="cctv-bar-lbls">' +
-            '<span id="cctv-lbl-' + cam.id + '">—</span>' +
-            '<span id="cctv-pct-' + cam.id + '">—</span>' +
+          '<span id="cctv-lbl-' + cam.id + '">—</span>' +
+          '<span id="cctv-pct-' + cam.id + '">—</span>' +
           '</div>' +
           '<div class="cctv-bar-track">' +
-            '<div class="cctv-bar-fill" id="cctv-fill-' + cam.id + '" style="width:0%"></div>' +
+          '<div class="cctv-bar-fill" id="cctv-fill-' + cam.id + '" style="width:0%"></div>' +
           '</div>' +
           // Secondary EMA indicator row
           '<div style="display:flex;justify-content:space-between;font-size:9px;color:#4b5563;margin-top:3px;">' +
-            '<span>EMA smooth:</span>' +
-            '<span id="cctv-ema-' + cam.id + '" style="color:#6b7280;">—</span>' +
+          '<span>EMA smooth:</span>' +
+          '<span id="cctv-ema-' + cam.id + '" style="color:#6b7280;">—</span>' +
           '</div>' +
-        '</div>';
-      grid.insertBefore(tile, addBtn);
-      const v = tile.querySelector('#cctv-video-' + cam.id);
-      v.srcObject = stream; v.play();
-      cam.videoEl = v;
-      if (modelReady) beginLoop(cam);
-    }
-
-    function showTileError(cam) {
-      const ov = document.getElementById('cctv-ov-' + cam.id);
-      if (ov) ov.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ff0043;font-size:1.2rem;"></i>' +
-                             '<span style="color:#ff0043;font-size:10px;">Model failed</span>';
-    }
-
-    // ── Global inference canvas (reused for performance) ──
-    let inferCanvas = null;
-    let inferCtx    = null;
-
-    // ── Inference loop ────────────────────────────────────────────
-    function beginLoop(cam) {
-      if (cam.loopActive) return;
-      cam.loopActive = true;
-      const ov = document.getElementById('cctv-ov-' + cam.id);
-      if (ov) ov.style.display = 'none';
-
-      async function loop() {
-        if (!cam.stream?.active || !modelReady || !tmModel) { cam.loopActive = false; return; }
-        try { await predict(cam); } catch(e) { console.warn('[CCTV] predict error:', e); }
-        setTimeout(loop, SCAN_INTERVAL);
-      }
-      loop();
-    }
-
-    // ── Core prediction with EMA + consecutive-frame confirmation ──
-    async function predict(cam) {
-      const v = cam.videoEl;
-      if (!v || v.readyState < 2 || v.videoWidth === 0) return;
-
-      cam.frameCount++;
-      const startTime = performance.now();
-
-      // Ensure global canvas is ready
-      if (!inferCanvas) {
-        inferCanvas = document.createElement('canvas');
-        inferCanvas.width = inferCanvas.height = INPUT_SIZE;
-        inferCtx = inferCanvas.getContext('2d', { willReadFrequently: true });
+          '</div>';
+        grid.insertBefore(tile, addBtn);
+        const v = tile.querySelector('#cctv-video-' + cam.id);
+        v.srcObject = stream; v.play();
+        cam.videoEl = v;
+        if (modelReady) beginLoop(cam);
       }
 
-      // Draw frame with contrast boost
-      inferCtx.filter = 'contrast(1.15) saturate(1.1)';
-      inferCtx.drawImage(v, 0, 0, INPUT_SIZE, INPUT_SIZE);
-      inferCtx.filter = 'none';
-
-      // Skip warmup frames — let auto-exposure settle
-      if (cam.frameCount <= WARMUP_FRAMES) {
-        updateBar(cam, 0, 0, 1);
-        return;
+      function showTileError(cam) {
+        const ov = document.getElementById('cctv-ov-' + cam.id);
+        if (ov) ov.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ff0043;font-size:1.2rem;"></i>' +
+          '<span style="color:#ff0043;font-size:10px;">Model failed</span>';
       }
 
-      // Run your trained model
-      const preds = await tmModel.predict(inferCanvas);
-      
-      // Update FPS badge
-      const duration = performance.now() - startTime;
-      const fps = (1000 / (duration + SCAN_INTERVAL)).toFixed(1);
-      const fpsEl = document.getElementById('cctv-fps-' + cam.id);
-      if (fpsEl) fpsEl.textContent = 'AI: ' + fps + ' FPS';
+      // ── Global inference canvas (reused for performance) ──
+      let inferCanvas = null;
+      let inferCtx = null;
 
-      const get   = n => preds.find(p => p.className === n)?.probability ?? 0;
+      // ── Inference loop ────────────────────────────────────────────
+      function beginLoop(cam) {
+        if (cam.loopActive) return;
+        cam.loopActive = true;
+        const ov = document.getElementById('cctv-ov-' + cam.id);
+        if (ov) ov.style.display = 'none';
 
-      const rawFire  = get('Fire');
-      const rawSmoke = get('Smoke');
-      const rawNorm  = get('Normal');
-
-      // ── Exponential Moving Average smoothing ──────────────────
-      // Reduces single-frame false spikes (camera flare, reflections)
-      cam.ema.Fire   = EMA_ALPHA * rawFire  + (1 - EMA_ALPHA) * cam.ema.Fire;
-      cam.ema.Smoke  = EMA_ALPHA * rawSmoke + (1 - EMA_ALPHA) * cam.ema.Smoke;
-      cam.ema.Normal = EMA_ALPHA * rawNorm  + (1 - EMA_ALPHA) * cam.ema.Normal;
-
-      // ── Consecutive frame counters ────────────────────────────
-      // Must stay above raw threshold N frames before confirm check runs
-      cam.consec.Fire  = rawFire  >= FIRE_RAW_THRESH  ? cam.consec.Fire  + 1 : 0;
-      cam.consec.Smoke = rawSmoke >= SMOKE_RAW_THRESH ? cam.consec.Smoke + 1 : 0;
-
-      // Store for display
-      cam.raw = { fire: rawFire, smoke: rawSmoke, norm: rawNorm };
-
-      // Update bar with RAW (responsive feedback) but EMA label
-      updateBar(cam, rawFire, rawSmoke, rawNorm, cam.ema);
-
-      const now = Date.now();
-
-      // ── Fire confirmation gate ────────────────────────────────
-      if (
-        cam.consec.Fire >= CONSEC_NEEDED &&          // sustained in raw
-        cam.ema.Fire   >= FIRE_CONFIRM &&             // smoothed value high enough
-        now - (cam.lastTrigger.Fire || 0) > DEBOUNCE_SECS * 1000
-      ) {
-        cam.lastTrigger.Fire = now;
-        cam.consec.Fire = 0;
-        await triggerIncident(cam, 'Fire', cam.ema.Fire, inferCanvas);
-        return;
+        async function loop() {
+          if (!cam.stream?.active || !modelReady || !tmModel) { cam.loopActive = false; return; }
+          try { await predict(cam); } catch (e) { console.warn('[CCTV] predict error:', e); }
+          setTimeout(loop, SCAN_INTERVAL);
+        }
+        loop();
       }
 
-      // ── Smoke confirmation gate ───────────────────────────────
-      if (
-        cam.consec.Smoke >= CONSEC_NEEDED &&
-        cam.ema.Smoke   >= SMOKE_CONFIRM &&
-        now - (cam.lastTrigger.Smoke || 0) > DEBOUNCE_SECS * 1000
-      ) {
-        cam.lastTrigger.Smoke = now;
-        cam.consec.Smoke = 0;
-        await triggerIncident(cam, 'Smoke', cam.ema.Smoke, inferCanvas);
-        return;
+      // ── Core prediction with EMA + consecutive-frame confirmation ──
+      async function predict(cam) {
+        const v = cam.videoEl;
+        if (!v || v.readyState < 2 || v.videoWidth === 0) return;
+
+        cam.frameCount++;
+        const startTime = performance.now();
+
+        // Ensure global canvas is ready
+        if (!inferCanvas) {
+          inferCanvas = document.createElement('canvas');
+          inferCanvas.width = inferCanvas.height = INPUT_SIZE;
+          inferCtx = inferCanvas.getContext('2d', { willReadFrequently: true });
+        }
+
+        // Draw frame with contrast boost
+        inferCtx.filter = 'contrast(1.15) saturate(1.1)';
+        inferCtx.drawImage(v, 0, 0, INPUT_SIZE, INPUT_SIZE);
+        inferCtx.filter = 'none';
+
+        // Skip warmup frames — let auto-exposure settle
+        if (cam.frameCount <= WARMUP_FRAMES) {
+          updateBar(cam, 0, 0, 1);
+          return;
+        }
+
+        // Run your trained model
+        const preds = await tmModel.predict(inferCanvas);
+
+        // Update FPS badge
+        const duration = performance.now() - startTime;
+        const fps = (1000 / (duration + SCAN_INTERVAL)).toFixed(1);
+        const fpsEl = document.getElementById('cctv-fps-' + cam.id);
+        if (fpsEl) fpsEl.textContent = 'AI: ' + fps + ' FPS';
+
+        const get = n => preds.find(p => p.className === n)?.probability ?? 0;
+
+        const rawFire = get('Fire');
+        const rawSmoke = get('Smoke');
+        const rawNorm = get('Normal');
+
+        // ── Exponential Moving Average smoothing ──────────────────
+        // Reduces single-frame false spikes (camera flare, reflections)
+        cam.ema.Fire = EMA_ALPHA * rawFire + (1 - EMA_ALPHA) * cam.ema.Fire;
+        cam.ema.Smoke = EMA_ALPHA * rawSmoke + (1 - EMA_ALPHA) * cam.ema.Smoke;
+        cam.ema.Normal = EMA_ALPHA * rawNorm + (1 - EMA_ALPHA) * cam.ema.Normal;
+
+        // ── Consecutive frame counters ────────────────────────────
+        // Must stay above raw threshold N frames before confirm check runs
+        cam.consec.Fire = rawFire >= FIRE_RAW_THRESH ? cam.consec.Fire + 1 : 0;
+        cam.consec.Smoke = rawSmoke >= SMOKE_RAW_THRESH ? cam.consec.Smoke + 1 : 0;
+
+        // Store for display
+        cam.raw = { fire: rawFire, smoke: rawSmoke, norm: rawNorm };
+
+        // Update bar with RAW (responsive feedback) but EMA label
+        updateBar(cam, rawFire, rawSmoke, rawNorm, cam.ema);
+
+        const now = Date.now();
+
+        // ── Fire confirmation gate ────────────────────────────────
+        if (
+          cam.consec.Fire >= CONSEC_NEEDED &&          // sustained in raw
+          cam.ema.Fire >= FIRE_CONFIRM &&             // smoothed value high enough
+          now - (cam.lastTrigger.Fire || 0) > DEBOUNCE_SECS * 1000
+        ) {
+          cam.lastTrigger.Fire = now;
+          cam.consec.Fire = 0;
+          await triggerIncident(cam, 'Fire', cam.ema.Fire, inferCanvas);
+          return;
+        }
+
+        // ── Smoke confirmation gate ───────────────────────────────
+        if (
+          cam.consec.Smoke >= CONSEC_NEEDED &&
+          cam.ema.Smoke >= SMOKE_CONFIRM &&
+          now - (cam.lastTrigger.Smoke || 0) > DEBOUNCE_SECS * 1000
+        ) {
+          cam.lastTrigger.Smoke = now;
+          cam.consec.Smoke = 0;
+          await triggerIncident(cam, 'Smoke', cam.ema.Smoke, inferCanvas);
+          return;
+        }
+
+        setNormal(cam);
       }
 
-      setNormal(cam);
-    }
+      // ── Confidence bar (raw bar + EMA readout) ────────────────────
+      function updateBar(cam, fire, smoke, norm, ema) {
+        const fill = document.getElementById('cctv-fill-' + cam.id);
+        const lbl = document.getElementById('cctv-lbl-' + cam.id);
+        const pct = document.getElementById('cctv-pct-' + cam.id);
+        const emaEl = document.getElementById('cctv-ema-' + cam.id);
+        if (!fill) return;
 
-    // ── Confidence bar (raw bar + EMA readout) ────────────────────
-    function updateBar(cam, fire, smoke, norm, ema) {
-      const fill = document.getElementById('cctv-fill-' + cam.id);
-      const lbl  = document.getElementById('cctv-lbl-'  + cam.id);
-      const pct  = document.getElementById('cctv-pct-'  + cam.id);
-      const emaEl= document.getElementById('cctv-ema-'  + cam.id);
-      if (!fill) return;
+        if (fire >= smoke && fire >= norm) {
+          fill.style.width = (fire * 100).toFixed(1) + '%'; fill.className = 'cctv-bar-fill red';
+          lbl.textContent = '🔥 Fire'; pct.textContent = (fire * 100).toFixed(1) + '%';
+        } else if (smoke >= norm) {
+          fill.style.width = (smoke * 100).toFixed(1) + '%'; fill.className = 'cctv-bar-fill orange';
+          lbl.textContent = '💨 Smoke'; pct.textContent = (smoke * 100).toFixed(1) + '%';
+        } else {
+          fill.style.width = (norm * 100).toFixed(1) + '%'; fill.className = 'cctv-bar-fill';
+          lbl.textContent = '✅ Normal'; pct.textContent = (norm * 100).toFixed(1) + '%';
+        }
 
-      if (fire >= smoke && fire >= norm) {
-        fill.style.width = (fire*100).toFixed(1)+'%'; fill.className = 'cctv-bar-fill red';
-        lbl.textContent = '🔥 Fire'; pct.textContent = (fire*100).toFixed(1)+'%';
-      } else if (smoke >= norm) {
-        fill.style.width = (smoke*100).toFixed(1)+'%'; fill.className = 'cctv-bar-fill orange';
-        lbl.textContent = '💨 Smoke'; pct.textContent = (smoke*100).toFixed(1)+'%';
-      } else {
-        fill.style.width = (norm*100).toFixed(1)+'%'; fill.className = 'cctv-bar-fill';
-        lbl.textContent = '✅ Normal'; pct.textContent = (norm*100).toFixed(1)+'%';
+        // Show EMA values
+        if (emaEl && ema) {
+          emaEl.textContent =
+            '🔥' + (ema.Fire * 100).toFixed(0) + '% ' +
+            '💨' + (ema.Smoke * 100).toFixed(0) + '% ' +
+            '✅' + (ema.Normal * 100).toFixed(0) + '%';
+        }
       }
 
-      // Show EMA values
-      if (emaEl && ema) {
-        emaEl.textContent =
-          '🔥' + (ema.Fire*100).toFixed(0) + '% ' +
-          '💨' + (ema.Smoke*100).toFixed(0) + '% ' +
-          '✅' + (ema.Normal*100).toFixed(0) + '%';
+      // ── Incident trigger ──────────────────────────────────────────
+      async function triggerIncident(cam, type, conf, canvas) {
+        console.warn('[CCTV] 🚨 INCIDENT:', type, cam.name, (conf * 100).toFixed(1) + '%');
+        const snap = canvas.toDataURL('image/jpeg', 0.88);
+
+        const tile = document.getElementById('cctv-tile-' + cam.id);
+        const badge = document.getElementById('cctv-badge-' + cam.id);
+        if (tile) tile.className = 'cctv-tile ' + type.toLowerCase() + '-alert';
+        if (badge) {
+          badge.className = 'cctv-badge cctv-badge-' + type.toLowerCase();
+          badge.textContent = '⚠ ' + type.toUpperCase();
+        }
+
+        if (!sirenActive) activateSiren();
+
+        const inc = { id: 'inc-' + Date.now(), cam: cam.name, type, conf, snap, time: new Date().toISOString() };
+        incidents.unshift(inc);
+        addToFeed(inc);
+        stats[type === 'Fire' ? 'fire' : 'smoke']++;
+        stats.total++;
+        updateStats();
+
+        // Cross-trigger ECHO+ emergency broadcast
+        if (typeof triggerEmergency === 'function') triggerEmergency('fire');
+
+        setTimeout(() => setNormal(cam), 8000);
       }
-    }
 
-    // ── Incident trigger ──────────────────────────────────────────
-    async function triggerIncident(cam, type, conf, canvas) {
-      console.warn('[CCTV] 🚨 INCIDENT:', type, cam.name, (conf*100).toFixed(1)+'%');
-      const snap = canvas.toDataURL('image/jpeg', 0.88);
-
-      const tile  = document.getElementById('cctv-tile-'  + cam.id);
-      const badge = document.getElementById('cctv-badge-' + cam.id);
-      if (tile)  tile.className  = 'cctv-tile ' + type.toLowerCase() + '-alert';
-      if (badge) {
-        badge.className   = 'cctv-badge cctv-badge-' + type.toLowerCase();
-        badge.textContent = '⚠ ' + type.toUpperCase();
+      function setNormal(cam) {
+        const tile = document.getElementById('cctv-tile-' + cam.id);
+        const badge = document.getElementById('cctv-badge-' + cam.id);
+        if (tile) tile.className = 'cctv-tile';
+        if (badge) { badge.className = 'cctv-badge cctv-badge-normal'; badge.textContent = 'NORMAL'; }
       }
 
-      if (!sirenActive) activateSiren();
-
-      const inc = { id:'inc-'+Date.now(), cam: cam.name, type, conf, snap, time: new Date().toISOString() };
-      incidents.unshift(inc);
-      addToFeed(inc);
-      stats[type==='Fire'?'fire':'smoke']++;
-      stats.total++;
-      updateStats();
-
-      // Cross-trigger ECHO+ emergency broadcast
-      if (typeof triggerEmergency === 'function') triggerEmergency('fire');
-
-      setTimeout(() => setNormal(cam), 8000);
-    }
-
-    function setNormal(cam) {
-      const tile  = document.getElementById('cctv-tile-'  + cam.id);
-      const badge = document.getElementById('cctv-badge-' + cam.id);
-      if (tile)  tile.className  = 'cctv-tile';
-      if (badge) { badge.className = 'cctv-badge cctv-badge-normal'; badge.textContent = 'NORMAL'; }
-    }
-
-    function addToFeed(inc) {
-      const list  = document.getElementById('cctvIncidentList');
-      const empty = document.getElementById('cctvEmptyFeed');
-      if (empty) empty.remove();
-      const d = document.createElement('div');
-      d.className = 'cctv-inc-item ' + inc.type.toLowerCase();
-      const safe = JSON.stringify(inc).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      d.innerHTML =
-        '<div style="font-size:1.1rem">' + (inc.type==='Fire'?'🔥':'💨') + '</div>' +
-        '<div style="flex:1;">' +
+      function addToFeed(inc) {
+        const list = document.getElementById('cctvIncidentList');
+        const empty = document.getElementById('cctvEmptyFeed');
+        if (empty) empty.remove();
+        const d = document.createElement('div');
+        d.className = 'cctv-inc-item ' + inc.type.toLowerCase();
+        const safe = JSON.stringify(inc).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        d.innerHTML =
+          '<div style="font-size:1.1rem">' + (inc.type === 'Fire' ? '🔥' : '💨') + '</div>' +
+          '<div style="flex:1;">' +
           '<div class="cctv-inc-type">' + inc.type + ' Detected</div>' +
           '<div class="cctv-inc-meta">' + inc.cam + ' · ' + new Date(inc.time).toLocaleTimeString() + '</div>' +
-          '<div class="cctv-inc-conf">EMA Conf: ' + (inc.conf*100).toFixed(1) + '% · 🤖 Enhanced AI</div>' +
-        '</div>' +
-        '<button onclick="cctvOpenSnap(\'' + safe + '\')" style="background:none;border:none;color:#00d4ff;cursor:pointer;font-size:12px;" title="Snapshot">🖼</button>';
-      list.prepend(d);
-      const badge = document.getElementById('cctvIncBadge');
-      if (badge) { badge.style.display=''; badge.textContent = incidents.length; }
-    }
+          '<div class="cctv-inc-conf">EMA Conf: ' + (inc.conf * 100).toFixed(1) + '% · 🤖 Enhanced AI</div>' +
+          '</div>' +
+          '<button onclick="cctvOpenSnap(\'' + safe + '\')" style="background:none;border:none;color:#00d4ff;cursor:pointer;font-size:12px;" title="Snapshot">🖼</button>';
+        list.prepend(d);
+        const badge = document.getElementById('cctvIncBadge');
+        if (badge) { badge.style.display = ''; badge.textContent = incidents.length; }
+      }
 
-    function updateStats() {
-      const $ = id => document.getElementById(id);
-      if ($('cctvStatCams'))  $('cctvStatCams').textContent  = cameras.length;
-      if ($('cctvStatFire'))  $('cctvStatFire').textContent  = stats.fire;
-      if ($('cctvStatSmoke')) $('cctvStatSmoke').textContent = stats.smoke;
-      if ($('cctvStatTotal')) $('cctvStatTotal').textContent = stats.total;
-    }
+      function updateStats() {
+        const $ = id => document.getElementById(id);
+        if ($('cctvStatCams')) $('cctvStatCams').textContent = cameras.length;
+        if ($('cctvStatFire')) $('cctvStatFire').textContent = stats.fire;
+        if ($('cctvStatSmoke')) $('cctvStatSmoke').textContent = stats.smoke;
+        if ($('cctvStatTotal')) $('cctvStatTotal').textContent = stats.total;
+      }
 
-    // ── Siren ─────────────────────────────────────────────────────
-    window.cctvToggleSiren = function() { sirenActive ? deactivateSiren() : activateSiren(); };
+      // ── Siren ─────────────────────────────────────────────────────
+      window.cctvToggleSiren = function () { sirenActive ? deactivateSiren() : activateSiren(); };
 
-    function activateSiren() {
-      sirenActive = true;
-      ['cctvSirenBtn','cctvSirenBtn2'].forEach(id => {
-        const b = document.getElementById(id); if (!b) return;
-        b.classList.add('on');
-        b.innerHTML = '<i class="fas fa-volume-up"></i> Siren ON';
-      });
-      const s = document.getElementById('cctvSirenStatus');
-      if (s) s.textContent = '🔊 SIREN ON';
-      if (!sirenCtx) sirenCtx = new (window.AudioContext || window.webkitAudioContext)();
-      (function beep() {
-        if (!sirenActive) return;
-        const o = sirenCtx.createOscillator(), g = sirenCtx.createGain();
-        o.connect(g); g.connect(sirenCtx.destination);
-        o.frequency.setValueAtTime(880, sirenCtx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(440, sirenCtx.currentTime + 0.5);
-        g.gain.setValueAtTime(0.28, sirenCtx.currentTime);
-        g.gain.linearRampToValueAtTime(0, sirenCtx.currentTime + 0.5);
-        o.start(); o.stop(sirenCtx.currentTime + 0.5);
-        setTimeout(beep, 620);
-      })();
-    }
+      function activateSiren() {
+        sirenActive = true;
+        ['cctvSirenBtn', 'cctvSirenBtn2'].forEach(id => {
+          const b = document.getElementById(id); if (!b) return;
+          b.classList.add('on');
+          b.innerHTML = '<i class="fas fa-volume-up"></i> Siren ON';
+        });
+        const s = document.getElementById('cctvSirenStatus');
+        if (s) s.textContent = '🔊 SIREN ON';
+        if (!sirenCtx) sirenCtx = new (window.AudioContext || window.webkitAudioContext)();
+        (function beep() {
+          if (!sirenActive) return;
+          const o = sirenCtx.createOscillator(), g = sirenCtx.createGain();
+          o.connect(g); g.connect(sirenCtx.destination);
+          o.frequency.setValueAtTime(880, sirenCtx.currentTime);
+          o.frequency.exponentialRampToValueAtTime(440, sirenCtx.currentTime + 0.5);
+          g.gain.setValueAtTime(0.28, sirenCtx.currentTime);
+          g.gain.linearRampToValueAtTime(0, sirenCtx.currentTime + 0.5);
+          o.start(); o.stop(sirenCtx.currentTime + 0.5);
+          setTimeout(beep, 620);
+        })();
+      }
 
-    function deactivateSiren() {
-      sirenActive = false;
-      ['cctvSirenBtn','cctvSirenBtn2'].forEach(id => {
-        const b = document.getElementById(id); if (!b) return;
-        b.classList.remove('on');
-        b.innerHTML = id==='cctvSirenBtn'
-          ? '<i class="fas fa-volume-mute"></i> Siren OFF'
-          : 'Activate';
-      });
-      const s = document.getElementById('cctvSirenStatus');
-      if (s) s.textContent = '🔕 SIREN OFF';
-    }
+      function deactivateSiren() {
+        sirenActive = false;
+        ['cctvSirenBtn', 'cctvSirenBtn2'].forEach(id => {
+          const b = document.getElementById(id); if (!b) return;
+          b.classList.remove('on');
+          b.innerHTML = id === 'cctvSirenBtn'
+            ? '<i class="fas fa-volume-mute"></i> Siren OFF'
+            : 'Activate';
+        });
+        const s = document.getElementById('cctvSirenStatus');
+        if (s) s.textContent = '🔕 SIREN OFF';
+      }
 
-    // ── Clear all ─────────────────────────────────────────────────
-    window.cctvClearAll = function() {
-      incidents = []; stats = {fire:0, smoke:0, total:0}; updateStats();
-      // Reset EMA + consec on all cameras
-      cameras.forEach(cam => {
-        cam.ema    = { Fire:0, Smoke:0, Normal:0 };
-        cam.consec = { Fire:0, Smoke:0 };
-        cam.frameCount = 0;
-        setNormal(cam);
-      });
-      const list = document.getElementById('cctvIncidentList');
-      list.innerHTML = '<div id="cctvEmptyFeed" style="text-align:center;padding:14px;color:#6b7280;font-size:11px;">' +
-        '<i class="fas fa-shield-alt" style="font-size:1.3rem;opacity:.3;display:block;margin-bottom:5px;"></i>No incidents detected</div>';
-      const badge = document.getElementById('cctvIncBadge');
-      if (badge) badge.style.display = 'none';
-      deactivateSiren();
-    };
+      // ── Clear all ─────────────────────────────────────────────────
+      window.cctvClearAll = function () {
+        incidents = []; stats = { fire: 0, smoke: 0, total: 0 }; updateStats();
+        // Reset EMA + consec on all cameras
+        cameras.forEach(cam => {
+          cam.ema = { Fire: 0, Smoke: 0, Normal: 0 };
+          cam.consec = { Fire: 0, Smoke: 0 };
+          cam.frameCount = 0;
+          setNormal(cam);
+        });
+        const list = document.getElementById('cctvIncidentList');
+        list.innerHTML = '<div id="cctvEmptyFeed" style="text-align:center;padding:14px;color:#6b7280;font-size:11px;">' +
+          '<i class="fas fa-shield-alt" style="font-size:1.3rem;opacity:.3;display:block;margin-bottom:5px;"></i>No incidents detected</div>';
+        const badge = document.getElementById('cctvIncBadge');
+        if (badge) badge.style.display = 'none';
+        deactivateSiren();
+      };
 
-    // ── Snapshot modal ─────────────────────────────────────────────
-    window.cctvOpenSnap = function(jsonStr) {
-      const inc = JSON.parse(jsonStr);
-      document.getElementById('cctvSnapTitle').textContent = (inc.type==='Fire'?'🔥':'💨') + ' ' + inc.type + ' Detected';
-      document.getElementById('cctvSnapImg').src = inc.snap;
-      document.getElementById('cctvSnapMeta').textContent =
-        inc.cam + ' · ' + new Date(inc.time).toLocaleTimeString() +
-        ' · EMA Confidence: ' + (inc.conf*100).toFixed(1) + '%';
-      document.getElementById('cctvSnapshotModal').classList.add('open');
-    };
-    window.cctvCloseSnap = function() { document.getElementById('cctvSnapshotModal').classList.remove('open'); };
+      // ── Snapshot modal ─────────────────────────────────────────────
+      window.cctvOpenSnap = function (jsonStr) {
+        const inc = JSON.parse(jsonStr);
+        document.getElementById('cctvSnapTitle').textContent = (inc.type === 'Fire' ? '🔥' : '💨') + ' ' + inc.type + ' Detected';
+        document.getElementById('cctvSnapImg').src = inc.snap;
+        document.getElementById('cctvSnapMeta').textContent =
+          inc.cam + ' · ' + new Date(inc.time).toLocaleTimeString() +
+          ' · EMA Confidence: ' + (inc.conf * 100).toFixed(1) + '%';
+        document.getElementById('cctvSnapshotModal').classList.add('open');
+      };
+      window.cctvCloseSnap = function () { document.getElementById('cctvSnapshotModal').classList.remove('open'); };
 
-  })();
+    })();
   </script>
 
   <!-- CCTV Snapshot Modal -->
