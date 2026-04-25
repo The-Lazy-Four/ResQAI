@@ -11,6 +11,7 @@
     rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
+  <link rel="stylesheet" href="/modules/rescue-builder/css/ai-rescue-guide.css" />
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -310,6 +311,9 @@
       height: auto
     }
   </style>
+  <!-- Socket.IO client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/resqSocket.js"></script>
 </head>
 
 <body class="bg-[#0a0e14] text-on-surface font-body min-h-screen">
@@ -323,20 +327,15 @@
       <span class="text-primary font-black text-xl font-headline tracking-tighter">ResQAI</span>
       <div class="h-4 w-px bg-white/10 hidden md:block"></div>
       <div
-        class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-400/20">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"
+        class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-500/10 border border-sky-400/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"
           style="animation:pulse-dot 2s infinite"></span>
-        <span class="text-emerald-300 font-headline font-bold text-[10px] uppercase tracking-widest">Staff
-          Dashboard</span>
+        <span class="text-sky-300 font-headline font-bold text-[10px] uppercase tracking-widest">Emergency Portal</span>
       </div>
       <span id="hdr-org" class="text-slate-500 text-xs font-body truncate max-w-[160px]"></span>
     </div>
     <div class="flex items-center gap-2">
       <span id="hdr-time" class="text-slate-600 text-xs font-mono hidden md:block"></span>
-      <button onclick="goToAdmin()"
-        class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-400/25 text-rose-400 text-[10px] font-headline uppercase tracking-widest hover:bg-rose-500/10 transition-all">
-        <span class="material-symbols-outlined text-sm">admin_panel_settings</span> Admin
-      </button>
       <button onclick="goBack()"
         class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-[10px] tracking-widest uppercase hover:scale-105 active:scale-95 transition-all">
         <span class="material-symbols-outlined text-sm">arrow_back</span> Exit
@@ -677,10 +676,48 @@
 
       await loadSystem();
       await loadAlerts();
-      alertPollInterval = setInterval(loadAlerts, 10000);
+
+      // --- SOCKET.IO: Replace polling with real-time ---
+      ResQSocket.connectToSystem(systemID);
+
+      // Listen for live alerts from admin broadcasts
+      ResQSocket.onEvent('new_alert', (data) => {
+        console.log('[LIVE] New alert:', data);
+        // Add alert to the list in real-time
+        prependLiveAlert(data);
+        toast('\u26a0\ufe0f Alert: ' + (data.message || 'New broadcast'), 'warning');
+      });
+
+      // Listen for SOS events (from other users in same system)
+      ResQSocket.onEvent('new_sos', (data) => {
+        console.log('[LIVE] SOS event:', data);
+        toast('\ud83d\udea8 SOS: ' + (data.emergency_type || 'Emergency reported'), 'error');
+      });
     });
 
-    window.addEventListener('beforeunload', () => { if (alertPollInterval) clearInterval(alertPollInterval); });
+    // Clean up socket on page unload
+    window.addEventListener('beforeunload', () => { ResQSocket.disconnectSocket(); });
+
+    // Prepend a live alert to the alerts list without refreshing
+    function prependLiveAlert(data) {
+      const list = document.getElementById('alerts-list');
+      if (!list) return;
+      const severityColors = { critical: 'rose', warning: 'amber', info: 'sky' };
+      const c = severityColors[data.severity] || 'sky';
+      const time = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+      const card = document.createElement('div');
+      card.className = 'alert-card';
+      card.style.cssText = `border-left: 3px solid; border-color: var(--tw-${c}-400, #fb923c);`;
+      card.innerHTML = `
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full bg-${c}-400"></span>
+          <span class="text-${c}-400 text-[10px] font-headline font-bold uppercase tracking-wider">${data.severity || 'info'}</span>
+          <span class="text-slate-700 text-[10px] font-mono ml-auto">${time}</span>
+        </div>
+        <div class="text-sm text-slate-300">${data.message || 'Alert'}</div>
+      `;
+      list.prepend(card);
+    }
 
     // ===== TOAST =====
     function toast(msg, type = 'info') {
@@ -1045,6 +1082,8 @@ Give a clear, calm, and practical emergency response. Be specific to this organi
 
     function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   </script>
+  <!-- AI Map Analysis Rescue Guide -->
+  <script src="/modules/rescue-builder/js/ai-rescue-guide-user.js"></script>
 </body>
 
 </html>

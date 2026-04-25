@@ -7,6 +7,14 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>ResQAI - Your Rescue Systems</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Import Map for Supabase ES modules -->
+    <script type="importmap">
+        {
+            "imports": {
+                "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+            }
+        }
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
         rel="stylesheet" />
@@ -191,7 +199,7 @@
                         class="px-6 py-3 rounded-lg border border-white/10 bg-white/5 text-on-surface font-headline text-xs tracking-widest uppercase hover:bg-white/10 transition-all">Choose
                         Type</button>
                     <button
-                        onclick="window.location.href='/modules/rescue-builder/pages/custom-builder-org-select.html'"
+                        onclick="handleCreateSystem()"
                         class="px-6 py-3 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary-container font-headline font-bold text-xs tracking-widest uppercase hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary-container/20">Create
                         New System</button>
                 </div>
@@ -262,13 +270,8 @@
         }
 
         async function getApiSystems() {
-            const token = localStorage.getItem('auth-token') || localStorage.getItem('user-session');
-            if (!token) return [];
-
             try {
-                const response = await fetch(`${API_BASE}/user/list`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const response = await fetch(`${API_BASE}/user/list`);
                 if (!response.ok) return [];
                 const data = await response.json();
                 return Array.isArray(data.systems) ? data.systems : [];
@@ -286,6 +289,7 @@
 
             return {
                 systemID: system.systemID || system.id,
+                systemCode: system.systemCode || system.system_code || '',
                 name: (system.data && system.data.organizationName) || system.name || system.organizationName || 'Unnamed System',
                 type,
                 location,
@@ -301,6 +305,7 @@
         function normalizeApiSystem(system) {
             return {
                 systemID: system.id,
+                systemCode: system.system_code || '',
                 name: system.organization_name || system.organizationName || 'Unnamed System',
                 type: system.organization_type || system.organizationType || 'custom',
                 location: system.location || 'Location pending',
@@ -342,7 +347,7 @@
                     </div>
                     <h2 class="text-2xl font-headline font-bold text-white mb-2">No Systems Yet</h2>
                     <p class="text-on-surface-variant/70 mb-10 max-w-xs mx-auto">Create your first rescue system to begin monitoring operational parameters and automating alerts.</p>
-                    <button onclick="window.location.href='/modules/rescue-builder/pages/custom-builder-org-select.html'" class="px-8 py-4 rounded-lg bg-gradient-to-br from-primary-container to-primary text-on-primary font-headline font-bold tracking-widest uppercase hover:scale-105 active:scale-95 transition-all shadow-[0_10px_40px_-10px_rgba(255,83,82,0.5)]">Create New System</button>
+                    <button onclick="handleCreateSystem()" class="px-8 py-4 rounded-lg bg-gradient-to-br from-primary-container to-primary text-on-primary font-headline font-bold tracking-widest uppercase hover:scale-105 active:scale-95 transition-all shadow-[0_10px_40px_-10px_rgba(255,83,82,0.5)]">Create New System</button>
                 </div>
             `;
                 return;
@@ -388,11 +393,18 @@
                             </div>
                         </div>
 
-                        <p class="text-[11px] text-on-surface-variant/50 mb-6">Last updated: ${escapeHtml(updated)}</p>
+                        ${system.systemCode ? `<div class="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-black/20 border border-white/5">
+                            <span class="material-symbols-outlined text-sm text-primary">qr_code_2</span>
+                            <span class="text-primary font-mono font-bold text-xs tracking-wider">${escapeHtml(system.systemCode)}</span>
+                            <span class="text-slate-600 text-[10px] ml-auto">Public Code</span>
+                        </div>` : ''}
 
-                        <div class="flex gap-3">
+                        <p class="text-[11px] text-on-surface-variant/50 mb-4">Last updated: ${escapeHtml(updated)}</p>
+
+                        <div class="flex gap-2">
                             <button onclick="openSystem('${escapeHtml(system.systemID)}')" class="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-[1.02] active:scale-95 transition-all">Open</button>
-                            <button onclick="deleteSystem('${escapeHtml(system.systemID)}')" class="flex-1 px-4 py-3 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-200 font-headline font-bold text-xs tracking-widest uppercase hover:bg-rose-500/10 transition-all">Delete</button>
+                            <button onclick="showShareModal('${escapeHtml(system.systemCode)}', '${escapeHtml(system.name)}')" class="px-4 py-3 rounded-lg border border-secondary/30 bg-secondary/5 text-secondary font-headline font-bold text-xs tracking-widest uppercase hover:bg-secondary/10 transition-all" title="Share system access"><span class="material-symbols-outlined text-sm">share</span></button>
+                            <button onclick="deleteSystem('${escapeHtml(system.systemID)}')" class="px-4 py-3 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-200 font-headline font-bold text-xs tracking-widest uppercase hover:bg-rose-500/10 transition-all">Delete</button>
                         </div>
                     </div>
                 </article>
@@ -403,6 +415,63 @@
         function openSystem(systemID) {
             localStorage.setItem('active_system_id', systemID);
             window.location.href = `/modules/rescue-builder/index.html?systemID=${encodeURIComponent(systemID)}`;
+        }
+
+        // Show share modal with QR code and public link
+        async function showShareModal(systemCode, systemName) {
+            if (!systemCode) { alert('This system has no public code yet.'); return; }
+            const publicLink = `${window.location.origin}/s/${systemCode}`;
+
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'share-modal-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease';
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background:#1c2026;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px;max-width:420px;width:90%;text-align:center;position:relative;box-shadow:0 30px 80px rgba(0,0,0,0.5)';
+
+            // Generate QR code via API
+            let qrHtml = '<div style="width:200px;height:200px;margin:0 auto 16px;background:rgba(255,255,255,0.05);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:12px">Loading QR...</div>';
+
+            modal.innerHTML = `
+                <button onclick="this.closest('#share-modal-overlay').remove()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#64748b;cursor:pointer;font-size:20px">&times;</button>
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.15em;color:#64748b;font-family:'Space Grotesk';font-weight:700;margin-bottom:8px">Share System Access</div>
+                <h3 style="color:#fff;font-family:'Space Grotesk';font-weight:800;font-size:20px;margin-bottom:4px">${escapeHtml(systemName)}</h3>
+                <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,83,82,0.1);border:1px solid rgba(255,83,82,0.25);border-radius:8px;padding:6px 14px;margin-bottom:20px">
+                    <span class="material-symbols-outlined" style="font-size:16px;color:#ff5352">qr_code_2</span>
+                    <span style="color:#ffb3ae;font-family:monospace;font-weight:700;font-size:14px;letter-spacing:0.1em">${escapeHtml(systemCode)}</span>
+                </div>
+                <div id="qr-container">${qrHtml}</div>
+                <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+                    <input id="share-link-input" value="${publicLink}" readonly style="flex:1;background:none;border:none;color:#a6e6ff;font-size:12px;font-family:monospace;outline:none" />
+                    <button onclick="navigator.clipboard.writeText('${publicLink}');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)" style="background:rgba(166,230,255,0.1);border:1px solid rgba(166,230,255,0.25);border-radius:6px;padding:5px 12px;color:#a6e6ff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:0.1em">Copy</button>
+                </div>
+                <p style="color:#475569;font-size:11px">Anyone with this link or QR code can access your system.<br>No login required for users.</p>
+            `;
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Fetch QR from create endpoint (we need to generate it client-side)
+            try {
+                const resp = await fetch(`${API_BASE}/code/${systemCode}`);
+                if (resp.ok) {
+                    // Generate QR client-side using a canvas
+                    const qrContainer = document.getElementById('qr-container');
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 200; canvas.height = 200;
+                    canvas.style.cssText = 'border-radius:12px;margin:0 auto 16px;display:block;background:#0a0e14;padding:8px';
+                    qrContainer.innerHTML = '';
+                    // Simple QR placeholder — real QR is generated server-side
+                    const img = document.createElement('img');
+                    img.style.cssText = 'width:200px;height:200px;border-radius:12px;margin:0 auto 16px;display:block';
+                    // Use a free QR API as fallback
+                    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(publicLink)}&bgcolor=0a0e14&color=ff5352`;
+                    img.alt = 'QR Code for ' + systemCode;
+                    qrContainer.innerHTML = '';
+                    qrContainer.appendChild(img);
+                }
+            } catch (e) { console.warn('QR load error:', e); }
         }
 
         function scrollToOverview(event) {
@@ -418,16 +487,51 @@
             window.location.href = '/modules/rescue-builder/pages/custom-builder-org-select.html';
         }
 
-        function deleteSystem(systemID) {
-            const confirmed = window.confirm('Delete this rescue system?');
+        async function deleteSystem(systemID) {
+            const confirmed = window.confirm('Delete this rescue system? This cannot be undone.');
             if (!confirmed) return;
 
-            const systems = getStoredSystems().filter((system) => (system.systemID || system.id) !== systemID);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
-            loadSystems();
+            try {
+                // Delete from database via API
+                const resp = await fetch(`${API_BASE}/${systemID}`, { method: 'DELETE' });
+                const data = await resp.json();
+
+                if (!resp.ok || !data.success) {
+                    alert('Failed to delete system: ' + (data.error || 'Unknown error'));
+                    return;
+                }
+
+                // Also remove from localStorage
+                const systems = getStoredSystems().filter((s) => (s.systemID || s.id) !== systemID);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
+
+                // Reload the system list
+                loadSystems();
+            } catch (error) {
+                console.error('Delete failed:', error);
+                alert('Network error while deleting system.');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', loadSystems);
+    </script>
+
+    <!-- Auth guard for Create System (Google login) -->
+    <script type="module">
+        import { requireAuthForCreate, getAdminId } from '/js/auth/createSystemAuth.js';
+
+        // Expose to global scope so inline onclick can call it
+        window.handleCreateSystem = async function () {
+            const allowed = await requireAuthForCreate();
+            if (allowed) {
+                // User is authenticated — proceed to org select
+                window.location.href = '/modules/rescue-builder/pages/custom-builder-org-select.html';
+            }
+            // If not allowed, loginWithGoogle already redirected to Google
+        };
+
+        // Make admin ID available globally for system creation
+        window.getAdminId = getAdminId;
     </script>
 </body>
 

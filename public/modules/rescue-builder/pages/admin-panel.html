@@ -11,6 +11,7 @@
     rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
+  <link rel="stylesheet" href="/modules/rescue-builder/css/ai-rescue-guide.css" />
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
@@ -304,7 +305,13 @@
     textarea.broadcast-input:focus {
       border-color: rgba(255, 179, 174, 0.4);
     }
+    /* Live feed animation */
+    @keyframes feed-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,83,82,0.3); } 100% { box-shadow: 0 0 0 12px rgba(255,83,82,0); } }
+    .feed-new { animation: feed-pulse 0.6s ease, fade-in 0.3s ease; }
   </style>
+  <!-- Socket.IO client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/resqSocket.js"></script>
 </head>
 
 <body class="bg-[#0a0e14] text-on-surface font-body min-h-screen">
@@ -463,16 +470,36 @@
                 <span id="sos-count-badge"
                   class="hidden px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-400/25 text-rose-400 text-[10px] font-headline font-bold"></span>
               </h3>
-              <button onclick="refreshSOSEvents()"
-                class="flex items-center gap-1 text-slate-600 hover:text-rose-400 transition-colors text-xs font-headline uppercase tracking-wider">
-                <span class="material-symbols-outlined text-sm">refresh</span> Refresh
-              </button>
+              <div class="flex items-center gap-3">
+                <div id="socket-status" class="flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-slate-600 inline-block"></span>
+                  <span class="text-slate-600 text-[10px] font-bold uppercase tracking-wider">Connecting...</span>
+                </div>
+                <button onclick="refreshSOSEvents()"
+                  class="flex items-center gap-1 text-slate-600 hover:text-rose-400 transition-colors text-xs font-headline uppercase tracking-wider">
+                  <span class="material-symbols-outlined text-sm">refresh</span> Refresh
+                </button>
+              </div>
             </div>
             <div id="sos-events-list">
               <div class="text-center py-8 text-slate-600">
                 <span class="material-symbols-outlined text-3xl block mb-2">check_circle</span>
                 <span class="text-sm">No active SOS events</span>
               </div>
+            </div>
+          </div>
+
+          <!-- LIVE INCIDENT FEED (real-time via Socket.IO) -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-white font-bold font-headline flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-400 text-lg">rss_feed</span> Live Incident Feed
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-[9px] font-headline font-bold uppercase tracking-widest">Real-time</span>
+              </h3>
+              <button onclick="clearLiveFeed()" class="text-slate-700 hover:text-slate-400 text-xs font-headline uppercase tracking-wider">Clear</button>
+            </div>
+            <div id="live-feed-list" class="space-y-2 max-h-[320px] overflow-y-auto">
+              <div class="text-center py-6 text-slate-700 text-sm">Waiting for live events...</div>
             </div>
           </div>
 
@@ -722,10 +749,61 @@
       if (!systemID) { toast('No system selected', 'error'); return; }
       await loadSystem();
       await Promise.all([refreshSOSEvents(), refreshLogs(), loadAlertHistory(), loadStats()]);
-      pollInterval = setInterval(() => refreshSOSEvents(), 8000);
+
+      // --- SOCKET.IO: Replace polling with real-time ---
+      ResQSocket.connectToSystem(systemID);
+
+      // Listen for new SOS events
+      ResQSocket.onEvent('new_sos', (data) => {
+        console.log('[LIVE] New SOS:', data);
+        addToLiveFeed('SOS', data.emergency_type || 'Emergency', data.location, data.timestamp);
+        refreshSOSEvents(); // also refresh the full list
+        // Update SOS counter
+        const el = document.getElementById('stat-sos');
+        if (el) el.textContent = parseInt(el.textContent || '0') + 1;
+        toast('🚨 New SOS event received!', 'error');
+      });
+
+      // Listen for new alerts
+      ResQSocket.onEvent('new_alert', (data) => {
+        console.log('[LIVE] New Alert:', data);
+        addToLiveFeed('ALERT', data.message, '', data.timestamp);
+        loadAlertHistory(); // refresh alert list
+        const el = document.getElementById('stat-alerts');
+        if (el) el.textContent = parseInt(el.textContent || '0') + 1;
+        toast('📢 New alert broadcast received!', 'warning');
+      });
     });
 
-    window.addEventListener('beforeunload', () => { if (pollInterval) clearInterval(pollInterval); });
+    // Clean up socket on page unload
+    window.addEventListener('beforeunload', () => { ResQSocket.disconnectSocket(); });
+
+    // ===== LIVE FEED =====
+    function addToLiveFeed(type, detail, location, timestamp) {
+      const list = document.getElementById('live-feed-list');
+      // Remove "waiting" placeholder
+      if (list.querySelector('.text-center')) list.innerHTML = '';
+      const icon = type === 'SOS' ? 'emergency' : 'campaign';
+      const color = type === 'SOS' ? 'rose' : 'amber';
+      const time = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+      const item = document.createElement('div');
+      item.className = `flex items-center gap-3 p-3 rounded-xl bg-${color}-500/5 border border-${color}-400/15 feed-new`;
+      item.innerHTML = `
+        <span class="material-symbols-outlined text-${color}-400 text-base flex-shrink-0">${icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm text-${color}-300 font-medium">${type}: ${detail}</div>
+          ${location ? `<div class="text-xs text-slate-600 truncate">📍 ${location}</div>` : ''}
+        </div>
+        <span class="text-slate-600 text-[10px] font-mono whitespace-nowrap">${time}</span>
+      `;
+      list.prepend(item);
+      // Keep max 50 items
+      while (list.children.length > 50) list.removeChild(list.lastChild);
+    }
+
+    function clearLiveFeed() {
+      document.getElementById('live-feed-list').innerHTML = '<div class="text-center py-6 text-slate-700 text-sm">Waiting for live events...</div>';
+    }
 
     // ===== TOAST =====
     function toast(msg, type = 'info') {
@@ -1216,6 +1294,8 @@
       }
     }
   </script>
+  <!-- AI Map Analysis Rescue Guide -->
+  <script src="/modules/rescue-builder/js/ai-rescue-guide-admin.js"></script>
 </body>
 
 </html>

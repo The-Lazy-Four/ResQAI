@@ -50,6 +50,7 @@ async function createTables() {
         db.exec(`
             CREATE TABLE IF NOT EXISTS emergencies (
                 id TEXT PRIMARY KEY,
+                system_id TEXT,
                 description TEXT NOT NULL,
                 location TEXT NOT NULL,
                 severity TEXT DEFAULT 'high',
@@ -64,6 +65,7 @@ async function createTables() {
 
             CREATE TABLE IF NOT EXISTS chat_history (
                 id TEXT PRIMARY KEY,
+                system_id TEXT,
                 user_message TEXT NOT NULL,
                 bot_response TEXT NOT NULL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -71,6 +73,9 @@ async function createTables() {
 
             CREATE TABLE IF NOT EXISTS custom_rescue_systems (
                 id TEXT PRIMARY KEY,
+                system_code TEXT UNIQUE,
+                access_code TEXT,
+                admin_id TEXT,
                 organization_name TEXT NOT NULL,
                 organization_type TEXT NOT NULL,
                 location TEXT NOT NULL,
@@ -81,6 +86,25 @@ async function createTables() {
                 status TEXT DEFAULT 'created',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS incidents (
+                id TEXT PRIMARY KEY,
+                system_id TEXT NOT NULL,
+                type TEXT NOT NULL,
+                status TEXT DEFAULT 'active',
+                message TEXT,
+                location TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS sos_events (
+                id TEXT PRIMARY KEY,
+                system_id TEXT NOT NULL,
+                emergency_type TEXT NOT NULL,
+                location TEXT,
+                status TEXT DEFAULT 'active',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
             CREATE TABLE IF NOT EXISTS system_alerts (
@@ -110,10 +134,15 @@ async function createTables() {
             );
 
             CREATE INDEX IF NOT EXISTS idx_emergencies_status ON emergencies(status);
+            CREATE INDEX IF NOT EXISTS idx_emergencies_system ON emergencies(system_id);
             CREATE INDEX IF NOT EXISTS idx_emergencies_created ON emergencies(created_at);
             CREATE INDEX IF NOT EXISTS idx_custom_systems_created ON custom_rescue_systems(created_at);
+            CREATE INDEX IF NOT EXISTS idx_custom_systems_code ON custom_rescue_systems(system_code);
+            CREATE INDEX IF NOT EXISTS idx_custom_systems_admin ON custom_rescue_systems(admin_id);
             CREATE INDEX IF NOT EXISTS idx_alerts_system ON system_alerts(system_id);
             CREATE INDEX IF NOT EXISTS idx_events_system ON system_events(system_id);
+            CREATE INDEX IF NOT EXISTS idx_incidents_system ON incidents(system_id);
+            CREATE INDEX IF NOT EXISTS idx_sos_events_system ON sos_events(system_id);
         `, (err) => { if (err) console.warn('Table creation note:', err.message); resolve(); });
     });
 }
