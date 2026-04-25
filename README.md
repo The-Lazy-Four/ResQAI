@@ -227,7 +227,7 @@ NODE_ENV=development
 ## 👥 Team
 
 **Core Team:**
-- **Souvik Dey** – Research Implementation, Lead Backend Developer
+- **Souvik Dey** – System Architect, Core Developer & Lead Backend Engineer
 - **Snehasis Chakraborty** – Idea Conceptualization & Developer
 - **Partha Sarathi Sarkar** – UI Design and Lead Frontend Developer
 - **Samrat Chatterjee** – PPT Maker
