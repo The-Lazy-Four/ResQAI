@@ -1,14 +1,16 @@
 # 🎮 Modules Documentation
 
-Detailed explanation of ResQAI's 3 core modules.
+Detailed explanation of ResQAI's 3 core modules.  
+**Last Updated**: April 26, 2026
 
 ---
 
-## 🚀 Module 1: Rapid Crisis Protocol
+## 🚀 Module 1: Rapid Crisis Protocol (Crisis Portal)
 
-**Location**: `public/pages/guest-crisis-portal.html`
-
-**Purpose**: Standalone guest-facing emergency response system for the public.
+**Location**: `public/modules/crisis-portal/`  
+**Files**: `pages/guest-crisis-portal.html`, `pages/command-center.html`  
+**Status**: ✅ Functional (UI complete, demo data used)  
+**Purpose**: Standalone guest-facing emergency response system for the public
 
 ### User Interface
 
@@ -26,15 +28,16 @@ Detailed explanation of ResQAI's 3 core modules.
 #### Dashboard Tab
 **Features**:
 - Real-time statistics:
-  - Total emergencies
-  - Active incidents
-  - Resolved incidents
-- Safety score (0-100)
-- Daily risk insights
-- Morning safety brief modal
-- Quick action buttons for common emergencies
+  - Total emergencies (from mock data)
+  - Active incidents (demo)
+  - Resolved incidents (demo)
+- Safety status indicator (High Alert / Normal)
+- Location display with coordinates
+- Current time and refresh status
+- Auto-refresh every 60 seconds
 
-**Data Source**: `/api/emergencies`, `/api/classification`
+**Data Source**: `/api/emergencies` (with mock fallback when API unavailable)  
+**Note**: Currently uses mock data marked with ⚠️ [DEMO] indicator
 
 #### Report Tab
 **Features**:
