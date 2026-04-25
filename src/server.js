@@ -1,8 +1,10 @@
 // ============================================
-// ResQAI - Express Server
+// ResQAI - Express Server + Socket.IO
 // ============================================
 
 import express from 'express';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -25,6 +27,7 @@ import customSystemRoutes from './api/routes/custom-system.js';
 
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
+import { initSocketHandlers } from './socket/socketHandler.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -55,8 +58,18 @@ if (envConfig.parsed) {
 validateEnvironment();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// ==================== SOCKET.IO ====================
+const io = new SocketIOServer(httpServer, {
+    cors: { origin: '*', methods: ['GET', 'POST'] }
+});
+initSocketHandlers(io);
+
+// Make io accessible to API routes via app.locals
+app.locals.io = io;
 
 // ==================== DATABASE INITIALIZATION ====================
 
@@ -143,6 +156,11 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/modules/rescue-builder/pages/custom-builder-dashboard.html'));
 });
 
+// PUBLIC SYSTEM ACCESS via /s/:code (QR code, direct link, etc.)
+app.get('/s/:code', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/pages/system.html'));
+});
+
 // Serve the cinematic landing page as the default entry point
 app.get('/pages/:page', (req, res) => {
     const pagePath = path.join(__dirname, '../public/pages', req.params.page);
@@ -169,7 +187,7 @@ app.use((err, req, res, next) => {
 
 // ==================== START SERVER ====================
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
     console.log(`
 ╔═════════════════════════════════════════╗
 ║         🚨 ResQAI Backend Running 🚨    ║
@@ -196,3 +214,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+export { io };

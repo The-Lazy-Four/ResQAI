@@ -4,12 +4,24 @@
 
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import QRCode from 'qrcode';
 import { query, execute, isMySQLAvailable } from '../../db/mysql.js';
 import { getDatabase, saveSystemAlert, getSystemAlerts, saveSystemEvent, getSystemEvents, logActivity, getActivityLogs, executeQuery } from '../../db/db.js';
 import { generateAIResponse } from '../../utils/aiRouter.js';
 import { verifyToken, optionalAuth } from '../../middleware/auth.js';
 
 const router = express.Router();
+
+// Generate a readable system code like RESQ-4821
+function generateSystemCode() {
+    const num = Math.floor(1000 + Math.random() * 9000);
+    return `RESQ-${num}`;
+}
+
+// Generate a random 6-char access code
+function generateAccessCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 
 function safeParseJSON(value, fallback = null) {
     if (!value) return fallback;
@@ -29,9 +41,13 @@ function normalizeSystemRecord(system) {
     const parsedStructure = safeParseJSON(system.structure_json, {});
     const parsedStaff = safeParseJSON(system.staff_json, []);
     const parsedRiskTypes = safeParseJSON(system.risk_types_json, []);
-    const layoutAnalysis = safeParseJSON(parsedStructure?.layoutAnalysis, null);
+    // Layout analysis: prefer dedicated column, fallback to structure_json embed
+    const layoutAnalysisFromColumn = safeParseJSON(system.layout_analysis, null);
+    const layoutAnalysisFromStructure = safeParseJSON(parsedStructure?.layoutAnalysis, null);
+    const layoutAnalysis = layoutAnalysisFromColumn || layoutAnalysisFromStructure;
     if (parsedStructure) { delete parsedStructure.layoutAnalysis; }
     n.structure = parsedStructure; n.staff = parsedStaff; n.riskTypes = parsedRiskTypes; n.layoutAnalysis = layoutAnalysis;
+    n.layout_analysis_visible = system.layout_analysis_visible != null ? system.layout_analysis_visible : 1;
     return n;
 }
 
@@ -88,27 +104,43 @@ function getMockEvents(systemID = 'mock-system') {
     ];
 }
 
-// CREATE
+// CREATE — generates system_code, access_code, admin_id, QR
 router.post('/create', optionalAuth, async (req, res) => {
     try {
-        const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes, layoutAnalysis } = req.body;
+        const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes, layoutAnalysis, adminId } = req.body;
         if (!organizationName || !organizationType || !location || !contactEmail) return res.status(400).json({ error: 'Missing required fields' });
+
         const systemID = uuidv4();
-        const userID = req.user?.userID || 'anonymous-' + uuidv4();
+        const systemCode = generateSystemCode();
+        const accessCode = generateAccessCode();
+        const adminID = adminId || req.user?.userID || null;
         const storedStructure = buildStoredStructure(structure, layoutAnalysis);
+
+        // Build the public access link
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const publicLink = `${baseUrl}/s/${systemCode}`;
+
+        // Generate QR code as data URL
+        const qrDataUrl = await QRCode.toDataURL(publicLink, { width: 300, margin: 2, color: { dark: '#ff5352', light: '#0a0e14' } });
+
         if (isMySQLAvailable()) {
             await execute(`INSERT INTO systems (id, user_id, organization_name, organization_type, location, contact_email, structure_json, staff_json, risk_types_json, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [systemID, userID, organizationName, organizationType, location, contactEmail, JSON.stringify(storedStructure), JSON.stringify(staff), JSON.stringify(riskTypes), 'active']);
+                [systemID, adminID, organizationName, organizationType, location, contactEmail, JSON.stringify(storedStructure), JSON.stringify(staff), JSON.stringify(riskTypes), 'active']);
         } else {
             const db = await getDatabase();
             await new Promise((resolve, reject) => {
-                db.run(`INSERT INTO custom_rescue_systems (id, organization_name, organization_type, location, contact_email, structure_json, staff_json, risk_types_json, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [systemID, organizationName, organizationType, location, contactEmail, JSON.stringify(storedStructure), JSON.stringify(staff), JSON.stringify(riskTypes), 'active', new Date().toISOString()],
+                db.run(`INSERT INTO custom_rescue_systems (id, system_code, access_code, admin_id, organization_name, organization_type, location, contact_email, structure_json, staff_json, risk_types_json, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [systemID, systemCode, accessCode, adminID, organizationName, organizationType, location, contactEmail, JSON.stringify(storedStructure), JSON.stringify(staff), JSON.stringify(riskTypes), 'active', new Date().toISOString()],
                     err => err ? reject(err) : resolve());
             });
         }
         await logActivity(systemID, 'SYSTEM_CREATED', `Created: ${organizationName}`);
-        res.json({ success: true, systemID, userID, message: 'System created successfully', system: { id: systemID, organizationName, organizationType, location, status: 'active' } });
+        res.json({
+            success: true, systemID, systemCode, accessCode, adminId: adminID,
+            publicLink, qrCode: qrDataUrl,
+            message: 'System created successfully',
+            system: { id: systemID, systemCode, organizationName, organizationType, location, status: 'active' }
+        });
     } catch (error) { console.error(error); res.status(500).json({ error: error.message }); }
 });
 
@@ -137,7 +169,7 @@ router.get('/user/list', optionalAuth, async (req, res) => {
             if (userID) systems = await query(`SELECT id, organization_name, organization_type, location, status, created_at FROM systems WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`, [userID]);
         } else {
             const db = await getDatabase();
-            systems = await new Promise((resolve, reject) => { db.all(`SELECT id, organization_name, organization_type, location, status, created_at FROM custom_rescue_systems ORDER BY created_at DESC LIMIT 100`, (err, rows) => err ? reject(err) : resolve(rows || [])); });
+            systems = await new Promise((resolve, reject) => { db.all(`SELECT id, system_code, admin_id, organization_name, organization_type, location, status, created_at FROM custom_rescue_systems ORDER BY created_at DESC LIMIT 100`, (err, rows) => err ? reject(err) : resolve(rows || [])); });
         }
         res.json({ success: true, count: systems.length, systems: systems || [] });
     } catch (error) { res.status(500).json({ error: error.message, systems: [] }); }
@@ -369,19 +401,102 @@ router.patch('/:systemID', verifyToken, async (req, res) => {
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-// DELETE SYSTEM
-router.delete('/:systemID', verifyToken, async (req, res) => {
+// PATCH LAYOUT ANALYSIS (dedicated endpoint for map analyser)
+router.patch('/:systemID/layout-analysis', optionalAuth, async (req, res) => {
     try {
         const { systemID } = req.params;
-        const userID = req.user.userID;
-        if (isMySQLAvailable()) {
-            await execute(`DELETE FROM systems WHERE id=? AND user_id=?`, [systemID, userID]);
-        } else {
-            const db = await getDatabase();
-            await new Promise((resolve, reject) => { db.run(`DELETE FROM custom_rescue_systems WHERE id=?`, [systemID], err => err ? reject(err) : resolve()); });
+        const { layout_analysis, layout_analysis_visible, layout_image } = req.body;
+        const db = await getDatabase();
+
+        // Ensure the columns exist (SQLite: add if missing)
+        const cols = await new Promise((resolve, reject) => {
+            db.all(`PRAGMA table_info(custom_rescue_systems)`, (err, rows) => err ? reject(err) : resolve(rows || []));
+        });
+        const colNames = cols.map(c => c.name);
+        if (!colNames.includes('layout_analysis')) {
+            await new Promise((resolve) => db.run(`ALTER TABLE custom_rescue_systems ADD COLUMN layout_analysis TEXT`, resolve));
         }
-        res.json({ success: true, message: 'System deleted', systemID });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+        if (!colNames.includes('layout_analysis_visible')) {
+            await new Promise((resolve) => db.run(`ALTER TABLE custom_rescue_systems ADD COLUMN layout_analysis_visible INTEGER DEFAULT 1`, resolve));
+        }
+        if (!colNames.includes('layout_image')) {
+            await new Promise((resolve) => db.run(`ALTER TABLE custom_rescue_systems ADD COLUMN layout_image TEXT`, resolve));
+        }
+
+        // Build dynamic UPDATE query
+        const updates = [];
+        const params = [];
+        if (layout_analysis !== undefined) {
+            updates.push('layout_analysis = ?');
+            params.push(typeof layout_analysis === 'string' ? layout_analysis : JSON.stringify(layout_analysis));
+        }
+        if (layout_analysis_visible !== undefined) {
+            updates.push('layout_analysis_visible = ?');
+            params.push(layout_analysis_visible ? 1 : 0);
+        }
+        if (layout_image !== undefined) {
+            updates.push('layout_image = ?');
+            params.push(layout_image);
+        }
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No fields to update' });
+        }
+
+        params.push(systemID);
+        await new Promise((resolve, reject) => {
+            db.run(`UPDATE custom_rescue_systems SET ${updates.join(', ')} WHERE id = ?`, params,
+                err => err ? reject(err) : resolve());
+        });
+
+        // Fetch updated record
+        const updated = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM custom_rescue_systems WHERE id = ?', [systemID],
+                (err, row) => err ? reject(err) : resolve(row));
+        });
+
+        await logActivity(systemID, 'LAYOUT_ANALYSIS_UPDATED', 'Layout analysis data updated');
+        res.json({ success: true, system: normalizeSystemRecord(updated) });
+    } catch (error) {
+        console.error('[LAYOUT-ANALYSIS] Update error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE SYSTEM (and all related data)
+router.delete('/:systemID', optionalAuth, async (req, res) => {
+    try {
+        const { systemID } = req.params;
+        const db = await getDatabase();
+
+        // Delete all related child records first
+        const relatedTables = ['incidents', 'sos_events', 'system_alerts', 'system_events', 'activity_logs'];
+        for (const table of relatedTables) {
+            await new Promise((resolve) => {
+                db.run(`DELETE FROM ${table} WHERE system_id = ?`, [systemID], (err) => {
+                    if (err) console.warn(`[DELETE] Could not clean ${table}:`, err.message);
+                    resolve();
+                });
+            });
+        }
+
+        // Delete the system itself
+        const result = await new Promise((resolve, reject) => {
+            db.run(`DELETE FROM custom_rescue_systems WHERE id = ?`, [systemID], function(err) {
+                if (err) return reject(err);
+                resolve(this.changes);
+            });
+        });
+
+        if (result === 0) {
+            return res.status(404).json({ success: false, error: 'System not found' });
+        }
+
+        console.log(`🗑️ [DELETE] System ${systemID} and all related data removed`);
+        res.json({ success: true, message: 'System deleted successfully' });
+    } catch (error) {
+        console.error('[DELETE] Error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // LOG EMERGENCY (FIXED - DB only, no localStorage)
@@ -392,6 +507,9 @@ router.post('/log-emergency', optionalAuth, async (req, res) => {
         const eventID = 'EV-' + Date.now();
         await saveSystemEvent(eventID, systemID, 'EMERGENCY_SOS', { emergencyType, location, timestamp }, location);
         await logActivity(systemID, 'EMERGENCY_SOS', `SOS: ${emergencyType} at ${location || 'unknown'}`);
+        // Emit to system room via Socket.IO
+        const io = req.app.locals.io;
+        if (io) io.to(systemID).emit('new_sos', { id: eventID, system_id: systemID, emergency_type: emergencyType, location, timestamp: new Date().toISOString() });
         res.json({ success: true, eventID, message: 'Emergency event logged', timestamp: new Date().toISOString() });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
@@ -404,8 +522,96 @@ router.post('/broadcast-alert', optionalAuth, async (req, res) => {
         const alertID = 'ALERT-' + Date.now();
         await saveSystemAlert(alertID, systemID, message, severity, 'broadcast');
         await logActivity(systemID, 'ALERT_BROADCAST', message.substring(0, 100));
+        // Emit to system room via Socket.IO
+        const io = req.app.locals.io;
+        if (io) io.to(systemID).emit('new_alert', { id: alertID, system_id: systemID, message, severity, timestamp: new Date().toISOString() });
         res.json({ success: true, alertID, message: 'Alert broadcast sent', timestamp: new Date().toISOString() });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
+
+// LOOKUP BY SYSTEM CODE (public access — no auth required)
+router.get('/code/:code', async (req, res) => {
+    try {
+        const { code } = req.params;
+        const db = await getDatabase();
+        const system = await new Promise((resolve, reject) => {
+            db.get(`SELECT * FROM custom_rescue_systems WHERE system_code = ?`, [code.toUpperCase()], (err, row) => err ? reject(err) : resolve(row));
+        });
+        if (!system) return res.status(404).json({ error: 'System not found' });
+        res.json({ success: true, system: normalizeSystemRecord(system) });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// SOS — scoped to system, stored in sos_events table
+router.post('/sos', async (req, res) => {
+    try {
+        const { system_id, emergency_type, location } = req.body;
+        if (!system_id) return res.status(400).json({ error: 'system_id is required' });
+        if (!emergency_type) return res.status(400).json({ error: 'emergency_type is required' });
+
+        // Verify system exists
+        const db = await getDatabase();
+        const system = await new Promise((resolve, reject) => {
+            db.get(`SELECT id FROM custom_rescue_systems WHERE id = ? OR system_code = ?`, [system_id, system_id], (err, row) => err ? reject(err) : resolve(row));
+        });
+        if (!system) return res.status(404).json({ error: 'System not found' });
+
+        const sosId = 'SOS-' + Date.now();
+        const realSystemId = system.id;
+        await new Promise((resolve, reject) => {
+            db.run(`INSERT INTO sos_events (id, system_id, emergency_type, location) VALUES (?, ?, ?, ?)`,
+                [sosId, realSystemId, emergency_type, location || ''], err => err ? reject(err) : resolve());
+        });
+        // Also log as system event and activity for existing panels
+        await saveSystemEvent(sosId, realSystemId, 'EMERGENCY_SOS', { emergencyType: emergency_type, location }, location);
+        await logActivity(realSystemId, 'EMERGENCY_SOS', `SOS: ${emergency_type} at ${location || 'unknown'}`);
+        // Emit to system room via Socket.IO
+        const io = req.app.locals.io;
+        if (io) io.to(realSystemId).emit('new_sos', { id: sosId, system_id: realSystemId, emergency_type, location, timestamp: new Date().toISOString() });
+        res.json({ success: true, sosId, message: 'SOS logged', timestamp: new Date().toISOString() });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// GET SOS EVENTS — scoped to system
+router.get('/sos/:systemID', async (req, res) => {
+    try {
+        const db = await getDatabase();
+        const events = await new Promise((resolve, reject) => {
+            db.all(`SELECT * FROM sos_events WHERE system_id = ? ORDER BY created_at DESC LIMIT 100`, [req.params.systemID],
+                (err, rows) => err ? reject(err) : resolve(rows || []));
+        });
+        res.json({ success: true, events });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// CREATE INCIDENT — scoped to system
+router.post('/incidents', async (req, res) => {
+    try {
+        const { system_id, type, message, location } = req.body;
+        if (!system_id || !type) return res.status(400).json({ error: 'system_id and type are required' });
+        const db = await getDatabase();
+        const incidentId = 'INC-' + Date.now();
+        await new Promise((resolve, reject) => {
+            db.run(`INSERT INTO incidents (id, system_id, type, message, location) VALUES (?, ?, ?, ?, ?)`,
+                [incidentId, system_id, type, message || '', location || ''], err => err ? reject(err) : resolve());
+        });
+        await logActivity(system_id, 'INCIDENT_CREATED', `${type}: ${message || ''}`);
+        res.json({ success: true, incidentId });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// GET INCIDENTS — scoped to system
+router.get('/incidents/:systemID', async (req, res) => {
+    try {
+        const db = await getDatabase();
+        const incidents = await new Promise((resolve, reject) => {
+            db.all(`SELECT * FROM incidents WHERE system_id = ? ORDER BY created_at DESC LIMIT 100`, [req.params.systemID],
+                (err, rows) => err ? reject(err) : resolve(rows || []));
+        });
+        res.json({ success: true, incidents });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+
 
 export default router;

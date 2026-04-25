@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResQAI — Loading System</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <!-- Import map for Supabase (role detection needs auth check) -->
+  <script type="importmap">
+    { "imports": { "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm" } }
+  </script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: { "surface": "#10141a", "primary": "#ffb3ae", "primary-container": "#ff5352", "on-primary": "#68000b", "on-surface": "#dfe2eb" },
+          fontFamily: { headline: ["Space Grotesk"], body: ["Inter"] }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes spin-slow { to { transform: rotate(360deg) } }
+    @keyframes fade-in { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+    .spin-slow { animation: spin-slow 2s linear infinite; }
+    .fade-in { animation: fade-in 0.5s ease; }
+  </style>
+</head>
+<body class="bg-[#0a0e14] text-on-surface font-body min-h-screen flex items-center justify-center">
+
+  <!-- Loading State -->
+  <div id="loading-state" class="text-center fade-in">
+    <div class="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full spin-slow mx-auto mb-6"></div>
+    <h2 class="text-white font-headline font-bold text-xl mb-2">Connecting to System</h2>
+    <p id="loading-msg" class="text-slate-500 text-sm">Verifying system code...</p>
+  </div>
+
+  <!-- Error State (hidden by default) -->
+  <div id="error-state" class="text-center hidden fade-in max-w-md px-6">
+    <span class="material-symbols-outlined text-5xl text-rose-400 mb-4 block">error</span>
+    <h2 class="text-white font-headline font-bold text-xl mb-2">System Not Found</h2>
+    <p id="error-msg" class="text-slate-500 text-sm mb-6">The system code is invalid or the system no longer exists.</p>
+    <a href="/" class="inline-block px-6 py-3 rounded-lg bg-primary-container text-on-primary font-headline font-bold text-xs tracking-widest uppercase hover:scale-105 transition-all">Go Home</a>
+  </div>
+
+  <script type="module">
+    import { getCurrentUser } from '/js/auth/authService.js';
+
+    const API = window.location.origin + '/api/custom-system';
+
+    // Extract system code from URL: /s/RESQ-1234
+    const pathParts = window.location.pathname.split('/');
+    const systemCode = pathParts[pathParts.length - 1];
+
+    async function init() {
+      if (!systemCode) return showError('No system code found in URL.');
+
+      try {
+        // 1. Fetch system by code
+        document.getElementById('loading-msg').textContent = `Looking up ${systemCode}...`;
+        const resp = await fetch(`${API}/code/${systemCode}`);
+        if (!resp.ok) return showError(`System "${systemCode}" not found.`);
+
+        const data = await resp.json();
+        const system = data.system;
+        const systemId = system.id;
+
+        // 2. Store system context for the panels
+        localStorage.setItem('active_system_id', systemId);
+        localStorage.setItem('active_system_code', system.system_code || systemCode);
+
+        // 3. Check if current user is the admin (role detection)
+        document.getElementById('loading-msg').textContent = 'Detecting role...';
+        let isAdmin = false;
+        try {
+          const user = await getCurrentUser();
+          if (user && system.admin_id && user.id === system.admin_id) {
+            isAdmin = true;
+          }
+        } catch (e) {
+          // No auth or error — default to user view
+        }
+
+        // 4. Redirect to the correct dashboard
+        if (isAdmin) {
+          window.location.replace(`/modules/rescue-builder/pages/admin-panel.html?systemID=${systemId}`);
+        } else {
+          window.location.replace(`/modules/rescue-builder/pages/user-panel.html?systemID=${systemId}`);
+        }
+      } catch (err) {
+        showError('Network error: ' + err.message);
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('error-msg').textContent = msg;
+    }
+
+    init();
+  </script>
+</body>
+</html>
