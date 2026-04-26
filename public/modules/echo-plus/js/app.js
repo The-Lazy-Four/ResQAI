@@ -440,11 +440,20 @@ function setGuestStatus(type, title, message) {
 // ============================================================
 // ADMIN LOGIN
 // ============================================================
+// ADMIN_PASS — declared here so login always works
+const ADMIN_PASS = (window.ECHO_CONFIG && window.ECHO_CONFIG.adminPassword)
+  ? window.ECHO_CONFIG.adminPassword
+  : 'echo2024';
+
 function adminLogin() {
-  const pass = $('admin-pass-input').value;
+  const pass = $('admin-pass-input').value.trim();
   const err = $('admin-login-error');
   err.classList.remove('show');
-  if (pass !== ADMIN_PASS) { err.textContent = 'Incorrect master password.'; err.classList.add('show'); return; }
+  if (pass !== ADMIN_PASS) {
+    err.textContent = 'Incorrect password. Try: echo2024';
+    err.classList.add('show');
+    return;
+  }
   show('screen-admin-dashboard');
   renderAdminNotifications();
 }
@@ -1042,12 +1051,13 @@ function updateStaffPanel(assignments) {
   list.innerHTML = staffData.map(s => {
     const c = roleColors[s.role] || { bg: '#1e2a40', col: '#94a3b8' };
     const status = s.statusOverride || s.status;
+    const task   = s.taskOverride || null;
     return `<div class="staff-item">
       <div class="staff-avatar" style="background:${c.bg};color:${c.col}">${s.avatar}</div>
       <div style="flex:1">
         <div class="staff-name-text">${s.name}</div>
-        <div class="staff-role-text">${s.role.charAt(0).toUpperCase() + s.role.slice(1)}</div>
-        <div class="staff-zone-text">${s.taskOverride || s.assignedZone}</div>
+        <div class="staff-role-text">${s.role.charAt(0).toUpperCase() + s.role.slice(1)} · ${s.assignedZone}</div>
+        ${task ? `<div class="staff-zone-text" style="color:#f59e0b;font-size:10px;margin-top:2px;">📋 ${task}</div>` : ''}
       </div>
       <div class="staff-status status-${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</div>
     </div>`;
@@ -1897,3 +1907,633 @@ guestTriggerEmergency = function (type) {
     }, 1500);
   }
 };
+
+// ============================================================
+// STAFF LOGIN & DASHBOARD
+// ============================================================
+
+let currentStaff = null;
+let staffDutyStart = null;
+let staffDutyTimer = null;
+
+function goStaff() {
+  show('screen-staff-login');
+  const input = document.getElementById('staff-pass-input');
+  if (input) { input.value = ''; input.focus(); }
+}
+
+function staffLogin() {
+  const code = (document.getElementById('staff-pass-input').value || '').trim().toUpperCase();
+  const err = document.getElementById('staff-login-error');
+  err.classList.remove('show');
+
+  const found = ECHO_DATA.staff.find(s => s.staffPass && s.staffPass.toUpperCase() === code);
+  if (!found) {
+    err.textContent = 'Invalid staff code. Please try again.';
+    err.classList.add('show');
+    return;
+  }
+
+  currentStaff = found;
+  staffDutyStart = new Date();
+  show('screen-staff-dashboard');
+  renderStaffDashboard();
+}
+
+function renderStaffDashboard() {
+  if (!currentStaff) return;
+  const s = currentStaff;
+
+  // Identity card
+  const avatarEl = document.getElementById('staff-id-avatar');
+  if (avatarEl) avatarEl.textContent = s.avatar || s.name.slice(0,2).toUpperCase();
+
+  setText('staff-id-name', s.name);
+
+  const roleColors = { security:'#f59e0b', medical:'#10b981', manager:'#3b82f6' };
+  const roleEl = document.getElementById('staff-id-role');
+  if (roleEl) {
+    roleEl.textContent = s.role.charAt(0).toUpperCase() + s.role.slice(1);
+    roleEl.style.color = roleColors[s.role] || '#93c5fd';
+  }
+
+  setText('staff-id-badge', 'Badge: ' + (s.badge || s.id));
+  setText('staff-id-shift', 'Shift: ' + (s.shift || 'Standard'));
+  setText('staff-id-zone', 'Zone: ' + s.assignedZone);
+
+  // Tasks based on role
+  const tasks = getStaffTasks(s);
+  const taskList = document.getElementById('staff-task-list');
+  if (taskList) {
+    taskList.innerHTML = tasks.map(t => `
+      <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;border-left:3px solid ${t.color};">
+        <span style="font-size:16px;flex-shrink:0;">${t.icon}</span>
+        <div>
+          <div style="color:#e5e7eb;font-size:13px;font-weight:600;">${t.title}</div>
+          <div style="color:#6b7280;font-size:11px;margin-top:2px;">${t.desc}</div>
+        </div>
+        <span style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:10px;background:${t.color}22;color:${t.color};font-weight:700;white-space:nowrap;">${t.status}</span>
+      </div>
+    `).join('');
+  }
+
+  // Zone status
+  const zoneEl = document.getElementById('staff-zone-status');
+  if (zoneEl) {
+    const hotel = ECHO_DATA.hotels[0];
+    const zones = hotel.mapLayout.zones;
+    const zoneHtml = zones.map(z => {
+      const isAssigned = z === s.assignedZone;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <span style="width:8px;height:8px;border-radius:50%;background:${isAssigned?'#22c55e':'#374151'};flex-shrink:0;"></span>
+        <span style="font-size:12px;color:${isAssigned?'#86efac':'#6b7280'};font-weight:${isAssigned?'700':'400'};">${z}${isAssigned?' ← Your Zone':''}</span>
+        <span style="margin-left:auto;font-size:10px;color:#22c55e;font-weight:600;">CLEAR</span>
+      </div>`;
+    }).join('');
+    zoneEl.innerHTML = zoneHtml;
+  }
+
+  // Alert banner if emergency active
+  const alertBanner = document.getElementById('staff-alert-banner');
+  if (alertBanner && state.currentEmergency) {
+    alertBanner.style.display = 'flex';
+    setText('staff-alert-title', '🚨 ' + state.currentEmergency.type.toUpperCase() + ' EMERGENCY ACTIVE');
+    setText('staff-alert-desc', state.currentEmergency.description || 'Please respond to your zone immediately.');
+  }
+
+  // Start duty timer
+  if (staffDutyTimer) clearInterval(staffDutyTimer);
+  staffDutyTimer = setInterval(updateStaffDutyTime, 1000);
+  updateStaffDutyTime();
+}
+
+function getStaffTasks(s) {
+  const roleTaskMap = {
+    security: [
+      { icon:'🔒', title:'Zone Patrol', desc:'Patrol assigned zone every 30 mins', status:'ACTIVE', color:'#f59e0b' },
+      { icon:'📹', title:'CCTV Monitoring', desc:'Monitor camera feeds for anomalies', status:'ONGOING', color:'#f59e0b' },
+      { icon:'🚪', title:'Access Control', desc:'Check guest ID at restricted zones', status:'STANDBY', color:'#6b7280' },
+    ],
+    medical: [
+      { icon:'🩺', title:'Medical Bay Ready', desc:'Ensure first aid kit is stocked', status:'ACTIVE', color:'#10b981' },
+      { icon:'💊', title:'Medication Check', desc:'Verify emergency medications', status:'DONE', color:'#22c55e' },
+      { icon:'📋', title:'Guest Health Log', desc:'Update any reported medical incidents', status:'PENDING', color:'#f59e0b' },
+    ],
+    manager: [
+      { icon:'📊', title:'Shift Handover', desc:'Brief incoming shift on open issues', status:'PENDING', color:'#3b82f6' },
+      { icon:'🏨', title:'Floor Inspection', desc:'Check all guest floors for compliance', status:'ACTIVE', color:'#3b82f6' },
+      { icon:'📞', title:'Guest Requests', desc:'Resolve pending guest service calls', status:'ONGOING', color:'#6b7280' },
+    ],
+  };
+  return roleTaskMap[s.role] || [{ icon:'✅', title:'General Duty', desc:'Report to supervisor for assignments', status:'ACTIVE', color:'#6b7280' }];
+}
+
+function updateStaffDutyTime() {
+  if (!staffDutyStart) return;
+  const el = document.getElementById('staff-duty-time');
+  if (!el) return;
+  const diff = Math.floor((Date.now() - staffDutyStart.getTime()) / 1000);
+  const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+  const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+  const sec = String(diff % 60).padStart(2, '0');
+  el.textContent = `${h}:${m}:${sec}`;
+}
+
+function saveStaffNotes() {
+  const notes = document.getElementById('staff-shift-notes');
+  if (notes && notes.value.trim()) {
+    const key = 'echo_staff_notes_' + (currentStaff ? currentStaff.id : 'unknown');
+    try { localStorage.setItem(key, notes.value); } catch(e) {}
+    // Show brief success feedback
+    const btn = notes.nextElementSibling;
+    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Saved!'; btn.style.background='#16a34a'; setTimeout(()=>{btn.textContent=orig;btn.style.background='#3b82f6';},1500); }
+  }
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ============================================================
+// EXPORT INCIDENT REPORT AS PDF
+// ============================================================
+
+function exportIncidentPDF() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour12:true, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const hotel = ECHO_DATA.hotels[0];
+
+  // Build incident history (current + timeline)
+  const incidents = [];
+
+  // Add current emergency if any
+  if (state.currentEmergency) {
+    const em = state.currentEmergency;
+    incidents.push({
+      id: 'INC-' + now.getFullYear() + '-' + String(state.emergencyCount).padStart(4,'0'),
+      type: (em.type || 'Unknown').toUpperCase(),
+      severity: (em.severity || 'high').toUpperCase(),
+      floor: em.floor || '—',
+      room: em.roomNumber || '—',
+      zone: em.zone || '—',
+      description: em.description || 'Emergency in progress.',
+      recommendedAction: em.recommendedAction || 'Follow standard protocol.',
+      timestamp: now.toLocaleString('en-IN'),
+      status: 'ACTIVE',
+    });
+  }
+
+  // Add timeline events
+  (state.timeline || []).forEach((t, i) => {
+    incidents.push({
+      id: 'EVT-' + String(i+1).padStart(3,'0'),
+      type: (t.type || 'event').toUpperCase(),
+      severity: 'INFO',
+      floor: '—',
+      room: '—',
+      zone: '—',
+      description: t.event,
+      recommendedAction: '—',
+      timestamp: t.time,
+      status: 'LOGGED',
+    });
+  });
+
+  // Build staff assignment table
+  const staffRows = ECHO_DATA.staff.map(s => {
+    const taskAssigned = (state.currentEmergency)
+      ? getStaffTaskForEmergency(s, state.currentEmergency)
+      : s.assignedZone;
+    return `
+      <tr>
+        <td>${s.badge || s.id}</td>
+        <td><strong>${s.name}</strong></td>
+        <td>${s.role.charAt(0).toUpperCase()+s.role.slice(1)}</td>
+        <td>${s.assignedZone}</td>
+        <td>${taskAssigned}</td>
+        <td><span class="status-pill status-${s.status}">${s.status.toUpperCase()}</span></td>
+        <td>${s.shift || '—'}</td>
+      </tr>`;
+  }).join('');
+
+  // Build CCTV AI detection rows from exposed global
+  const cctvIncidents = (typeof window.cctvGetIncidents === 'function') ? window.cctvGetIncidents() : [];
+  const cctvRows = cctvIncidents.length
+    ? cctvIncidents.map((inc, i) => `
+      <tr>
+        <td><strong>${String(i+1).padStart(3,'0')}</strong></td>
+        <td><span class="type-badge type-${(inc.type||'').toLowerCase()}">${inc.type === 'Fire' ? '🔥 FIRE' : inc.type === 'Smoke' ? '💨 SMOKE' : '🚨 ' + (inc.type||'WEAPON').toUpperCase()}</span></td>
+        <td><strong>${inc.cam || inc.camera || '—'}</strong></td>
+        <td>${inc.conf ? (inc.conf * 100).toFixed(1) + '%' : (inc.confidence ? (inc.confidence*100).toFixed(1)+'%' : '—')}</td>
+        <td>${new Date(inc.time).toLocaleString('en-IN')}</td>
+        <td><span class="status-pill status-logged">LOGGED</span></td>
+      </tr>`).join('')
+    : `<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:20px;">No AI camera detections in this session.</td></tr>`;
+
+  // Build incident rows
+  const incidentRows = incidents.length ? incidents.map(inc => `
+    <tr>
+      <td><strong>${inc.id}</strong></td>
+      <td><span class="type-badge type-${inc.type.toLowerCase()}">${inc.type}</span></td>
+      <td>${inc.severity}</td>
+      <td>${inc.floor}</td>
+      <td>${inc.room}</td>
+      <td>${inc.zone}</td>
+      <td>${inc.timestamp}</td>
+      <td><span class="status-pill status-${inc.status.toLowerCase()}">${inc.status}</span></td>
+      <td style="font-size:10px;">${inc.description}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="9" style="text-align:center;color:#6b7280;padding:20px;">No incidents recorded in this session.</td></tr>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>ECHO+ Incident Report — ${dateStr}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif;background:#fff;color:#1f2937;font-size:12px;line-height:1.5; }
+
+  /* PAGE HEADER */
+  .report-header { background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);color:#fff;padding:32px 40px; }
+  .report-header-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+  .brand { display:flex;align-items:center;gap:14px; }
+  .brand-mark { width:52px;height:52px;background:linear-gradient(135deg,#ef4444,#f97316);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff; }
+  .brand-name { font-size:24px;font-weight:800;letter-spacing:-0.5px; }
+  .brand-name span { color:#f97316; }
+  .brand-sub { font-size:11px;color:#93c5fd;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-top:2px; }
+  .report-meta { text-align:right;font-size:11px;color:#93c5fd;line-height:1.8; }
+  .report-title { font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:6px; }
+  .report-subtitle { font-size:13px;color:#60a5fa; }
+  .report-id-strip { display:flex;gap:24px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1); }
+  .report-id-item { display:flex;flex-direction:column;gap:2px; }
+  .report-id-label { font-size:9px;color:#6b7280;font-weight:700;letter-spacing:1.5px;text-transform:uppercase; }
+  .report-id-val { font-size:13px;color:#e5e7eb;font-weight:600; }
+
+  /* SECTIONS */
+  .page-body { padding:32px 40px; }
+  .section { margin-bottom:32px; }
+  .section-header { display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #e5e7eb; }
+  .section-icon { width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px; }
+  .section-title { font-size:15px;font-weight:800;color:#111827;letter-spacing:-0.3px; }
+  .section-count { margin-left:auto;background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px; }
+
+  /* SUMMARY GRID */
+  .summary-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:12px; }
+  .summary-card { background:linear-gradient(135deg,#f8faff,#eff6ff);border:1px solid #dbeafe;border-radius:10px;padding:14px 16px; }
+  .summary-val { font-size:28px;font-weight:800;color:#1d4ed8;margin-bottom:4px; }
+  .summary-label { font-size:10px;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+
+  /* TABLES */
+  table { width:100%;border-collapse:collapse;font-size:11px; }
+  thead tr { background:#1e3a5f;color:#fff; }
+  thead th { padding:10px 12px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.8px; }
+  tbody tr { border-bottom:1px solid #f3f4f6; }
+  tbody tr:nth-child(even) { background:#f9fafb; }
+  tbody td { padding:9px 12px;vertical-align:top; }
+
+  /* PILLS */
+  .status-pill { display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.8px; }
+  .status-active { background:#fee2e2;color:#dc2626; }
+  .status-standby { background:#fef3c7;color:#d97706; }
+  .status-logged { background:#e0f2fe;color:#0369a1; }
+  .status-on.duty, .status-on-duty { background:#dcfce7;color:#16a34a; }
+  .type-badge { display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:0.8px; }
+  .type-fire { background:#fee2e2;color:#dc2626; }
+  .type-medical { background:#dcfce7;color:#16a34a; }
+  .type-earthquake { background:#fef3c7;color:#d97706; }
+  .type-suspicious { background:#ede9fe;color:#7c3aed; }
+  .type-event { background:#e0f2fe;color:#0369a1; }
+  .type-info { background:#f3f4f6;color:#6b7280; }
+
+  /* HOTEL INFO BOX */
+  .hotel-info-box { background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+  .hotel-info-item { display:flex;flex-direction:column;gap:2px; }
+  .hotel-info-label { font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+  .hotel-info-val { font-size:13px;color:#1f2937;font-weight:600; }
+
+  /* FOOTER */
+  .report-footer { margin-top:40px;padding:20px 40px;background:#f9fafb;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center; }
+  .footer-left { font-size:10px;color:#9ca3af; }
+  .footer-brand { font-size:12px;font-weight:700;color:#1d4ed8; }
+  .confidential-badge { background:#fee2e2;color:#dc2626;font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:1px; }
+
+  /* SIGNATURES */
+  .sig-row { display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:24px; }
+  .sig-box { border-top:1px solid #d1d5db;padding-top:8px; }
+  .sig-label { font-size:10px;color:#6b7280;font-weight:600; }
+  .sig-name { font-size:12px;color:#374151;margin-top:4px; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- REPORT HEADER -->
+<div class="report-header">
+  <div class="report-header-top">
+    <div class="brand">
+      <div class="brand-mark">E+</div>
+      <div>
+        <div class="brand-name">ECHO<span>+</span></div>
+        <div class="brand-sub">Hotel Emergency Intelligence System</div>
+      </div>
+    </div>
+    <div class="report-meta">
+      <div>Generated: <strong>${dateStr}</strong></div>
+      <div>Time: <strong>${timeStr}</strong></div>
+      <div>Operator: <strong>${hotel.name}</strong></div>
+      <div>System: <strong>ECHO+ v2.0.1</strong></div>
+    </div>
+  </div>
+
+  <div class="report-title">📋 Incident & Operations Report</div>
+  <div class="report-subtitle">${hotel.name} — ${hotel.city}, ${hotel.country}</div>
+
+  <div class="report-id-strip">
+    <div class="report-id-item">
+      <span class="report-id-label">Report ID</span>
+      <span class="report-id-val">RPT-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}</span>
+    </div>
+    <div class="report-id-item">
+      <span class="report-id-label">Hotel ID</span>
+      <span class="report-id-val">${hotel.id.toUpperCase()}</span>
+    </div>
+    <div class="report-id-item">
+      <span class="report-id-label">Total Floors</span>
+      <span class="report-id-val">${hotel.floors}</span>
+    </div>
+    <div class="report-id-item">
+      <span class="report-id-label">Staff on Duty</span>
+      <span class="report-id-val">${ECHO_DATA.staff.length}</span>
+    </div>
+    <div class="report-id-item">
+      <span class="report-id-label">Incidents Logged</span>
+      <span class="report-id-val">${incidents.length}</span>
+    </div>
+    <div class="report-id-item">
+      <span class="report-id-label">Session Alerts</span>
+      <span class="report-id-val">${state.emergencyCount || 0}</span>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- SECTION 1: SUMMARY -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#dbeafe;">📊</div>
+      <div class="section-title">Session Summary</div>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-val">${state.emergencyCount || 0}</div>
+        <div class="summary-label">Total Alerts Triggered</div>
+      </div>
+      <div class="summary-card" style="background:linear-gradient(135deg,#fef9f0,#fef3c7);border-color:#fde68a;">
+        <div class="summary-val" style="color:#d97706;">${incidents.length}</div>
+        <div class="summary-label">Events Logged</div>
+      </div>
+      <div class="summary-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#bbf7d0;">
+        <div class="summary-val" style="color:#16a34a;">${ECHO_DATA.staff.length}</div>
+        <div class="summary-label">Staff On Duty</div>
+      </div>
+      <div class="summary-card" style="background:linear-gradient(135deg,#fdf2f8,#fce7f3);border-color:#fbcfe8;">
+        <div class="summary-val" style="color:#be185d;">${hotel.rooms ? hotel.rooms.filter(r=>r.status==='occupied').length : '—'}</div>
+        <div class="summary-label">Occupied Rooms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: HOTEL INFORMATION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#dcfce7;">🏨</div>
+      <div class="section-title">Property Information</div>
+    </div>
+    <div class="hotel-info-box">
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Hotel Name</span>
+        <span class="hotel-info-val">${hotel.name}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Location</span>
+        <span class="hotel-info-val">${hotel.city}, ${hotel.country}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Type</span>
+        <span class="hotel-info-val" style="text-transform:capitalize;">${hotel.type}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Floors</span>
+        <span class="hotel-info-val">${hotel.floors}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Assembly Point</span>
+        <span class="hotel-info-val">${hotel.mapLayout.assemblyPoint}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Emergency Exits</span>
+        <span class="hotel-info-val">${hotel.mapLayout.exits.join(' · ')}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Fire</span>
+        <span class="hotel-info-val">${hotel.emergencyContacts.fire}</span>
+      </div>
+      <div class="hotel-info-item">
+        <span class="hotel-info-label">Ambulance</span>
+        <span class="hotel-info-val">${hotel.emergencyContacts.ambulance}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: INCIDENT LOG -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fee2e2;">🚨</div>
+      <div class="section-title">Incident Log</div>
+      <span class="section-count">${incidents.length} record${incidents.length!==1?'s':''}</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Incident ID</th>
+          <th>Type</th>
+          <th>Severity</th>
+          <th>Floor</th>
+          <th>Room</th>
+          <th>Zone</th>
+          <th>Date & Time</th>
+          <th>Status</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${incidentRows}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 4: STAFF ASSIGNMENTS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#ede9fe;">👷</div>
+      <div class="section-title">Staff Deployment & Assignments</div>
+      <span class="section-count">${ECHO_DATA.staff.length} personnel</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Badge</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Assigned Zone</th>
+          <th>Emergency Task</th>
+          <th>Status</th>
+          <th>Shift</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${staffRows}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 5: EMERGENCY TIMELINE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fef3c7;">⏱️</div>
+      <div class="section-title">Emergency Timeline</div>
+    </div>
+    ${(state.timeline && state.timeline.length) ? `
+    <div style="position:relative;padding-left:24px;border-left:2px solid #e5e7eb;">
+      ${state.timeline.map((t,i) => `
+        <div style="position:relative;margin-bottom:14px;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #f3f4f6;">
+          <div style="position:absolute;left:-31px;top:12px;width:12px;height:12px;border-radius:50%;background:#3b82f6;border:2px solid #fff;box-shadow:0 0 0 2px #3b82f6;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <strong style="font-size:12px;color:#1f2937;">${t.event}</strong>
+            <span style="font-size:10px;color:#6b7280;">${t.time}</span>
+          </div>
+          <span style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">${(t.type||'event').toUpperCase()}</span>
+        </div>
+      `).join('')}
+    </div>
+    ` : '<div style="padding:20px;text-align:center;color:#6b7280;background:#f9fafb;border-radius:8px;border:1px dashed #e5e7eb;">No timeline events recorded in this session.</div>'}
+  </div>
+
+  <!-- SECTION 6: SIGNATURES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f3f4f6;">✍️</div>
+      <div class="section-title">Authorization & Sign-off</div>
+    </div>
+    <div class="sig-row">
+      <div class="sig-box">
+        <div class="sig-label">Reporting Officer</div>
+        <div class="sig-name">___________________________</div>
+        <div style="font-size:10px;color:#9ca3af;margin-top:6px;">Name / Badge / Signature</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">Shift Manager</div>
+        <div class="sig-name">___________________________</div>
+        <div style="font-size:10px;color:#9ca3af;margin-top:6px;">Name / Badge / Signature</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">Admin Approval</div>
+        <div class="sig-name">___________________________</div>
+        <div style="font-size:10px;color:#9ca3af;margin-top:6px;">Name / Badge / Signature</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- SECTION: CCTV AI DETECTIONS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fce7f3;">📷</div>
+      <div class="section-title">AI Camera Detection Log (CCTV)</div>
+      <span class="section-count">\${cctvIncidentRows.length > 0 ? cctvRows.split('<tr>').length - 1 + ' records' : '0 records'}</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Detection Type</th>
+          <th>Camera / Location</th>
+          <th>Confidence</th>
+          <th>Time Detected</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>\${cctvRows}</tbody>
+    </table>
+  </div>
+
+<!-- FOOTER -->
+<div class="report-footer">
+  <div class="footer-left">
+    <div>ECHO+ Hotel Emergency Intelligence System · v2.0.1</div>
+    <div>Generated: ${dateStr} at ${timeStr} · Auto-generated official record</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+    <span class="confidential-badge">CONFIDENTIAL</span>
+    <span class="footer-brand">ECHO+ by ResQAI</span>
+  </div>
+</div>
+
+<script>window.onload = function(){ window.print(); }</script>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type:'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (!win) {
+    // Fallback: direct download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ECHO_Incident_Report_' + now.toISOString().slice(0,10) + '.html';
+    a.click();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function getStaffTaskForEmergency(staff, emergency) {
+  if (!emergency) return staff.assignedZone;
+  const roleEmergencyTasks = {
+    security: {
+      fire: 'Evacuate guests · Block re-entry',
+      medical: 'Secure perimeter · Guide paramedics',
+      earthquake: 'Check structural damage · Control access',
+      suspicious: 'Locate & contain threat',
+    },
+    medical: {
+      fire: 'Set up triage at assembly point',
+      medical: '🚨 Respond immediately to patient',
+      earthquake: 'Treat injuries at assembly point',
+      suspicious: 'Standby for casualties',
+    },
+    manager: {
+      fire: 'Coordinate evacuation · Call fire brigade',
+      medical: 'Contact ambulance · Clear path',
+      earthquake: 'Account for all guests & staff',
+      suspicious: 'Lock down hotel · Alert police',
+    },
+  };
+  return (roleEmergencyTasks[staff.role] && roleEmergencyTasks[staff.role][emergency.type])
+    || staff.assignedZone;
+}
+
+// Also expose goStaff globally
+window.goStaff = goStaff;
+window.staffLogin = staffLogin;
+window.saveStaffNotes = saveStaffNotes;
+window.exportIncidentPDF = exportIncidentPDF;
