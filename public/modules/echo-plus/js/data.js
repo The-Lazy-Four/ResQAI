@@ -129,12 +129,12 @@ const ECHO_DATA = {
   ],
 
   staff: [
-    { id:"s1", name:"Capt. Ramesh Singh", role:"security", assignedZone:"Lobby", avatar:"RS", status:"active" },
-    { id:"s2", name:"Dr. Priya Nambiar", role:"medical", assignedZone:"Medical Bay", avatar:"PN", status:"active" },
-    { id:"s3", name:"Neha Kulkarni", role:"manager", assignedZone:"Front Desk", avatar:"NK", status:"active" },
-    { id:"s4", name:"Suresh Babu", role:"security", assignedZone:"East Wing", avatar:"SB", status:"active" },
-    { id:"s5", name:"Dr. Arif Khan", role:"medical", assignedZone:"Floor 2", avatar:"AK", status:"standby" },
-    { id:"s6", name:"Ritu Sharma", role:"manager", assignedZone:"Conference", avatar:"RS2", status:"active" },
+    { id:"s1", name:"Capt. Ramesh Singh", role:"security", assignedZone:"Lobby", avatar:"RS", status:"active", staffPass:"STAFF-RS01", badge:"SR-001", shift:"Morning (06:00–14:00)", phone:"+91 98300 11001" },
+    { id:"s2", name:"Dr. Priya Nambiar", role:"medical", assignedZone:"Medical Bay", avatar:"PN", status:"active", staffPass:"STAFF-PN02", badge:"MD-002", shift:"Morning (06:00–14:00)", phone:"+91 98300 11002" },
+    { id:"s3", name:"Neha Kulkarni", role:"manager", assignedZone:"Front Desk", avatar:"NK", status:"active", staffPass:"STAFF-NK03", badge:"MG-003", shift:"Day (09:00–17:00)", phone:"+91 98300 11003" },
+    { id:"s4", name:"Suresh Babu", role:"security", assignedZone:"East Wing", avatar:"SB", status:"active", staffPass:"STAFF-SB04", badge:"SR-004", shift:"Afternoon (14:00–22:00)", phone:"+91 98300 11004" },
+    { id:"s5", name:"Dr. Arif Khan", role:"medical", assignedZone:"Floor 2", avatar:"AK", status:"standby", staffPass:"STAFF-AK05", badge:"MD-005", shift:"Afternoon (14:00–22:00)", phone:"+91 98300 11005" },
+    { id:"s6", name:"Ritu Sharma", role:"manager", assignedZone:"Conference", avatar:"RS2", status:"active", staffPass:"STAFF-RS06", badge:"MG-006", shift:"Night (22:00–06:00)", phone:"+91 98300 11006" },
   ],
 
   scenarios: [

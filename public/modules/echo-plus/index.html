@@ -4,9 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ECHO+ — AI Emergency Guidance System</title>
+  <title>ECHO+ — AI Emergency Command Center</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/hotel-safe.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff5352'/><text y='.9em' font-size='80' x='10'>E</text></svg>" />
   <style>
@@ -548,6 +551,175 @@
     .cctv-thr-val.amber {
       color: #f59e0b;
     }
+
+    /* ═══ SEISMIC MONITOR ═══ */
+    .seismic-section { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .seismic-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+    .seismic-title { font-size: 13px; font-weight: 700; color: var(--text1,#e2e8f0); display: flex; align-items: center; gap: 6px; }
+    .seismic-ws-pill { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #94a3b8;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 3px 9px; }
+    .seismic-ws-dot { width: 7px; height: 7px; border-radius: 50%; background: #475569; transition: background .4s; }
+    .seismic-ws-dot.pulse { background: #22c55e; animation: seismicPulse 1.2s infinite; }
+    @keyframes seismicPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .seismic-ws-pill.connected { color: #22c55e; border-color: rgba(34,197,94,.3); }
+    .seismic-ws-pill.error     { color: #f87171; border-color: rgba(248,113,113,.3); }
+    .seismic-location { font-size: 11px; color: #64748b; }
+    .seismic-alert-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 12px 14px; display: none; }
+    .seismic-alert-box.show { display: block; }
+    .seismic-alert-box.low    { border-color: rgba(234,179,8,.4);  background: rgba(234,179,8,.05); }
+    .seismic-alert-box.medium { border-color: rgba(249,115,22,.4); background: rgba(249,115,22,.06); }
+    .seismic-alert-box.high   { border-color: rgba(239,68,68,.5);  background: rgba(239,68,68,.08); animation: seismicShake .25s 3; }
+    @keyframes seismicShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+    .seismic-alert-mag { font-size: 2rem; font-weight: 800; color: #f97316; line-height: 1; }
+    .seismic-alert-loc  { font-size: 12px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+    .seismic-alert-meta { font-size: 10px; color: #64748b; }
+    .seismic-alert-dist { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+    .seismic-alert-level { display: inline-block; margin-top: 5px; font-size: 9px; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px; background: rgba(249,115,22,.2); color: #f97316; letter-spacing:.5px; }
+    .seismic-feed { display: flex; flex-direction: column; gap: 4px; }
+    .seismic-feed-title { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+    .seismic-feed-empty { font-size: 11px; color: #475569; text-align: center; padding: 10px 0; }
+    .seismic-feed-item { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 8px;
+      padding: 6px 8px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); font-size: 10px; }
+    .seismic-feed-mag { font-size: 16px; font-weight: 800; text-align: center; line-height: 1; }
+    .seismic-feed-mag.low    { color: #22c55e; }
+    .seismic-feed-mag.medium { color: #f59e0b; }
+    .seismic-feed-mag.high   { color: #ef4444; }
+    .seismic-feed-loc  { color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .seismic-feed-time { color: #475569; white-space: nowrap; }
+
+    .cctv-stat-val.weapon { color: #ff4444; }
+
+    /* ══════════════════════════════════════════
+       ENHANCED UI — ResQAI Threat Detection Hub
+       ══════════════════════════════════════════ */
+
+    /* Detection hub section header */
+    .det-hub-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px 0;
+    }
+    .det-hub-title {
+      font-size: 11px; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; color: #9ca3af;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .det-hub-live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #00ff87;
+      animation: liveBlip 1.4s ease-in-out infinite;
+      box-shadow: 0 0 6px #00ff87;
+    }
+    @keyframes liveBlip { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+
+    /* Threat type badges */
+    .threat-type-bar {
+      display: flex; gap: 6px; padding: 8px 14px; flex-wrap: wrap;
+    }
+    .threat-chip {
+      display: flex; align-items: center; gap: 5px; padding: 4px 11px;
+      border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      border: 1px solid; cursor: default; transition: all .2s;
+    }
+    .threat-chip.fire   { background: rgba(255,69,0,.12);  color: #ff6030; border-color: rgba(255,69,0,.35); }
+    .threat-chip.smoke  { background: rgba(255,153,0,.1); color: #ffaa00; border-color: rgba(255,153,0,.3); }
+    .threat-chip.weapon { background: rgba(255,30,30,.12); color: #ff4444; border-color: rgba(255,30,30,.35); }
+    .threat-chip.quake  { background: rgba(249,115,22,.1); color: #f97316; border-color: rgba(249,115,22,.3); }
+    .threat-chip.active { animation: chipPulse .8s ease-in-out infinite alternate; }
+    @keyframes chipPulse { from{opacity:.7} to{opacity:1; filter:brightness(1.3)} }
+
+    /* Master siren button — BIG, loud, obvious */
+    .master-siren-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 800; letter-spacing: .06em;
+      border: 2px solid rgba(255,0,67,.5);
+      background: rgba(255,0,67,.1);
+      color: #ff0043;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all .2s;
+    }
+    .master-siren-btn:hover { background: rgba(255,0,67,.2); }
+    .master-siren-btn.on {
+      background: #ff0043; color: #fff;
+      border-color: #ff0043;
+      animation: masterSirenFlash .6s infinite alternate;
+      box-shadow: 0 0 24px rgba(255,0,67,.6), 0 0 48px rgba(255,0,67,.3);
+    }
+    @keyframes masterSirenFlash { from{box-shadow:0 0 16px rgba(255,0,67,.5)} to{box-shadow:0 0 32px rgba(255,0,67,.9)} }
+
+    /* Enhanced CCTV card */
+    .cctv-ai-card { border-top: 2px solid rgba(0,212,255,.2) !important; }
+
+    /* Seismic section enhancements */
+    .seismic-section {
+      border-top: 2px solid rgba(249,115,22,.2) !important;
+      background: linear-gradient(180deg, rgba(249,115,22,.03) 0%, transparent 60%);
+    }
+    .seismic-title { font-size: 12px !important; letter-spacing: .08em; text-transform: uppercase; }
+
+    /* Weapon section visual enhancements */
+    .cctv-inc-item.suspicious {
+      border-left: 3px solid #ff2020 !important;
+      background: rgba(255,20,20,.06);
+    }
+
+    /* Status system banner enhanced */
+    .system-status-banner {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px !important;
+      letter-spacing: .1em;
+    }
+
+    /* Alert overlay for weapon detection */
+    @keyframes weaponFlash {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+      50%      { box-shadow: 0 0 0 12px rgba(255,0,0,.4); }
+    }
+    .cctv-tile.weapon-alert {
+      border-color: #ff2020 !important;
+      animation: weaponFlash .5s infinite;
+    }
+
+    /* Siren ring animation on detection */
+    @keyframes sirenRingOut {
+      0%   { transform: scale(1);   opacity: .8; }
+      100% { transform: scale(2.5); opacity: 0;  }
+    }
+    .siren-ring {
+      position: fixed; pointer-events: none; z-index: 9998;
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 3px solid #ff0043;
+      top: 20px; right: 80px;
+      animation: sirenRingOut .7s ease-out forwards;
+    }
+
+    /* Scrollbar polish */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,.03); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+
+    /* ═══ CAMERA PERMISSION TOAST ═══ */
+    #camPermToast {
+      position: fixed; bottom: 20px; right: 20px; left: auto; transform: none;
+      background: linear-gradient(135deg,#1a2535,#0d1520);
+      border: 1px solid rgba(239,68,68,.45); border-left: 3px solid #ef4444;
+      color: #f1f5f9; padding: 12px 14px; border-radius: 10px;
+      font-size: 11px; font-weight: 500; font-family: inherit;
+      box-shadow: 0 6px 24px rgba(0,0,0,.55); z-index: 99999; display: none;
+      width: 280px; animation: camToastSlide .3s ease;
+    }
+    @keyframes camToastSlide { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+    #camPermToast .ct-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    #camPermToast .ct-title { color:#f87171; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; }
+    #camPermToast .ct-close { cursor:pointer; color:#475569; font-size:15px; line-height:1; padding:0 2px; }
+    #camPermToast .ct-close:hover { color:#f87171; }
+    #camPermToast .ct-sub { color:#94a3b8; font-size:10px; margin-bottom:7px; }
+    #camPermToast .ct-steps { color:#cbd5e1; font-size:10px; line-height:1.9; padding-left:2px; }
+    #camPermToast .ct-steps span { display:block; }
   </style>
 </head>
 
@@ -593,11 +765,19 @@
         <div class="role-card admin-card" onclick="goAdmin()">
           <span class="role-arrow">›</span>
           <span class="role-icon">🖥️</span>
-          <div class="role-name">Admin / Staff</div>
+          <div class="role-name">Admin</div>
           <div class="role-desc">Full emergency command center. Trigger alerts, coordinate staff, monitor all floors.
           </div>
           <div class="role-meta">Live floor map · Staff routing · Alert orchestration</div>
           <div class="role-cta">Open Command Center <span>→</span></div>
+        </div>
+        <div class="role-card staff-card" onclick="goStaff()">
+          <span class="role-arrow">›</span>
+          <span class="role-icon">👷</span>
+          <div class="role-name">Staff Login</div>
+          <div class="role-desc">Access your personal staff dashboard, assigned tasks, and emergency alerts for your zone.</div>
+          <div class="role-meta">Personal dashboard · Zone alerts · Task tracking</div>
+          <div class="role-cta">Staff Access <span>→</span></div>
         </div>
       </div>
 
@@ -616,8 +796,7 @@
         </div>
       </div>
 
-      <div class="landing-footer">Demo credentials — Room: 203 &nbsp;|&nbsp; Code: V3344 &nbsp;|&nbsp; Hotel: Oberoi
-        Grand &nbsp;|&nbsp; Admin pass: echo2024</div>
+      <div class="landing-footer">Demo — Room: 203 · Code: V3344 · Hotel: Oberoi Grand &nbsp;|&nbsp; Admin: <strong>echo2024</strong> &nbsp;|&nbsp; Staff PIN e.g.: <strong>STAFF-RS01</strong></div>
     </div>
   </div>
 
@@ -914,6 +1093,157 @@
   <!-- =====================================================
      SCREEN 5: ADMIN LOGIN
      ===================================================== -->
+
+  <!-- =====================================================
+     SCREEN: STAFF LOGIN
+     ===================================================== -->
+  <div class="echo-screen" id="screen-staff-login">
+    <div class="admin-login-card">
+      <div class="admin-login-icon">👷</div>
+      <div class="admin-login-title">Staff Portal</div>
+      <div class="admin-login-sub">Enter your personal staff access code to continue</div>
+
+      <div class="form-group" style="margin-top:20px;">
+        <label class="form-label">Staff Access Code</label>
+        <input class="form-input" id="staff-pass-input" type="password" placeholder="e.g. STAFF-RS01"
+          onkeydown="if(event.key==='Enter') staffLogin()" autocomplete="off" />
+      </div>
+      <div class="error-msg" id="staff-login-error"></div>
+      <div class="echo-mt-4">
+        <button class="btn-primary" onclick="staffLogin()">Access Staff Dashboard →</button>
+      </div>
+      <div class="echo-center echo-mt-12">
+        <button class="btn-secondary" onclick="goLanding()">← Back to Home</button>
+      </div>
+      <div class="echo-demo-hint echo-center echo-mt-16">
+        Demo codes: <strong class="echo-accent-blue">STAFF-RS01 · STAFF-PN02 · STAFF-NK03</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+     SCREEN: STAFF DASHBOARD
+     ===================================================== -->
+  <div class="echo-screen" id="screen-staff-dashboard">
+    <div class="admin-header">
+      <div class="admin-head-left">
+        <div class="admin-brand-wrap">
+          <div class="admin-brand-mark">E+</div>
+          <div class="admin-brand-title">ECHO<span>+</span> <span class="admin-brand-sub">Staff</span></div>
+        </div>
+        <div class="admin-divider"></div>
+        <div class="admin-site-meta">
+          <div class="admin-site-status" id="staff-status-badge" style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;">ON DUTY</div>
+          <div class="admin-site-hotel" id="staff-hotel-label">Grand Royal Hotel, Kolkata</div>
+        </div>
+      </div>
+      <div class="admin-head-right">
+        <button class="btn-secondary" onclick="goLanding()">⬅ Exit</button>
+      </div>
+    </div>
+
+    <!-- Staff Identity Card -->
+    <div style="padding:20px 24px 0;">
+      <div id="staff-identity-card" style="
+        background:linear-gradient(135deg,#1e3a5f 0%,#0f2542 100%);
+        border:1px solid rgba(59,130,246,0.3);
+        border-radius:16px;
+        padding:20px 24px;
+        display:flex;
+        align-items:center;
+        gap:20px;
+        position:relative;
+        overflow:hidden;
+      ">
+        <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(59,130,246,0.08);border-radius:50%;"></div>
+        <div id="staff-id-avatar" style="
+          width:64px;height:64px;border-radius:50%;
+          background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+          display:flex;align-items:center;justify-content:center;
+          font-size:22px;font-weight:800;color:#fff;flex-shrink:0;
+          box-shadow:0 4px 16px rgba(59,130,246,0.4);
+        ">--</div>
+        <div style="flex:1;">
+          <div id="staff-id-name" style="font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;">Staff Name</div>
+          <div id="staff-id-role" style="font-size:12px;color:#93c5fd;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Role</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <span id="staff-id-badge" style="font-size:11px;color:#6b7280;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:6px;">Badge: --</span>
+            <span id="staff-id-shift" style="font-size:11px;color:#6b7280;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:6px;">Shift: --</span>
+            <span id="staff-id-zone" style="font-size:11px;color:#6b7280;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:6px;">Zone: --</span>
+          </div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div id="staff-duty-time" style="font-size:24px;font-weight:800;color:#3b82f6;font-variant-numeric:tabular-nums;">00:00</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:2px;">TIME ON DUTY</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Banner (hidden by default) -->
+    <div id="staff-alert-banner" style="display:none;margin:16px 24px 0;background:linear-gradient(135deg,#7f1d1d,#991b1b);border:1px solid #ef4444;border-radius:12px;padding:14px 18px;display:none;align-items:center;gap:12px;">
+      <span style="font-size:22px;">🚨</span>
+      <div>
+        <div id="staff-alert-title" style="color:#fca5a5;font-weight:700;font-size:14px;">EMERGENCY ALERT</div>
+        <div id="staff-alert-desc" style="color:#fecaca;font-size:12px;margin-top:2px;">No active emergency</div>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 24px 24px;">
+
+      <!-- MY TASKS -->
+      <div style="background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;">
+        <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">📋 My Tasks</div>
+        <div id="staff-task-list" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="color:#4b5563;font-size:13px;font-style:italic;">No tasks assigned</div>
+        </div>
+      </div>
+
+      <!-- EMERGENCY CONTACTS -->
+      <div style="background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;">
+        <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">📞 Emergency Contacts</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="tel:101" style="display:flex;align-items:center;gap:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 12px;color:#fca5a5;text-decoration:none;">
+            🔥 <span style="flex:1;font-size:13px;font-weight:600;">Fire Brigade</span><strong>101</strong>
+          </a>
+          <a href="tel:108" style="display:flex;align-items:center;gap:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:10px 12px;color:#86efac;text-decoration:none;">
+            🏥 <span style="flex:1;font-size:13px;font-weight:600;">Ambulance</span><strong>108</strong>
+          </a>
+          <a href="tel:100" style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 12px;color:#93c5fd;text-decoration:none;">
+            👮 <span style="flex:1;font-size:13px;font-weight:600;">Police</span><strong>100</strong>
+          </a>
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:10px 12px;color:#d8b4fe;">
+            🏨 <span style="flex:1;font-size:13px;font-weight:600;">Front Desk</span><strong>0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZONE STATUS -->
+      <div style="background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;">
+        <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">🗺️ Zone Status</div>
+        <div id="staff-zone-status" style="color:#4b5563;font-size:13px;font-style:italic;">Loading zone data…</div>
+      </div>
+
+      <!-- SHIFT NOTES -->
+      <div style="background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;">
+        <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">📝 Shift Notes</div>
+        <textarea id="staff-shift-notes" style="
+          width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);
+          border-radius:8px;padding:10px;color:#d1d5db;font-size:13px;resize:none;height:100px;
+          font-family:inherit;
+        " placeholder="Write shift handover notes here…"></textarea>
+        <button onclick="saveStaffNotes()" style="
+          margin-top:8px;background:#3b82f6;color:#fff;border:none;border-radius:8px;
+          padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;width:100%;
+        ">💾 Save Notes</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =====================================================
+     SCREEN 5: ADMIN — LOGIN
+     ===================================================== -->
   <div class="echo-screen" id="screen-admin-login">
     <div class="admin-login-card">
       <div class="admin-login-icon">🛡️</div>
@@ -962,6 +1292,15 @@
           <button class="lang-btn" data-lang="bn" onclick="setLang('bn')">বাং</button>
         </div>
         <button class="btn-secondary" onclick="clearEmergency()">✕ Clear Alert</button>
+        <button onclick="exportIncidentPDF()" style="
+          background:linear-gradient(135deg,#7c3aed,#4f46e5);
+          color:#fff;border:none;border-radius:8px;padding:8px 16px;
+          font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;
+          box-shadow:0 2px 10px rgba(124,58,237,0.4);letter-spacing:0.3px;
+          transition:all 0.2s;
+        " onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+          📄 Export Incident Report
+        </button>
         <button class="btn-secondary" onclick="goLanding()">Exit</button>
       </div>
     </div>
@@ -1110,20 +1449,34 @@
         <div class="admin-map-card cctv-ai-card" style="display:flex;flex-direction:column;gap:12px;padding:14px;">
 
           <!-- Header row -->
-          <div class="cctv-header">
+          <div class="det-hub-header">
+            <div class="det-hub-title">
+              <div class="det-hub-live-dot"></div>
+              🛡️ AI Threat Detection Hub
+            </div>
+            <div id="cctvAIPill" class="cctv-ai-pill">
+              <div class="spinner" style="width:10px;height:10px;border-width:2px;"></div>
+              <span id="cctvAIText">AI Model: Standby</span>
+            </div>
+          </div>
+
+          <!-- Threat type bar -->
+          <div class="threat-type-bar">
+            <span class="threat-chip fire" id="chipFire">🔥 Fire</span>
+            <span class="threat-chip smoke" id="chipSmoke">💨 Smoke</span>
+            <span class="threat-chip weapon" id="chipWeapon">🔫 Weapon</span>
+            <span class="threat-chip quake" id="chipQuake">🌍 Seismic</span>
+          </div>
+
+          <!-- Sub-header -->
+          <div class="cctv-header" style="margin-top:4px;">
             <div class="cctv-title">
               📷 AI Camera Surveillance
               <span class="ai-live-chip live">LIVE</span>
-              <div id="cctvAIPill" class="cctv-ai-pill">
-                <div class="spinner" style="width:10px;height:10px;border-width:2px;"></div>
-                <span id="cctvAIText">AI Model: Standby</span>
-              </div>
             </div>
             <div class="cctv-ctrl">
-              <button class="cctv-btn cctv-btn-add" onclick="cctvAddCamera()"><i class="fas fa-plus"></i> Add
-                Camera</button>
-              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn" onclick="cctvToggleSiren()"><i
-                  class="fas fa-volume-mute"></i> Siren OFF</button>
+              <button class="cctv-btn cctv-btn-add" onclick="cctvAddCamera()"><i class="fas fa-plus"></i> Add Camera</button>
+              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn" onclick="cctvToggleSiren()"><i class="fas fa-volume-mute"></i> Siren OFF</button>
             </div>
           </div>
 
@@ -1142,6 +1495,10 @@
               <div class="cctv-stat-lbl">💨 Smoke</div>
             </div>
             <div class="cctv-stat">
+              <div class="cctv-stat-val weapon" id="cctvStatWeapon">0</div>
+              <div class="cctv-stat-lbl">🔫 Weapon</div>
+            </div>
+            <div class="cctv-stat">
               <div class="cctv-stat-val" id="cctvStatTotal">0</div>
               <div class="cctv-stat-lbl">🔔 Total</div>
             </div>
@@ -1157,23 +1514,28 @@
 
           <!-- Siren + Thresholds row -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <div class="cctv-siren-row" style="flex:1;min-width:160px;">
-              <div>
-                <div class="cctv-siren-status" id="cctvSirenStatus">🔕 SIREN OFF</div>
-                <div style="font-size:9px;color:#6b7280;margin-top:2px;">Auto-triggers on detection</div>
+            <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:6px;">
+              <!-- Master Siren Button -->
+              <button class="master-siren-btn" id="masterSirenBtn" onclick="cctvToggleSiren()">
+                <i class="fas fa-bell" style="font-size:1.1rem;"></i>
+                <span id="masterSirenLabel">🔕 MASTER SIREN — OFF</span>
+              </button>
+              <div class="cctv-siren-row">
+                <div>
+                  <div class="cctv-siren-status" id="cctvSirenStatus">🔕 SIREN OFF</div>
+                  <div style="font-size:9px;color:#6b7280;margin-top:2px;">Auto-triggers on any detection</div>
+                </div>
+                <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn2" onclick="cctvToggleSiren()"
+                  style="padding:4px 8px;font-size:10px;">Activate</button>
               </div>
-              <button class="cctv-btn cctv-btn-siren" id="cctvSirenBtn2" onclick="cctvToggleSiren()"
-                style="padding:4px 8px;font-size:10px;">Activate</button>
             </div>
             <div class="cctv-threshold-grid" style="flex:1;min-width:180px;">
-              <div class="cctv-thr"><span class="cctv-thr-lbl">🔥 Fire Threshold</span><span
-                  class="cctv-thr-val fire">80%</span></div>
-              <div class="cctv-thr"><span class="cctv-thr-lbl">💨 Smoke Threshold</span><span
-                  class="cctv-thr-val smoke">75%</span></div>
-              <div class="cctv-thr"><span class="cctv-thr-lbl">🔄 Scan Interval</span><span
-                  class="cctv-thr-val blue">500ms</span></div>
-              <div class="cctv-thr"><span class="cctv-thr-lbl">⏱ Debounce</span><span class="cctv-thr-val amber">30
-                  sec</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">🔥 Fire Threshold</span><span class="cctv-thr-val fire">80%</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">💨 Smoke Threshold</span><span class="cctv-thr-val smoke">75%</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">🔫 Weapon Conf.</span><span class="cctv-thr-val" style="color:#ff4444;">45%</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">🌍 Quake Alert</span><span class="cctv-thr-val amber">M4.0+</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">🔄 Scan Interval</span><span class="cctv-thr-val blue">350ms</span></div>
+              <div class="cctv-thr"><span class="cctv-thr-lbl">⏱ Debounce</span><span class="cctv-thr-val amber">30 sec</span></div>
             </div>
           </div>
 
@@ -1198,6 +1560,86 @@
           </div>
         </div>
         <!-- ═══ END AI CCTV SURVEILLANCE ═══ -->
+
+        <!-- ═══ SEISMIC MONITOR ═══ -->
+        <div class="admin-map-card seismic-section" style="margin-top:0;">
+
+          <!-- Header -->
+          <div class="seismic-header">
+            <div class="seismic-title">
+              🌍 Seismic Monitor
+              <span style="font-size:10px;color:#5a6a80;font-weight:400;">India Region · Real-Time WebSocket</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div id="seismicWsPill" class="seismic-ws-pill">
+                <div id="seismicWsDot" class="seismic-ws-dot"></div>
+                <span id="seismicWsText">Connecting…</span>
+              </div>
+              <button onclick="window.stopQuakeSiren&&window.stopQuakeSiren()"
+                style="font-size:10px;padding:3px 9px;border-radius:6px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#f97316;cursor:pointer;">
+                ■ Stop Alert
+              </button>
+            </div>
+          </div>
+
+          <!-- GPS location line -->
+          <div class="seismic-location" id="seismicLocationLine">
+            📍 Detecting your location…
+          </div>
+
+          <!-- Active alert box -->
+          <div class="seismic-alert-box" id="seismicAlertBox">
+            <div style="display:flex;align-items:flex-start;gap:14px;">
+              <div>
+                <div class="seismic-alert-mag" id="seismicAlertMag">0.0</div>
+                <div style="font-size:9px;color:#7a8ba0;margin-top:2px;">MAGNITUDE</div>
+              </div>
+              <div style="flex:1;">
+                <div class="seismic-alert-loc"  id="seismicAlertLoc">—</div>
+                <div class="seismic-alert-meta" id="seismicAlertMeta">—</div>
+                <div class="seismic-alert-dist" id="seismicAlertDist">—</div>
+                <div class="seismic-alert-level" id="seismicAlertLevel">MEDIUM</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent feed -->
+          <div class="seismic-feed">
+            <div class="seismic-feed-title">⚡ Recent Earthquakes — India</div>
+            <div id="seismicFeedList">
+              <div class="seismic-feed-empty">Listening for seismic activity…</div>
+            </div>
+          </div>
+
+        </div>
+        <!-- ═══ END SEISMIC MONITOR ═══ -->
+
+        <!-- ═══ EXPORT PDF BUTTON — BOTTOM OF ADMIN ═══ -->
+        <div style="
+          display:flex; align-items:center; justify-content:space-between;
+          padding:14px 18px; margin-top:4px;
+          background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(79,70,229,0.08));
+          border:1px solid rgba(124,58,237,0.3); border-radius:12px;
+        ">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#c4b5fd;">📋 Incident Report Export</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:2px;">Includes all incidents, CCTV detections, staff assignments &amp; hotel data</div>
+          </div>
+          <button onclick="exportIncidentPDF()" style="
+            background:linear-gradient(135deg,#7c3aed,#4f46e5);
+            color:#fff; border:none; border-radius:10px;
+            padding:10px 22px; font-size:13px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; gap:8px;
+            box-shadow:0 4px 14px rgba(124,58,237,0.45);
+            transition:all 0.2s; letter-spacing:0.3px;
+            white-space:nowrap;
+          "
+          onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 6px 20px rgba(124,58,237,0.6)'"
+          onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 14px rgba(124,58,237,0.45)'">
+            📄 Export Full PDF Report
+          </button>
+        </div>
+        <!-- ═══ END EXPORT ═══ -->
 
       </div>
 
@@ -1536,7 +1978,7 @@
           updateStats();
           if (!modelReady && !modelLoading) loadModel();
         } catch (e) {
-          alert('Camera access denied — please allow camera permission in your browser.');
+          (window.showCamPermToast || function(){alert("Please allow camera permission in your browser to use this feature.");})();
         }
       };
 
@@ -1784,28 +2226,120 @@
       }
 
       // ── Siren ─────────────────────────────────────────────────────
-      window.cctvToggleSiren = function () { sirenActive ? deactivateSiren() : activateSiren(); };
+      // ── Camera permission toast (replaces browser alert) ─────────
+      window.showCamPermToast = function() {
+        let t = document.getElementById('camPermToast');
+        if (!t) {
+          t = document.createElement('div');
+          t.id = 'camPermToast';
+          document.body.appendChild(t);
+        }
+        t.innerHTML =
+          '<div class="ct-head">' +
+            '<div class="ct-title">📷 Camera Access Denied</div>' +
+            '<div class="ct-close" onclick="document.getElementById(\'camPermToast\').style.display=\'none\'">✕</div>' +
+          '</div>' +
+          '<div class="ct-sub">Your browser blocked camera access.</div>' +
+          '<div class="ct-steps">' +
+            '<span>① Click the 🔒 icon in the address bar</span>' +
+            '<span>② Set <strong>Camera</strong> → <strong>Allow</strong></span>' +
+            '<span>③ Refresh the page and try again</span>' +
+          '</div>';
+        t.style.display = 'block';
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => { t.style.display = 'none'; }, 12000);
+      };
+
+      // ── Expose functions globally ───────────────────────────────────
+      window.cctvToggleSiren   = function () { sirenActive ? deactivateSiren() : activateSiren(); };
+      window.cctvActivateSiren = activateSiren;
+      window.cctvGetIncidents  = () => incidents;
 
       function activateSiren() {
         sirenActive = true;
+
+        // ── Update all siren UI buttons ───────────────────────────
         ['cctvSirenBtn', 'cctvSirenBtn2'].forEach(id => {
           const b = document.getElementById(id); if (!b) return;
           b.classList.add('on');
-          b.innerHTML = '<i class="fas fa-volume-up"></i> Siren ON';
+          b.innerHTML = '<i class="fas fa-volume-up"></i> 🚨 SIREN ON';
         });
         const s = document.getElementById('cctvSirenStatus');
-        if (s) s.textContent = '🔊 SIREN ON';
+        if (s) s.textContent = '🔊 SIREN ACTIVE';
+        const msb = document.getElementById('masterSirenBtn');
+        const msl = document.getElementById('masterSirenLabel');
+        if (msb) msb.classList.add('on');
+        if (msl) msl.textContent = '🔊 MASTER SIREN — ACTIVE';
+        // Activate threat chips
+        ['chipFire','chipSmoke','chipWeapon','chipQuake'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('active');
+        });
+
+        // ── Flash visual ring on page ─────────────────────────────
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            const ring = document.createElement('div');
+            ring.className = 'siren-ring';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 800);
+          }, i * 200);
+        }
+
+        // ── LOUD multi-oscillator siren engine ────────────────────
         if (!sirenCtx) sirenCtx = new (window.AudioContext || window.webkitAudioContext)();
-        (function beep() {
+        if (sirenCtx.state === 'suspended') sirenCtx.resume();
+
+        (function loudBeep() {
           if (!sirenActive) return;
-          const o = sirenCtx.createOscillator(), g = sirenCtx.createGain();
-          o.connect(g); g.connect(sirenCtx.destination);
-          o.frequency.setValueAtTime(880, sirenCtx.currentTime);
-          o.frequency.exponentialRampToValueAtTime(440, sirenCtx.currentTime + 0.5);
-          g.gain.setValueAtTime(0.28, sirenCtx.currentTime);
-          g.gain.linearRampToValueAtTime(0, sirenCtx.currentTime + 0.5);
-          o.start(); o.stop(sirenCtx.currentTime + 0.5);
-          setTimeout(beep, 620);
+          const ctx = sirenCtx;
+          const now = ctx.currentTime;
+
+          // Compressor to prevent clipping while maximizing loudness
+          const comp = ctx.createDynamicsCompressor();
+          comp.threshold.value = -6;
+          comp.ratio.value = 4;
+          comp.connect(ctx.destination);
+
+          // Master gain — maximized
+          const masterGain = ctx.createGain();
+          masterGain.gain.setValueAtTime(1.0, now);
+          masterGain.connect(comp);
+
+          // Oscillator 1 — high sweep (main wail)
+          const o1 = ctx.createOscillator();
+          const g1 = ctx.createGain();
+          o1.type = 'sawtooth';
+          o1.frequency.setValueAtTime(1200, now);
+          o1.frequency.exponentialRampToValueAtTime(600, now + 0.45);
+          g1.gain.setValueAtTime(0.6, now);
+          g1.gain.linearRampToValueAtTime(0, now + 0.48);
+          o1.connect(g1); g1.connect(masterGain);
+
+          // Oscillator 2 — mid body (fills out the sound)
+          const o2 = ctx.createOscillator();
+          const g2 = ctx.createGain();
+          o2.type = 'square';
+          o2.frequency.setValueAtTime(900, now);
+          o2.frequency.exponentialRampToValueAtTime(450, now + 0.45);
+          g2.gain.setValueAtTime(0.4, now);
+          g2.gain.linearRampToValueAtTime(0, now + 0.48);
+          o2.connect(g2); g2.connect(masterGain);
+
+          // Oscillator 3 — low punch (impact on alert start)
+          const o3 = ctx.createOscillator();
+          const g3 = ctx.createGain();
+          o3.type = 'sine';
+          o3.frequency.setValueAtTime(180, now);
+          g3.gain.setValueAtTime(0.5, now);
+          g3.gain.linearRampToValueAtTime(0, now + 0.12);
+          o3.connect(g3); g3.connect(masterGain);
+
+          o1.start(now); o1.stop(now + 0.5);
+          o2.start(now); o2.stop(now + 0.5);
+          o3.start(now); o3.stop(now + 0.15);
+
+          setTimeout(loudBeep, 580);
         })();
       }
 
@@ -1820,11 +2354,22 @@
         });
         const s = document.getElementById('cctvSirenStatus');
         if (s) s.textContent = '🔕 SIREN OFF';
+        const msb = document.getElementById('masterSirenBtn');
+        const msl = document.getElementById('masterSirenLabel');
+        if (msb) msb.classList.remove('on');
+        if (msl) msl.textContent = '🔕 MASTER SIREN — OFF';
+        ['chipFire','chipSmoke','chipWeapon','chipQuake'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('active');
+        });
       }
 
       // ── Clear all ─────────────────────────────────────────────────
       window.cctvClearAll = function () {
         incidents = []; stats = { fire: 0, smoke: 0, total: 0 }; updateStats();
+        // Reset weapon stat
+        const wEl = document.getElementById('cctvStatWeapon');
+        if (wEl) wEl.textContent = '0';
         // Reset EMA + consec on all cameras
         cameras.forEach(cam => {
           cam.ema = { Fire: 0, Smoke: 0, Normal: 0 };
@@ -1853,6 +2398,700 @@
       window.cctvCloseSnap = function () { document.getElementById('cctvSnapshotModal').classList.remove('open'); };
 
     })();
+  </script>
+
+
+
+
+
+  <!-- ═══ WEAPON DETECTION — Roboflow API ═══ -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ── Config ──────────────────────────────────────────────────────
+    const WEAPON_SCAN_MS   = 1500;   // scan every 1.5s (parallel to fire)
+    const WEAPON_CONF_MIN  = 0.45;   // 45% confidence minimum
+    const WEAPON_DEBOUNCE  = 20000;  // 20s between alerts per camera
+    const CAPTURE_SIZE     = 416;    // Roboflow works best at 416px
+
+    const WEAPON_ICONS = {
+      gun: '🔫', pistol: '🔫', rifle: '🔫', handgun: '🔫',
+      knife: '🔪', blade: '🔪', sword: '🔪',
+      weapon: '⚠️', default: '🚨'
+    };
+
+    function weaponIcon(cls) {
+      const k = (cls || '').toLowerCase();
+      for (const [key, icon] of Object.entries(WEAPON_ICONS)) {
+        if (k.includes(key)) return icon;
+      }
+      return WEAPON_ICONS.default;
+    }
+
+    // ── Per-camera state ─────────────────────────────────────────────
+    const weaponState = {}; // camId → { lastTrigger, canvas, ctx }
+
+    function getState(cam) {
+      if (!weaponState[cam.id]) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = CAPTURE_SIZE;
+        weaponState[cam.id] = {
+          lastTrigger: 0,
+          canvas,
+          ctx: canvas.getContext('2d', { willReadFrequently: true })
+        };
+      }
+      return weaponState[cam.id];
+    }
+
+    // ── Draw bounding boxes on CCTV overlay canvas ───────────────────
+    function drawWeaponBoxes(cam, predictions, imgW, imgH) {
+      const ovCanvas = document.getElementById('cctv-weapon-ov-' + cam.id);
+      if (!ovCanvas) return;
+      const ctx = ovCanvas.getContext('2d');
+      ctx.clearRect(0, 0, ovCanvas.width, ovCanvas.height);
+      if (!predictions || predictions.length === 0) return;
+
+      // Roboflow returns x/y/w/h in the space of the image it received (CAPTURE_SIZE x CAPTURE_SIZE).
+      // Scale those coords to the canvas's actual rendered pixel size.
+      const srcW = imgW || CAPTURE_SIZE;
+      const srcH = imgH || CAPTURE_SIZE;
+      const scaleX = ovCanvas.width  / srcW;
+      const scaleY = ovCanvas.height / srcH;
+
+      predictions.forEach(pred => {
+        if (pred.confidence < WEAPON_CONF_MIN) return;
+        // Roboflow: x,y = center; width,height = box size
+        const x = (pred.x - pred.width  / 2) * scaleX;
+        const y = (pred.y - pred.height / 2) * scaleY;
+        const w = pred.width  * scaleX;
+        const h = pred.height * scaleY;
+
+        // Glowing red box
+        ctx.save();
+        ctx.shadowColor = '#ff2020';
+        ctx.shadowBlur  = 14;
+        ctx.strokeStyle = '#ff2020';
+        ctx.lineWidth   = 3;
+        ctx.strokeRect(x, y, w, h);
+
+        // Corner tick marks
+        const tick = Math.min(w, h) * 0.18;
+        ctx.strokeStyle = '#ff6060';
+        ctx.lineWidth = 2;
+        [[x, y, 1, 1],[x+w, y, -1, 1],[x, y+h, 1, -1],[x+w, y+h, -1, -1]].forEach(([cx, cy, dx, dy]) => {
+          ctx.beginPath();
+          ctx.moveTo(cx + dx * tick, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, cy + dy * tick);
+          ctx.stroke();
+        });
+        ctx.restore();
+
+        // Label — placed above box, or below if at top edge
+        const icon  = weaponIcon(pred.class);
+        const label = icon + ' ' + pred.class.toUpperCase() + ' ' + (pred.confidence * 100).toFixed(0) + '%';
+        ctx.font = 'bold 12px monospace';
+        const tw = ctx.measureText(label).width + 12;
+        const labelY = y > 24 ? y - 22 : y + h + 2;
+        ctx.fillStyle = 'rgba(200,0,0,0.9)';
+        ctx.fillRect(x, labelY, tw, 20);
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 0;
+        ctx.fillText(label, x + 6, labelY + 14);
+      });
+    }
+
+    // ── Trigger weapon alert ─────────────────────────────────────────
+    function triggerWeaponAlert(cam, pred, snap) {
+      const icon    = weaponIcon(pred.class);
+      const camName = cam.name || ('Camera ' + cam.id);
+      const conf    = (pred.confidence * 100).toFixed(0);
+      const type    = pred.class.charAt(0).toUpperCase() + pred.class.slice(1);
+      const time    = new Date().toISOString();
+
+      console.warn('[WEAPON] 🚨 DETECTED:', type, 'in', camName, conf + '%');
+
+      // Flash camera tile red
+      const tile  = document.getElementById('cctv-tile-'  + cam.id);
+      const badge = document.getElementById('cctv-badge-' + cam.id);
+      if (tile)  tile.style.outline = '3px solid #ff2020';
+      if (badge) { badge.className = 'cctv-badge'; badge.style.cssText = 'background:#ff2020;color:#fff;'; badge.textContent = icon + ' ' + type.toUpperCase(); }
+      setTimeout(() => {
+        if (tile)  tile.style.outline = '';
+        if (badge) { badge.className = 'cctv-badge cctv-badge-normal'; badge.style.cssText = ''; badge.textContent = 'NORMAL'; }
+      }, 10000);
+
+      // 🚨 Trigger hotel-wide siren + suspicious emergency broadcast
+      // activateSiren lives inside CCTV IIFE — access via window.cctvActivateSiren
+      if (typeof window.cctvActivateSiren === 'function') window.cctvActivateSiren();
+      // Flash weapon threat chip
+      const wChip = document.getElementById('chipWeapon');
+      if (wChip) { wChip.classList.add('active'); setTimeout(() => wChip.classList.remove('active'), 15000); }
+      else if (typeof activateSiren === 'function') activateSiren();
+      if (typeof triggerEmergency === 'function') triggerEmergency('suspicious');
+
+      // Add to CCTV incident feed with room/camera info
+      const incidentList = document.getElementById('cctvIncidentList');
+      const emptyFeed    = document.getElementById('cctvEmptyFeed');
+      if (emptyFeed) emptyFeed.remove();
+      if (incidentList) {
+        const d = document.createElement('div');
+        d.className = 'cctv-inc-item suspicious';
+        d.style.cssText = 'border-left: 3px solid #ff2020;';
+        d.innerHTML =
+          '<div style="font-size:1.1rem">' + icon + '</div>' +
+          '<div style="flex:1;">' +
+            '<div class="cctv-inc-type" style="color:#ff4444">' + type + ' Detected 🚨</div>' +
+            '<div class="cctv-inc-meta">📍 <strong>' + camName + '</strong> · ' + new Date(time).toLocaleTimeString() + '</div>' +
+            '<div class="cctv-inc-conf" style="color:#ff6666">Confidence: ' + conf + '% · Weapon Alert</div>' +
+          '</div>';
+        incidentList.prepend(d);
+
+        // Update badge count
+        const badge2 = document.getElementById('cctvIncBadge');
+        if (badge2) { badge2.style.display = ''; badge2.textContent = (parseInt(badge2.textContent) || 0) + 1; }
+      }
+
+      // Update weapon + total stats
+      const weaponEl = document.getElementById('cctvStatWeapon');
+      if (weaponEl) weaponEl.textContent = (parseInt(weaponEl.textContent) || 0) + 1;
+      const totalEl = document.getElementById('cctvStatTotal');
+      if (totalEl) totalEl.textContent = (parseInt(totalEl.textContent) || 0) + 1;
+
+      // Show toast notification with room name
+      showWeaponToast(icon, type, camName, conf);
+    }
+
+    // ── Toast notification ───────────────────────────────────────────
+    function showWeaponToast(icon, type, camName, conf) {
+      let toast = document.getElementById('weaponToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'weaponToast';
+        toast.style.cssText = [
+          'position:fixed', 'top:20px', 'right:20px', 'z-index:99999',
+          'background:linear-gradient(135deg,#1a0000,#330000)',
+          'color:#fff', 'padding:16px 18px', 'border-radius:14px',
+          'font-family:monospace', 'font-size:13px', 'font-weight:700',
+          'box-shadow:0 0 40px rgba(255,0,0,0.7),0 4px 24px rgba(0,0,0,0.8)',
+          'display:none', 'max-width:340px',
+          'border:2px solid rgba(255,50,50,0.8)',
+          'animation:none', 'cursor:default'
+        ].join(';');
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML =
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
+          '<span style="font-size:2rem;animation:weaponIconPulse .5s infinite alternate;">' + icon + '</span>' +
+          '<div>' +
+            '<div style="font-size:15px;letter-spacing:.08em;color:#ff4444;">🚨 WEAPON DETECTED</div>' +
+            '<div style="font-size:12px;color:#ffaaaa;font-weight:400;margin-top:1px;">' + type.toUpperCase() + ' · ' + conf + '% confidence</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#ff8888;font-weight:400;margin-bottom:10px;">📍 ' + camName + ' — Security notified · Siren active</div>' +
+        '<div style="display:flex;gap:8px;">' +
+          '<button onclick="if(typeof window.cctvActivateSiren===\'function\')window.cctvActivateSiren();this.closest(\'#weaponToast\').style.display=\'none\';" ' +
+            'style="flex:1;padding:6px;border-radius:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:10px;cursor:pointer;font-family:monospace;">🔊 Resound</button>' +
+          '<button onclick="if(typeof window.cctvActivateSiren===\'function\'?false:true);if(typeof cctvToggleSiren===\'function\')cctvToggleSiren();this.closest(\'div\').parentElement.style.display=\'none\';" ' +
+            'style="flex:1;padding:6px;border-radius:7px;background:rgba(255,0,0,.3);border:1px solid rgba(255,0,0,.6);color:#fff;font-size:10px;cursor:pointer;font-family:monospace;">■ Stop Siren</button>' +
+        '</div>';
+      toast.style.display = 'block';
+      toast.style.animation = 'none';
+      setTimeout(() => toast.offsetHeight, 10);
+      toast.style.animation = 'weaponToastIn 0.3s ease';
+      clearTimeout(toast._hideTimer);
+      toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 12000);
+    }
+
+    // ── Toast animation style ────────────────────────────────────────
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes weaponToastIn {
+        from { opacity:0; transform:translateX(40px); }
+        to   { opacity:1; transform:translateX(0); }
+      }
+      @keyframes weaponIconPulse {
+        from { transform: scale(1);   filter: drop-shadow(0 0 4px #ff2020); }
+        to   { transform: scale(1.2); filter: drop-shadow(0 0 12px #ff2020); }
+      }
+      .cctv-weapon-overlay {
+        position:absolute; top:0; left:0; width:100%; height:100%;
+        pointer-events:none; z-index:10;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // ── Inject overlay canvas into each camera tile ──────────────────
+    function injectOverlay(cam) {
+      if (document.getElementById('cctv-weapon-ov-' + cam.id)) return;
+      const tile = document.getElementById('cctv-tile-' + cam.id);
+      if (!tile) return;
+
+      // CRITICAL FIX: attach to .cctv-feed (the video container), NOT the whole tile
+      const feed = tile.querySelector('.cctv-feed');
+      const target = feed || tile;
+
+      // Make sure target is positioned so absolute canvas sits over video
+      target.style.position = 'relative';
+
+      const canvas = document.createElement('canvas');
+      canvas.id        = 'cctv-weapon-ov-' + cam.id;
+      canvas.className = 'cctv-weapon-overlay';
+
+      // Match canvas pixel dimensions to the video element's rendered size
+      const vid = tile.querySelector('video');
+      const refW = vid ? vid.offsetWidth  : (feed ? feed.offsetWidth  : 300);
+      const refH = vid ? vid.offsetHeight : (feed ? feed.offsetHeight : 150);
+      canvas.width  = refW  || 300;
+      canvas.height = refH  || 150;
+      canvas.style.cssText =
+        'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;';
+
+      target.appendChild(canvas);
+
+      // Keep canvas pixel buffer in sync if layout changes
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => {
+          const c = document.getElementById('cctv-weapon-ov-' + cam.id);
+          if (!c) { ro.disconnect(); return; }
+          const v2 = tile.querySelector('video');
+          c.width  = v2 ? v2.offsetWidth  : c.parentElement.offsetWidth  || 300;
+          c.height = v2 ? v2.offsetHeight : c.parentElement.offsetHeight || 150;
+        });
+        ro.observe(target);
+      }
+    }
+
+    // ── Per-camera weapon scan loop ──────────────────────────────────
+    async function weaponScan(cam) {
+      const v = cam.videoEl || document.getElementById('cctv-video-' + cam.id);
+      if (!v || v.readyState < 2 || v.videoWidth === 0) return;
+
+      const state = getState(cam);
+      // Contrast boost helps model see sharper edges (images held to camera)
+      state.ctx.filter = 'contrast(1.2) brightness(1.05)';
+      state.ctx.drawImage(v, 0, 0, CAPTURE_SIZE, CAPTURE_SIZE);
+      state.ctx.filter = 'none';
+      const b64 = state.canvas.toDataURL('image/jpeg', 0.88).split(',')[1];
+
+      try {
+        const resp = await fetch('/api/weapon/detect', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ image_b64: b64 })
+        });
+        if (!resp.ok) {
+          // Clear any stale boxes on API error
+          const ov = document.getElementById('cctv-weapon-ov-' + cam.id);
+          if (ov) ov.getContext('2d').clearRect(0, 0, ov.width, ov.height);
+          return;
+        }
+        const { predictions, image } = await resp.json();
+
+        // Always inject overlay first, then draw (or clear if empty)
+        injectOverlay(cam);
+        drawWeaponBoxes(cam, predictions, image?.width, image?.height);
+
+        // Trigger alert for high-confidence detections
+        const now  = Date.now();
+        const best = (predictions || [])
+          .filter(p => p.confidence >= WEAPON_CONF_MIN)
+          .sort((a, b) => b.confidence - a.confidence)[0];
+
+        if (best && (now - state.lastTrigger) > WEAPON_DEBOUNCE) {
+          state.lastTrigger = now;
+          const snap = state.canvas.toDataURL('image/jpeg', 0.88);
+          triggerWeaponAlert(cam, best, snap);
+        }
+
+      } catch (e) {
+        // Clear stale boxes silently — don't interrupt fire detection
+        const ov = document.getElementById('cctv-weapon-ov-' + cam.id);
+        if (ov) ov.getContext('2d').clearRect(0, 0, ov.width, ov.height);
+      }
+    }
+
+    // ── Hook into existing camera loop ───────────────────────────────
+    // Poll for cameras array from the CCTV IIFE
+    function startWeaponLoops() {
+      // Access cameras from parent scope via window or poll DOM
+      const checkCameras = setInterval(() => {
+        // Look for active video elements
+        const videos = document.querySelectorAll('[id^="cctv-video-"]');
+        if (videos.length === 0) return;
+
+        videos.forEach(video => {
+          const camId = video.id.replace('cctv-video-', '');
+          if (weaponState[camId]?._loopRunning) return;
+
+          // Create minimal cam object from DOM
+          const cam = {
+            id:      camId,
+            videoEl: video,
+            name:    document.querySelector('#cctv-tile-' + camId + ' .cctv-cam-name')
+                       ?.textContent?.trim() || ('Camera ' + camId)
+          };
+
+          weaponState[camId] = weaponState[camId] || {};
+          weaponState[camId]._loopRunning = true;
+          weaponState[camId].lastTrigger  = 0;
+
+          // Start scan loop for this camera
+          (async function loop() {
+            await weaponScan(cam);
+            setTimeout(loop, WEAPON_SCAN_MS);
+          })();
+
+          console.log('[WEAPON] ✅ Scan loop started for', cam.name);
+        });
+      }, 2000);
+    }
+
+    // Boot after DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startWeaponLoops);
+    } else {
+      setTimeout(startWeaponLoops, 2000);
+    }
+
+    console.log('[WEAPON] ✅ Weapon detection module loaded — Roboflow API ready');
+  })();
+  </script>
+
+  <!-- ═══ SEISMIC MONITOR — Real-Time WebSocket ═══ -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ── Config ──────────────────────────────────────────────────────
+    const WS_URL        = 'wss://www.seismicportal.eu/standing_order/websocket';
+    const INDIA_LAT_MIN = 6,  INDIA_LAT_MAX  = 38;
+    const INDIA_LON_MIN = 67, INDIA_LON_MAX  = 98;
+    const ALERT_MAG     = 4.0;   // trigger siren above this
+    const SIREN_MAG     = 5.5;   // extra-loud siren above this
+    const MAX_FEED      = 5;
+    const RECONNECT_MS  = 5000;
+
+    // ── State ────────────────────────────────────────────────────────
+    let userLat = null, userLon = null;
+    let ws = null, wsAlive = false;
+    let recentQuakes = [];
+    let lastAlertId  = null;
+    let quakeSirenCtx = null;
+    let quakeSirenActive = false;
+
+    // ── GPS ──────────────────────────────────────────────────────────
+    function initLocation() {
+      const line = document.getElementById('seismicLocationLine');
+      if (!navigator.geolocation) {
+        if (line) line.textContent = '📍 GPS not available — using India centre';
+        userLat = 20.5937; userLon = 78.9629;
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          userLat = pos.coords.latitude;
+          userLon = pos.coords.longitude;
+          if (line) line.innerHTML =
+            '📍 Your location: <strong style="color:#00d4ff">' +
+            userLat.toFixed(3) + '°N, ' + userLon.toFixed(3) + '°E</strong>' +
+            ' &nbsp;|&nbsp; Monitoring India region 24/7';
+        },
+        () => {
+          userLat = 20.5937; userLon = 78.9629; // India centre fallback
+          if (line) line.innerHTML = '📍 Location unavailable — monitoring all India';
+        },
+        { timeout: 8000, maximumAge: 60000 }
+      );
+    }
+
+    // ── Haversine distance (km) ──────────────────────────────────────
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371, toRad = x => x * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat/2)**2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // ── Magnitude level helpers ──────────────────────────────────────
+    function magLevel(mag) {
+      if (mag >= 6.0) return 'critical';
+      if (mag >= 5.0) return 'high';
+      if (mag >= 4.0) return 'medium';
+      return 'low';
+    }
+    function magColor(mag) {
+      if (mag >= 6.0) return '#ff3030';
+      if (mag >= 5.0) return '#ff7800';
+      if (mag >= 4.0) return '#ffc107';
+      return '#4caf50';
+    }
+
+    // ── LOUD earthquake siren (different from fire siren) ────────────
+    function playQuakeSiren(mag) {
+      try {
+        if (!quakeSirenCtx) quakeSirenCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (quakeSirenCtx.state === 'suspended') quakeSirenCtx.resume();
+        quakeSirenActive = true;
+
+        // Visual flash — orange for quake
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => {
+            const ring = document.createElement('div');
+            ring.className = 'siren-ring';
+            ring.style.borderColor = '#f97316';
+            ring.style.right = (80 + i * 10) + 'px';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 900);
+          }, i * 150);
+        }
+
+        let count = 0;
+        const MAX_BEEPS = mag >= 6.0 ? 40 : mag >= 5.0 ? 25 : 15;
+
+        (function quakeBeep() {
+          if (!quakeSirenActive || count >= MAX_BEEPS) return;
+          count++;
+          const ctx = quakeSirenCtx;
+          const now = ctx.currentTime;
+
+          // Compressor for max volume
+          const comp = ctx.createDynamicsCompressor();
+          comp.threshold.value = -4; comp.ratio.value = 5;
+          comp.connect(ctx.destination);
+          const master = ctx.createGain();
+          master.gain.setValueAtTime(1.0, now);
+          master.connect(comp);
+
+          // Tone 1 — deep rumble sweep (earthquake-feel)
+          const o1 = ctx.createOscillator();
+          const g1 = ctx.createGain();
+          o1.type = 'sawtooth';
+          o1.frequency.setValueAtTime(220, now);
+          o1.frequency.exponentialRampToValueAtTime(110, now + 0.4);
+          g1.gain.setValueAtTime(0.7, now);
+          g1.gain.linearRampToValueAtTime(0, now + 0.45);
+          o1.connect(g1); g1.connect(master);
+
+          // Tone 2 — high warning klaxon
+          const o2 = ctx.createOscillator();
+          const g2 = ctx.createGain();
+          o2.type = 'square';
+          o2.frequency.setValueAtTime(1100, now);
+          o2.frequency.exponentialRampToValueAtTime(550, now + 0.4);
+          g2.gain.setValueAtTime(0.5, now);
+          g2.gain.linearRampToValueAtTime(0, now + 0.45);
+          o2.connect(g2); g2.connect(master);
+
+          // Tone 3 — mid punch
+          const o3 = ctx.createOscillator();
+          const g3 = ctx.createGain();
+          o3.type = 'sine';
+          o3.frequency.setValueAtTime(440, now);
+          g3.gain.setValueAtTime(0.6, now);
+          g3.gain.linearRampToValueAtTime(0, now + 0.15);
+          o3.connect(g3); g3.connect(master);
+
+          o1.start(now); o1.stop(now + 0.5);
+          o2.start(now); o2.stop(now + 0.5);
+          o3.start(now); o3.stop(now + 0.18);
+
+          setTimeout(quakeBeep, 520);
+        })();
+      } catch (e) { console.warn('[SEISMIC] Siren error:', e.message); }
+    }
+
+    function stopQuakeSiren() { quakeSirenActive = false; }
+
+    // ── Show alert box ───────────────────────────────────────────────
+    function showAlert(quake) {
+      const box   = document.getElementById('seismicAlertBox');
+      const mag   = quake.mag;
+      const level = magLevel(mag);
+      if (!box) return;
+
+      box.className = 'seismic-alert-box show ' + level;
+      document.getElementById('seismicAlertMag').textContent   = mag.toFixed(1);
+      document.getElementById('seismicAlertLoc').textContent   = quake.location || 'Unknown location';
+      document.getElementById('seismicAlertLevel').textContent = level.toUpperCase();
+
+      const dist = (userLat && userLon)
+        ? haversine(userLat, userLon, quake.lat, quake.lon)
+        : null;
+      let distText = dist ? '📏 ' + Math.round(dist) + ' km from your location' : '📏 Distance unknown';
+      if (dist) {
+        if      (dist <=  100) distText += ' — ⚠️ VERY CLOSE';
+        else if (dist <=  300) distText += ' — nearby';
+        else if (dist <=  600) distText += ' — regional';
+        else                   distText += ' — distant';
+      }
+      document.getElementById('seismicAlertDist').textContent = distText;
+
+      const depth = quake.depth ? quake.depth.toFixed(0) + ' km depth' : '';
+      const time  = new Date(quake.time).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      document.getElementById('seismicAlertMeta').textContent = time + (depth ? ' · ' + depth : '');
+    }
+
+    // ── Update feed list ─────────────────────────────────────────────
+    function updateFeed() {
+      const list = document.getElementById('seismicFeedList');
+      if (!list) return;
+      if (recentQuakes.length === 0) {
+        list.innerHTML = '<div class="seismic-feed-empty">No earthquakes detected yet</div>';
+        return;
+      }
+      list.innerHTML = recentQuakes.slice(0, MAX_FEED).map(q => {
+        const level = magLevel(q.mag);
+        const time  = new Date(q.time).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+        const dist  = (userLat && userLon)
+          ? Math.round(haversine(userLat, userLon, q.lat, q.lon)) + ' km'
+          : '';
+        return `<div class="seismic-feed-item">
+          <div class="seismic-feed-mag ${level}" style="color:${magColor(q.mag)}">${q.mag.toFixed(1)}</div>
+          <div class="seismic-feed-loc" title="${q.location}">${q.location}</div>
+          ${dist ? `<div style="font-size:10px;color:#00d4ff;min-width:45px;text-align:right;">${dist}</div>` : ''}
+          <div class="seismic-feed-time">${time}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Process incoming quake ───────────────────────────────────────
+    function processQuake(data) {
+      try {
+        const props  = data.data?.properties || data.properties;
+        if (!props) return;
+
+        const lat  = parseFloat(props.lat  || props.latitude  || 0);
+        const lon  = parseFloat(props.lon  || props.longitude || 0);
+        const mag  = parseFloat(props.mag  || props.magnitude || 0);
+        const loc  = props.flynn_region || props.place || props.description || 'India Region';
+        const dep  = parseFloat(props.depth || 0);
+        const time = props.time || new Date().toISOString();
+        const id   = props.unid || props.id || (lat + '' + lon + '' + time);
+
+        // Filter for India bounding box
+        const inIndia = lat >= INDIA_LAT_MIN && lat <= INDIA_LAT_MAX &&
+                        lon >= INDIA_LON_MIN && lon <= INDIA_LON_MAX;
+        if (!inIndia) return;
+
+        console.log('[SEISMIC] 🌍 India quake detected! Mag:', mag, 'Loc:', loc);
+
+        const quake = { mag, lat, lon, location: loc, depth: dep, time, id };
+
+        // Add to feed (avoid duplicates)
+        if (!recentQuakes.find(q => q.id === id)) {
+          recentQuakes.unshift(quake);
+          if (recentQuakes.length > MAX_FEED) recentQuakes.pop();
+        }
+        updateFeed();
+
+        // ── Distance-aware trigger logic ──────────────────────────
+        // Only alert if earthquake is actually dangerous FOR YOUR location
+        const distKm = (userLat && userLon)
+          ? haversine(userLat, userLon, lat, lon)
+          : 9999;
+
+        // Minimum magnitude needed based on distance from user
+        let minMagForAlert;
+        if      (distKm <=  100) minMagForAlert = 3.0;  // very close — even small quakes
+        else if (distKm <=  300) minMagForAlert = 4.5;  // nearby — moderate quakes
+        else if (distKm <=  600) minMagForAlert = 5.5;  // regional — strong quakes
+        else                     minMagForAlert = 6.5;  // far away — major quakes only
+
+        const shouldAlert = mag >= minMagForAlert && id !== lastAlertId;
+
+        console.log('[SEISMIC] Mag:', mag, '| Dist:', Math.round(distKm) + 'km',
+          '| Min needed:', minMagForAlert, '| Alert:', shouldAlert);
+
+        if (shouldAlert) {
+          lastAlertId = id;
+          showAlert(quake);
+
+          // 🚨 Trigger hotel-wide siren + emergency system
+          playQuakeSiren(mag);
+          if (typeof window.cctvActivateSiren === 'function') window.cctvActivateSiren();
+          if (typeof triggerEmergency === 'function') triggerEmergency('earthquake');
+          // Flash seismic threat chip
+          const qChip = document.getElementById('chipQuake');
+          if (qChip) { qChip.classList.add('active'); setTimeout(() => qChip.classList.remove('active'), 20000); }
+
+          console.warn('[SEISMIC] 🚨 ALERT! Mag', mag, 'at', loc,
+            '— only', Math.round(distKm) + 'km from you');
+        }
+      } catch (e) {
+        console.warn('[SEISMIC] Parse error:', e.message);
+      }
+    }
+
+    // ── WebSocket connection ─────────────────────────────────────────
+    function setWsPill(state, text) {
+      const pill = document.getElementById('seismicWsPill');
+      const dot  = document.getElementById('seismicWsDot');
+      const txt  = document.getElementById('seismicWsText');
+      if (!pill) return;
+      pill.className = 'seismic-ws-pill ' + state;
+      if (dot) { dot.className = 'seismic-ws-dot' + (state === 'connected' ? ' pulse' : ''); }
+      if (txt) txt.textContent = text;
+    }
+
+    function connectWS() {
+      if (ws) { try { ws.close(); } catch(_) {} }
+      setWsPill('', 'Connecting…');
+
+      try {
+        ws = new WebSocket(WS_URL);
+      } catch(e) {
+        setWsPill('error', 'WS Failed');
+        setTimeout(connectWS, RECONNECT_MS);
+        return;
+      }
+
+      ws.onopen = () => {
+        wsAlive = true;
+        setWsPill('connected', '🟢 Live — India Watch');
+        console.log('[SEISMIC] ✅ WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          processQuake(data);
+        } catch(e) {
+          // ignore non-JSON heartbeats
+        }
+      };
+
+      ws.onerror = () => {
+        setWsPill('error', '🔴 Connection Error');
+      };
+
+      ws.onclose = () => {
+        wsAlive = false;
+        setWsPill('error', '🔴 Disconnected — Reconnecting…');
+        console.warn('[SEISMIC] WebSocket closed — retrying in', RECONNECT_MS, 'ms');
+        setTimeout(connectWS, RECONNECT_MS);
+      };
+    }
+
+    // ── Boot ─────────────────────────────────────────────────────────
+    function init() {
+      initLocation();
+      connectWS();
+      updateFeed();
+      console.log('[SEISMIC] ✅ Seismic Monitor initialised — watching India region');
+    }
+
+    // Wait for DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      setTimeout(init, 500); // slight delay so CCTV boots first
+    }
+
+    // Expose stop function globally
+    window.stopQuakeSiren = stopQuakeSiren;
+  })();
   </script>
 
   <!-- CCTV Snapshot Modal -->

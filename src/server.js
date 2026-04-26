@@ -24,6 +24,7 @@ import aiRoutes from './api/routes/ai.js';
 import portalRoutes from './api/routes/portal.js';
 import authRoutes from './api/routes/auth.js';
 import customSystemRoutes from './api/routes/custom-system.js';
+import weaponDetectRoutes from './api/routes/weapon-detect.js';
 
 // Import validation utilities
 import { validateEnvironment, getAIStatus } from './utils/validateEnv.js';
@@ -148,6 +149,7 @@ app.use('/api/nearby', nearbyRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/custom-system', customSystemRoutes);
+app.use('/api/weapon', weaponDetectRoutes);
 
 // ==================== SERVE FRONTEND ====================
 
