@@ -1,0 +1,373 @@
+/*
+ * ECHO+ mobile-responsive.css
+ * Purpose: isolated responsive overrides loaded after base styles.
+ */
+
+@media (max-width: 1100px) {
+  .guest-dash-body,
+  .guest-app-layout,
+  .admin-main,
+  .admin-right-section,
+  .sidebar-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .role-cards .role-card {
+    max-width: 240px !important;
+  }
+
+  .status-card-premium,
+  .dash-tile,
+  .staff-card-modern,
+  .collapsible-info-card,
+  .panel-card,
+  .admin-map-card,
+  .ai-instruction-card,
+  .admin-right-section,
+  .sidebar-section,
+  .scenario-card,
+  .staff-item,
+  .hotel-card,
+  .hotel-preview-card,
+  .admin-login-card,
+  .landing-metric-card,
+  .stat-mini,
+  #staff-identity-card {
+    border-radius: 14px !important;
+    padding: 14px !important;
+  }
+
+  .admin-body {
+    grid-template-columns: 240px 1fr 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .role-cards {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .role-cards .role-card {
+    max-width: none !important;
+    min-height: 180px;
+  }
+
+  .landing-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .landing-metric-card {
+    padding: 10px 8px !important;
+  }
+
+  .guest-grid-tiles,
+  .scenarios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-layout {
+    height: auto;
+    min-height: 420px;
+    flex-direction: column;
+  }
+
+  .chat-targets-side {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .admin-body {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar,
+  .admin-right {
+    border: 0;
+  }
+
+  .admin-map-svg {
+    height: 260px;
+  }
+
+  #screen-staff-dashboard > div[style*="display:grid;grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  #screen-staff-dashboard > div[style*="display:grid;grid-template-columns:1fr 1fr"] > div {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  #screen-staff-dashboard > div[style*="padding:20px 24px 0"] {
+    padding: 12px 12px 0 !important;
+  }
+
+  #staff-identity-card {
+    gap: 12px !important;
+  }
+
+  #staff-id-avatar {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 18px !important;
+  }
+
+  #staff-id-name {
+    font-size: 18px !important;
+  }
+
+  #staff-duty-time {
+    font-size: 20px !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .guest-header,
+  .guest-dash-header,
+  .admin-header {
+    padding: 10px 12px !important;
+    gap: 8px;
+  }
+
+  .guest-body {
+    padding: 14px 12px 18px;
+  }
+
+  .step-title,
+  .admin-login-title {
+    font-size: 22px;
+  }
+
+  .step-sub,
+  .landing-sub,
+  .tile-content,
+  .status-message {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .role-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  .role-card {
+    max-width: 100% !important;
+    min-height: 0;
+    padding: 14px !important;
+  }
+
+  .role-icon {
+    font-size: 20px;
+  }
+
+  .role-name {
+    font-size: 18px !important;
+  }
+
+  .landing-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .landing-metric-value {
+    font-size: 16px;
+  }
+
+  .landing-metric-label {
+    font-size: 9px;
+  }
+
+  .guest-app-layout {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .status-card-premium,
+  .dash-tile,
+  .staff-card-modern,
+  .collapsible-info-card,
+  .panel-card,
+  .admin-map-card,
+  .ai-instruction-card,
+  .admin-right-section,
+  .sidebar-section,
+  .scenario-card,
+  .staff-item,
+  .hotel-card,
+  .hotel-preview-card,
+  .admin-login-card,
+  .stat-mini,
+  #staff-identity-card {
+    border-radius: 12px !important;
+    padding: 12px !important;
+  }
+
+  .sos-grid,
+  .contact-grid,
+  .cctv-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .map-zoom-btn,
+  .vbtn-glass-sq,
+  .mini-send-btn,
+  .btn-secondary,
+  .lang-btn,
+  .vbtn {
+    min-height: 36px;
+  }
+
+  .chat-main-feed.mini-feed {
+    height: 120px;
+  }
+
+  .admin-head-right {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .admin-head-right .lang-switcher {
+    grid-column: 1 / -1;
+  }
+
+  .admin-head-right button,
+  .admin-head-right .btn-secondary {
+    width: 100%;
+  }
+
+  .cctv-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cctv-feed {
+    height: 130px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .landing-title {
+    font-size: clamp(30px, 10vw, 40px) !important;
+    line-height: 1.02;
+  }
+
+  .landing-sub {
+    margin-bottom: 16px;
+  }
+
+  .landing-metrics {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  .landing-metric-card {
+    padding: 8px 6px !important;
+  }
+
+  .landing-metric-value {
+    font-size: 14px;
+  }
+
+  .landing-metric-label {
+    font-size: 8px;
+  }
+
+  .status-card-premium,
+  .dash-tile,
+  .staff-card-modern,
+  .collapsible-info-card,
+  .panel-card,
+  .admin-map-card,
+  .ai-instruction-card,
+  .admin-right-section,
+  .sidebar-section,
+  .scenario-card,
+  .staff-item,
+  .hotel-card,
+  .hotel-preview-card,
+  .admin-login-card,
+  .stat-mini,
+  #staff-identity-card {
+    border-radius: 10px !important;
+    padding: 10px !important;
+  }
+
+  .tile-label,
+  .scenario-type,
+  .sidebar-label,
+  .form-label {
+    font-size: 10px;
+  }
+
+  .scenario-name,
+  .staff-name-text,
+  .hotel-name,
+  .status-title,
+  .p-name,
+  .call-status-label {
+    font-size: 12px !important;
+  }
+
+  .scenario-desc,
+  .staff-role-text,
+  .staff-zone-text,
+  .hotel-loc,
+  .hotel-meta,
+  .gdash-hotel-text,
+  .gdash-city-text,
+  .p-room,
+  .call-duration {
+    font-size: 10px !important;
+  }
+
+  .admin-map-svg {
+    height: 220px;
+  }
+
+  .sos-grid,
+  .contact-grid,
+  .cctv-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-split {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .chat-input-row {
+    gap: 5px;
+  }
+
+  .chat-mini-input {
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  #staff-id-name {
+    font-size: 16px !important;
+  }
+
+  #staff-id-role,
+  #staff-id-badge,
+  #staff-id-shift,
+  #staff-id-zone {
+    font-size: 10px !important;
+  }
+
+  #staff-duty-time {
+    font-size: 16px !important;
+  }
+}
