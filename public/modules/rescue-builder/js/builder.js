@@ -1357,11 +1357,18 @@ async function loadSystemIntoPanel(systemID) {
     }
 }
 
-// Delete system confirmation
+// Delete system (no confirmation popup - execute directly)
 function deleteSystemConfirm(systemID) {
-    if (confirm('Are you sure you want to delete this system? This action cannot be undone.')) {
-        deleteSystem(systemID);
-    }
+    // Show inline confirmation UI in toast instead of popup
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:16px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;z-index:9999;display:flex;gap:8px;align-items:center;';
+    toast.innerHTML = `
+      <span>Delete this system?</span>
+      <button onclick="deleteSystem('${systemID}'); this.parentElement.remove();" style="padding:6px 12px;background:rgba(239,68,68,0.3);border:1px solid rgba(239,68,68,0.5);color:#f87171;border-radius:4px;cursor:pointer;">Confirm</button>
+      <button onclick="this.parentElement.remove();" style="padding:6px 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#cbd5e1;border-radius:4px;cursor:pointer;">Cancel</button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 8000);
 }
 
 // Delete system from API and localStorage

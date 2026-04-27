@@ -21,6 +21,50 @@ const SOS_TYPES = {
 };
 
 /**
+ * Play loud siren sound using Web Audio API
+ */
+function playSiren(duration = 5000, frequency = 800) {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Siren waveform: alternating frequency for classic siren sound
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+    // Ramp up and down frequency for siren effect
+    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.5);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency, audioContext.currentTime + 1);
+
+    // Create pulsing effect
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.8, audioContext.currentTime + 0.1);
+    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.5);
+
+    // Repeat siren pattern
+    let time = audioContext.currentTime;
+    const endTime = audioContext.currentTime + (duration / 1000);
+
+    while (time < endTime) {
+      oscillator.frequency.exponentialRampToValueAtTime(1200, time + 0.4);
+      oscillator.frequency.exponentialRampToValueAtTime(frequency, time + 0.8);
+      gainNode.gain.exponentialRampToValueAtTime(0.8, time + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.3, time + 0.5);
+      time += 1;
+    }
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(endTime);
+  } catch (err) {
+    console.log('Siren audio error:', err);
+  }
+}
+
+/**
  * Trigger SOS for a given type
  */
 export async function triggerSOS(type = 'sos') {
@@ -28,6 +72,9 @@ export async function triggerSOS(type = 'sos') {
   sosActive = true;
 
   const info = SOS_TYPES[type] || SOS_TYPES.sos;
+
+  // Play loud siren immediately
+  playSiren(5000, 800);
 
   // Update status indicator
   updateStatus('EMERGENCY - SOS ACTIVE', 'red');
@@ -41,8 +88,8 @@ export async function triggerSOS(type = 'sos') {
     distance: 'YOUR LOCATION',
   });
 
-  // Show dispatching notification
-  showToast(`🚨 ${info.label.toUpperCase()} — Emergency services dispatched!`, 'critical');
+  // Show dispatching notification with siren indicator
+  showToast(`🚨 ${info.label.toUpperCase()} — SIREN ACTIVATED! Emergency services dispatched!`, 'critical');
 
   // Show loading in AI panel
   showAIResponse('⏳ Getting emergency guidance from ResQAI...');

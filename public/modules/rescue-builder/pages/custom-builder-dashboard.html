@@ -484,16 +484,19 @@
         }
 
         async function deleteSystem(systemID) {
-            const confirmed = window.confirm('Delete this rescue system? This cannot be undone.');
-            if (!confirmed) return;
-
             try {
                 // Delete from database via API
                 const resp = await fetch(`${API_BASE}/${systemID}`, { method: 'DELETE' });
                 const data = await resp.json();
 
                 if (!resp.ok || !data.success) {
-                    alert('Failed to delete system: ' + (data.error || 'Unknown error'));
+                    console.error('Failed to delete:', data.error);
+                    // Show toast notification instead of alert
+                    const toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;z-index:9999;';
+                    toast.textContent = '❌ Failed to delete system';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
                     return;
                 }
 
@@ -501,11 +504,23 @@
                 const systems = getStoredSystems().filter((s) => (s.systemID || s.id) !== systemID);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(systems));
 
+                // Show success toast
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:8px;z-index:9999;';
+                toast.textContent = '✅ System deleted successfully';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+
                 // Reload the system list
                 loadSystems();
             } catch (error) {
                 console.error('Delete failed:', error);
-                alert('Network error while deleting system.');
+                // Show error toast
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;z-index:9999;';
+                toast.textContent = '❌ Network error while deleting system';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
             }
         }
 

@@ -453,7 +453,7 @@
           <div class="text-slate-400 text-sm mb-1">Emergency? Tap the button to alert all staff.</div>
           <div class="text-slate-600 text-xs">Your location and emergency type will be logged.</div>
         </div>
-        <div class="flex justify-center mb-6">
+        <div class="flex justify-center gap-4 mb-6">
           <div class="relative">
             <button onclick="activateSOS()"
               class="w-36 h-36 rounded-full bg-gradient-to-br from-rose-600 to-rose-500 text-white font-black font-headline text-2xl shadow-[0_0_60px_rgba(239,68,68,0.4)] hover:shadow-[0_0_80px_rgba(239,68,68,0.6)] transition-all hover:scale-105 active:scale-95 border-4 border-rose-400/30 relative ring-anim"
@@ -461,8 +461,12 @@
               🆘<br><span class="text-sm font-bold tracking-widest">SOS</span>
             </button>
           </div>
+          <button id="stop-siren-btn" onclick="stopSiren()"
+            class="hidden w-32 h-32 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 text-white font-black font-headline text-xl shadow-[0_0_40px_rgba(100,116,139,0.4)] hover:shadow-[0_0_60px_rgba(100,116,139,0.6)] transition-all hover:scale-105 active:scale-95 border-4 border-slate-400/30 flex items-center justify-center">
+            🔇<br><span class="text-xs font-bold tracking-widest">STOP</span>
+          </button>
         </div>
-        <p class="text-slate-600 text-xs">Hold for 1 second to confirm. All admins will be immediately notified.</p>
+        <p class="text-slate-600 text-xs">Press SOS to activate siren. Use STOP button to silence.</p>
       </div>
 
       <!-- Emergency Type Selector -->
@@ -871,6 +875,65 @@
       } catch (err) { toast('Error loading system: ' + err.message, 'error'); }
     }
 
+    // ===== SIREN SOUND =====
+    let sirenAudioContext = null;
+    let sirenOscillator = null;
+    let sirenGainNode = null;
+
+    function playSiren(duration = 5000, frequency = 800) {
+      try {
+        sirenAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        sirenOscillator = sirenAudioContext.createOscillator();
+        sirenGainNode = sirenAudioContext.createGain();
+
+        sirenOscillator.connect(sirenGainNode);
+        sirenGainNode.connect(sirenAudioContext.destination);
+
+        sirenOscillator.type = 'sine';
+        sirenOscillator.frequency.setValueAtTime(frequency, sirenAudioContext.currentTime);
+        sirenOscillator.frequency.exponentialRampToValueAtTime(1200, sirenAudioContext.currentTime + 0.5);
+        sirenOscillator.frequency.exponentialRampToValueAtTime(frequency, sirenAudioContext.currentTime + 1);
+
+        sirenGainNode.gain.setValueAtTime(0.3, sirenAudioContext.currentTime);
+        sirenGainNode.gain.exponentialRampToValueAtTime(0.8, sirenAudioContext.currentTime + 0.1);
+        sirenGainNode.gain.exponentialRampToValueAtTime(0.3, sirenAudioContext.currentTime + 0.5);
+
+        let time = sirenAudioContext.currentTime;
+        const endTime = sirenAudioContext.currentTime + (duration / 1000);
+
+        while (time < endTime) {
+          sirenOscillator.frequency.exponentialRampToValueAtTime(1200, time + 0.4);
+          sirenOscillator.frequency.exponentialRampToValueAtTime(frequency, time + 0.8);
+          sirenGainNode.gain.exponentialRampToValueAtTime(0.8, time + 0.1);
+          sirenGainNode.gain.exponentialRampToValueAtTime(0.3, time + 0.5);
+          time += 1;
+        }
+
+        sirenOscillator.start(sirenAudioContext.currentTime);
+        sirenOscillator.stop(endTime);
+        document.getElementById('stop-siren-btn').classList.remove('hidden');
+      } catch (err) {
+        console.log('Siren audio error:', err);
+      }
+    }
+
+    function stopSiren() {
+      try {
+        if (sirenOscillator) {
+          sirenOscillator.stop();
+          sirenOscillator = null;
+        }
+        if (sirenAudioContext) {
+          sirenAudioContext.close();
+          sirenAudioContext = null;
+        }
+        document.getElementById('stop-siren-btn').classList.add('hidden');
+        toast('🔇 Siren stopped', 'info');
+      } catch (err) {
+        console.log('Error stopping siren:', err);
+      }
+    }
+
     // ===== SOS =====
     function selectSOSType(id, label) {
       selectedSOSType = id;
@@ -882,9 +945,9 @@
     }
 
     async function activateSOS() {
-      const confirmed = confirm(`🚨 Send SOS alert to all admin staff?\n\nType: ${selectedSOSType.toUpperCase()}\n\nThis will immediately notify all administrators.`);
-      if (!confirmed) return;
-      toast('🚨 SOS ALERT SENT!', 'error');
+      // Play siren immediately - no confirmation dialog
+      playSiren(5000, 800);
+      toast('🚨 SOS ALERT SENT! SIREN ACTIVATED!', 'error');
       try {
         const resp = await fetch(`${API}/log-emergency`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
