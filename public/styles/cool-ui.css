@@ -1,0 +1,167 @@
+/* =========================================================
+   ResQAI Visual Polish Layer
+   Additive styles for modern depth, motion, and clarity.
+   ========================================================= */
+
+:root {
+    --cool-accent-1: rgba(255, 83, 82, 0.22);
+    --cool-accent-2: rgba(20, 209, 255, 0.16);
+    --cool-accent-3: rgba(183, 109, 255, 0.14);
+    --cool-border: rgba(255, 255, 255, 0.12);
+    --cool-shadow: 0 16px 42px rgba(0, 0, 0, 0.35);
+    --cool-shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+body.cool-ui {
+    position: relative;
+    isolation: isolate;
+}
+
+body.cool-ui::before,
+body.cool-ui::after {
+    content: "";
+    position: fixed;
+    pointer-events: none;
+    border-radius: 999px;
+    filter: blur(74px);
+    z-index: -1;
+}
+
+body.cool-ui::before {
+    width: 18rem;
+    height: 18rem;
+    top: -4rem;
+    left: -4rem;
+    background: var(--cool-accent-1);
+}
+
+body.cool-ui::after {
+    width: 22rem;
+    height: 22rem;
+    right: -8rem;
+    bottom: -10rem;
+    background: var(--cool-accent-2);
+}
+
+body.cool-ui .glass-card,
+body.cool-ui .card,
+body.cool-ui .alert-card,
+body.cool-ui .summary-card,
+body.cool-ui .system-card,
+body.cool-ui .panel-card,
+body.cool-ui .status-card,
+body.cool-ui .scenario-card,
+body.cool-ui .hotel-card,
+body.cool-ui .guest-info-card,
+body.cool-ui .auth-card,
+body.cool-ui .card-shell {
+    border: 1px solid var(--cool-border) !important;
+    box-shadow: var(--cool-shadow-soft);
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+body.cool-ui .glass-card:hover,
+body.cool-ui .card:hover,
+body.cool-ui .system-card:hover,
+body.cool-ui .summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--cool-shadow);
+    border-color: rgba(255, 179, 174, 0.24) !important;
+}
+
+body.cool-ui .material-symbols-outlined {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+body.cool-ui button,
+body.cool-ui .action-btn,
+body.cool-ui .nav-link,
+body.cool-ui .nav-tab,
+body.cool-ui .btn,
+body.cool-ui .btn-primary,
+body.cool-ui .btn-secondary,
+body.cool-ui a[role='button'] {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+body.cool-ui button:hover,
+body.cool-ui .action-btn:hover,
+body.cool-ui .btn:hover,
+body.cool-ui .btn-primary:hover,
+body.cool-ui .btn-secondary:hover,
+body.cool-ui a[role='button']:hover {
+    box-shadow: 0 8px 24px rgba(255, 83, 82, 0.16);
+}
+
+body.cool-ui button:active,
+body.cool-ui .action-btn:active,
+body.cool-ui .nav-link:active,
+body.cool-ui .nav-tab:active,
+body.cool-ui .btn:active,
+body.cool-ui .btn-primary:active,
+body.cool-ui .btn-secondary:active,
+body.cool-ui a[role='button']:active {
+    transform: translateY(1px) scale(0.985);
+}
+
+body.cool-ui input,
+body.cool-ui textarea,
+body.cool-ui select {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body.cool-ui input:focus,
+body.cool-ui textarea:focus,
+body.cool-ui select:focus {
+    border-color: rgba(20, 209, 255, 0.42) !important;
+    box-shadow: 0 0 0 3px rgba(20, 209, 255, 0.14);
+}
+
+body.cool-ui .nav-link.active,
+body.cool-ui .nav-tab.active {
+    background-image: linear-gradient(90deg, rgba(255, 83, 82, 0.18), rgba(255, 179, 174, 0.1));
+}
+
+body.cool-ui .wireframe-bg {
+    opacity: 0.2 !important;
+}
+
+body.cool-ui .hero-gradient {
+    filter: saturate(1.1);
+}
+
+/* Compact neon accent for high-priority emergency CTAs */
+body.cool-ui #main-sos-btn,
+body.cool-ui .sos-btn,
+body.cool-ui .emergency-btn {
+    box-shadow: 0 0 0 1px rgba(255, 83, 82, 0.2), 0 14px 36px rgba(255, 83, 82, 0.2);
+}
+
+@media (max-width: 767px) {
+    body.cool-ui::before {
+        width: 13rem;
+        height: 13rem;
+    }
+
+    body.cool-ui::after {
+        width: 15rem;
+        height: 15rem;
+    }
+
+    body.cool-ui .glass-card,
+    body.cool-ui .card,
+    body.cool-ui .summary-card,
+    body.cool-ui .system-card {
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.26);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.cool-ui *,
+    body.cool-ui *::before,
+    body.cool-ui *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
