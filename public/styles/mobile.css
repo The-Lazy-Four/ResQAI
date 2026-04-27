@@ -452,9 +452,58 @@ body.mobile-drawer-open .mobile-drawer-overlay {
     body.mobile-rescue-admin #live-feed-list,
     body.mobile-rescue-admin #activity-logs-list,
     body.mobile-rescue-admin #emergency-log-list,
-    body.mobile-rescue-admin #alert-history-list {
+    body.mobile-rescue-admin #alert-history-list,
+    body.mobile-rescue-admin #sos-events-list,
+    body.mobile-rescue-admin #staff-roster {
         max-height: 30dvh !important;
         overflow-y: auto !important;
+    }
+
+    body.mobile-rescue-admin header {
+        padding: 0.6rem 0.75rem !important;
+    }
+
+    body.mobile-rescue-admin header>div:first-child {
+        gap: 0.45rem !important;
+        min-width: 0;
+    }
+
+    body.mobile-rescue-admin header>div:first-child>div.h-4,
+    body.mobile-rescue-admin header>div:first-child>div.flex.items-center.gap-2.px-3.py-1\.5,
+    body.mobile-rescue-admin #system-name-badge {
+        display: none !important;
+    }
+
+    body.mobile-rescue-admin header>div:last-child {
+        gap: 0.45rem !important;
+    }
+
+    body.mobile-rescue-admin header>div:last-child>button:not(:last-child) {
+        display: none !important;
+    }
+
+    body.mobile-rescue-admin header>div:last-child>button:last-child {
+        padding: 0.5rem 0.7rem !important;
+        font-size: 0.58rem !important;
+        letter-spacing: 0.08em !important;
+    }
+
+    body.mobile-rescue-admin #section-alerts .flex.gap-3.items-center,
+    body.mobile-rescue-admin #section-ai .flex.gap-3.mb-4 {
+        flex-wrap: wrap !important;
+        align-items: stretch !important;
+    }
+
+    body.mobile-rescue-admin #btn-broadcast,
+    body.mobile-rescue-admin #section-ai .flex.gap-3.mb-4>button {
+        width: 100%;
+        margin-left: 0 !important;
+        justify-content: center;
+    }
+
+    body.mobile-rescue-admin #broadcast-severity,
+    body.mobile-rescue-admin #ai-query-input {
+        width: 100%;
     }
 
     body.mobile-rescue-user .grid.grid-cols-3,
@@ -463,12 +512,68 @@ body.mobile-drawer-open .mobile-drawer-overlay {
         gap: 0.5rem !important;
     }
 
-    body.mobile-rescue-user #alerts-list,
-    body.mobile-rescue-user #guide-steps,
+    body.mobile-rescue-user #all-alerts-list,
+    body.mobile-rescue-user #home-alerts-preview,
+    body.mobile-rescue-user #evac-steps,
+    body.mobile-rescue-user #sos-history,
     body.mobile-rescue-user #activity-list,
     body.mobile-rescue-user #chat-messages {
         max-height: 30dvh;
         overflow-y: auto;
+    }
+
+    body.mobile-rescue-user header {
+        padding: 0.55rem 0.7rem !important;
+    }
+
+    body.mobile-rescue-user header>div:first-child {
+        min-width: 0;
+        gap: 0.4rem !important;
+    }
+
+    body.mobile-rescue-user #hdr-org {
+        max-width: 42vw !important;
+    }
+
+    body.mobile-rescue-user header>div:last-child>button {
+        padding: 0.45rem 0.6rem !important;
+        font-size: 0.56rem !important;
+        letter-spacing: 0.08em !important;
+        gap: 0.2rem !important;
+    }
+
+    body.mobile-rescue-user header>div:last-child>button .material-symbols-outlined {
+        font-size: 0.95rem !important;
+    }
+
+    body.mobile-rescue-user .fixed.top-14.left-0.w-full.z-40 {
+        padding: 0.35rem 0.45rem !important;
+        gap: 0.35rem !important;
+    }
+
+    body.mobile-rescue-user .nav-tab {
+        padding: 0.45rem 0.55rem !important;
+        font-size: 0.55rem !important;
+        letter-spacing: 0.05em !important;
+        white-space: nowrap;
+        gap: 0.2rem !important;
+    }
+
+    body.mobile-rescue-user .pt-28.pb-8.px-4.max-w-2xl.mx-auto {
+        padding-top: 6.4rem !important;
+        padding-left: 0.65rem !important;
+        padding-right: 0.65rem !important;
+        padding-bottom: 0.8rem !important;
+    }
+
+    body.mobile-rescue-user #section-ai .flex.gap-2.items-end {
+        align-items: stretch;
+    }
+
+    body.mobile-rescue-user #section-ai #btn-send-chat {
+        width: 2.6rem;
+        height: auto;
+        min-height: 2.6rem;
     }
 
     body.mobile-rescue-home .systems-grid {
