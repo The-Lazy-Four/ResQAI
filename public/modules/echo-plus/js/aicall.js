@@ -185,7 +185,7 @@ window.ResQAICall = class AICallSystem {
     async _callAI(userMessage) {
         const pos = this.currentPosition;
         const type = this.incident?.type || "other";
-
+        
         const mapContext = `Hotel layout: L-shaped building with North Wing and South Wing. 
 North Wing: Rooms 101-110. South Wing: Rooms 111-120.
 Stairwell A: North end of North Wing. Stairwell B: South end of South Wing.
@@ -201,7 +201,7 @@ Assembly Point: Open area 50m West of the Central Lobby entrance.`;
             hotelArchitecture = mapContext + `\nAlways refer to these map zones for navigation. Never use elevators.`;
         }
 
-        const stepsContext = (this.instructionSteps && this.instructionSteps.length > 0)
+        const stepsContext = (this.instructionSteps && this.instructionSteps.length > 0) 
             ? `Initial AI-generated guidance steps for this guest: ${this.instructionSteps.join(', ')}.`
             : "";
 
