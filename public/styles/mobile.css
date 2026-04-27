@@ -312,6 +312,7 @@ body.mobile-drawer-open .mobile-drawer-overlay {
    ========================================================= */
 
 @media (max-width: 767px) {
+
     /* ---------- Module Selection ---------- */
     body.mobile-module-selection main {
         padding-top: 5.2rem !important;
