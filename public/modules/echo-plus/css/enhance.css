@@ -1,0 +1,742 @@
+/*
+ * ECHO+ enhance.css
+ * Additive-only UI enhancement layer.
+ * Loaded LAST — overrides via specificity/cascade only.
+ * Zero structural changes. No JS touched. No IDs removed.
+ *
+ * Strategy:
+ *   • Rich colour grading — deeper, more saturated tokens
+ *   • Desktop: refined depth, glow hierarchy, micro-polish
+ *   • Mobile (≤640px): compact card system, bottom-tab feel,
+ *     thumb-friendly SOS grid, no long-scroll pages
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   1. ENHANCED COLOUR TOKEN OVERRIDE
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* Richer background depth */
+  --bg:  #080b11;
+  --bg2: #0d1119;
+  --bg3: #131926;
+
+  /* Glass layers — more contrast */
+  --glass:  rgba(255,255,255,0.035);
+  --glass2: rgba(255,255,255,0.065);
+  --border: rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+
+  /* Brand accent — warmer coral → electric gradient */
+  --blue:      #ff6f61;
+  --blue-glow: rgba(255,111,97,0.28);
+  --blue-dim:  rgba(255,111,97,0.11);
+
+  /* Incident colours — saturated, vivid */
+  --fire:        #ff4545;
+  --fire-glow:   rgba(255,69,69,0.30);
+  --fire-dim:    rgba(255,69,69,0.10);
+
+  --medical:     #00e887;
+  --medical-glow:rgba(0,232,135,0.26);
+  --medical-dim: rgba(0,232,135,0.09);
+
+  --quake:       #ffc200;
+  --quake-glow:  rgba(255,194,0,0.26);
+  --quake-dim:   rgba(255,194,0,0.09);
+
+  --purple:      #c084fc;
+  --purple-glow: rgba(192,132,252,0.26);
+  --purple-dim:  rgba(192,132,252,0.10);
+
+  /* Typography */
+  --text:  #e4e8f2;
+  --text2: #96a3ba;
+  --text3: #596070;
+
+  /* Radii */
+  --r:  16px;
+  --r2: 12px;
+  --r3: 9px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2. GLOBAL BACKGROUND — deeper mesh
+   ═══════════════════════════════════════════════════════════ */
+body {
+  background:
+    radial-gradient(ellipse 120% 60% at 70% -10%, rgba(255,69,69,0.055) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 10% 90%,  rgba(192,132,252,0.04) 0%, transparent 60%),
+    #080b11;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgba(255,69,69,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,69,69,0.028) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. LANDING — richer hero gradient & card glow
+   ═══════════════════════════════════════════════════════════ */
+#screen-landing.echo-screen {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(255,69,69,0.17) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(192,132,252,0.07) 0%, transparent 50%),
+    var(--bg);
+}
+
+.landing-title {
+  background: linear-gradient(145deg, #ffffff 0%, #c8d0e8 60%, #9da8c4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 40px rgba(255,111,97,0.2));
+}
+
+.echo-logo-mark {
+  background: linear-gradient(135deg, #ff6f61 0%, #c084fc 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,111,97,0.25),
+    0 8px 32px rgba(255,111,97,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+/* Role cards — rich glow on hover */
+.role-card {
+  background:
+    linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.28s ease, border-color 0.28s ease;
+}
+.role-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,111,97,0.18);
+}
+.role-card.guest-card:hover { border-color: rgba(255,111,97,0.3); }
+.role-card.admin-card:hover { border-color: rgba(255,69,69,0.3); }
+
+/* Staff card */
+.role-card.staff-card:hover {
+  border-color: rgba(0,232,135,0.35) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55), 0 0 32px rgba(0,232,135,0.12) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4. HEADERS — richer glass with coloured rim
+   ═══════════════════════════════════════════════════════════ */
+.guest-header,
+.guest-dash-header,
+.admin-header {
+  background: rgba(8,11,17,0.85) !important;
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border-bottom: 1px solid rgba(255,255,255,0.065) !important;
+  box-shadow: 0 1px 0 rgba(255,111,97,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   5. CARDS — depth + glow system
+   ═══════════════════════════════════════════════════════════ */
+.panel-card,
+.dash-tile,
+.scenario-card,
+.hotel-card,
+.map-card,
+.admin-map-card,
+.instruction-card,
+.guest-info-card,
+.status-card,
+.collapsible-info-card,
+.staff-nearby-card,
+.ai-panel,
+.admin-login-card {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.32), 0 1px 0 rgba(255,255,255,0.04) inset;
+  backdrop-filter: blur(4px);
+}
+
+.panel-card:hover,
+.dash-tile:hover,
+.scenario-card:hover,
+.hotel-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.48), 0 0 0 1px rgba(255,255,255,0.09);
+}
+
+/* Scenario type accent glow */
+.scenario-card.fire:hover    { box-shadow: 0 8px 32px rgba(255,69,69,0.2),  0 0 0 1px rgba(255,69,69,0.25); }
+.scenario-card.medical:hover { box-shadow: 0 8px 32px rgba(0,232,135,0.18), 0 0 0 1px rgba(0,232,135,0.25); }
+.scenario-card.earthquake:hover { box-shadow: 0 8px 32px rgba(255,194,0,0.18), 0 0 0 1px rgba(255,194,0,0.25); }
+.scenario-card.suspicious:hover { box-shadow: 0 8px 32px rgba(192,132,252,0.18), 0 0 0 1px rgba(192,132,252,0.25); }
+
+/* Status card glow */
+.status-card.danger  { box-shadow: 0 0 32px rgba(255,69,69,0.18),  inset 0 1px 0 rgba(255,69,69,0.1); }
+.status-card.warning { box-shadow: 0 0 24px rgba(255,194,0,0.14),  inset 0 1px 0 rgba(255,194,0,0.08); }
+.status-card.alert   { box-shadow: 0 0 24px rgba(192,132,252,0.14),inset 0 1px 0 rgba(192,132,252,0.08); }
+.status-card.normal  { box-shadow: 0 0 24px rgba(0,232,135,0.12),  inset 0 1px 0 rgba(0,232,135,0.08); }
+
+/* ═══════════════════════════════════════════════════════════
+   6. SOS BUTTONS — vibrant, colour-coded glow
+   ═══════════════════════════════════════════════════════════ */
+.sos-btn {
+  border-radius: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.18s ease, background 0.18s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer layer */
+.sos-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.07) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+  pointer-events: none;
+}
+.sos-btn:hover::before { transform: translateX(100%); }
+
+.sos-btn.fire {
+  background: rgba(255,69,69,0.10) !important;
+  border-color: rgba(255,69,69,0.35) !important;
+  color: #ff7070 !important;
+}
+.sos-btn.fire:hover {
+  background: rgba(255,69,69,0.20) !important;
+  box-shadow: 0 0 24px rgba(255,69,69,0.30), 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+.sos-btn.fire:active {
+  background: rgba(255,69,69,0.30) !important;
+  transform: scale(0.96);
+  box-shadow: 0 0 32px rgba(255,69,69,0.45);
+}
+
+.sos-btn.med {
+  background: rgba(0,232,135,0.08) !important;
+  border-color: rgba(0,232,135,0.30) !important;
+  color: #00e887 !important;
+}
+.sos-btn.med:hover {
+  background: rgba(0,232,135,0.16) !important;
+  box-shadow: 0 0 24px rgba(0,232,135,0.25), 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+.sos-btn.med:active {
+  background: rgba(0,232,135,0.28) !important;
+  transform: scale(0.96);
+}
+
+.sos-btn.quake {
+  background: rgba(255,194,0,0.08) !important;
+  border-color: rgba(255,194,0,0.30) !important;
+  color: #ffc200 !important;
+}
+.sos-btn.quake:hover {
+  background: rgba(255,194,0,0.16) !important;
+  box-shadow: 0 0 24px rgba(255,194,0,0.25), 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+.sos-btn.quake:active {
+  background: rgba(255,194,0,0.28) !important;
+  transform: scale(0.96);
+}
+
+.sos-btn.sec {
+  background: rgba(192,132,252,0.08) !important;
+  border-color: rgba(192,132,252,0.30) !important;
+  color: #c084fc !important;
+}
+.sos-btn.sec:hover {
+  background: rgba(192,132,252,0.16) !important;
+  box-shadow: 0 0 24px rgba(192,132,252,0.25), 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px) scale(1.03);
+}
+.sos-btn.sec:active {
+  background: rgba(192,132,252,0.28) !important;
+  transform: scale(0.96);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   7. TRIGGER BUTTONS (ADMIN SIDEBAR)
+   ═══════════════════════════════════════════════════════════ */
+.trigger-btn {
+  border-radius: 12px !important;
+  border-width: 1.5px !important;
+}
+.trigger-btn.fire-btn:hover {
+  box-shadow: 0 0 20px rgba(255,69,69,0.22), 0 4px 12px rgba(0,0,0,0.25);
+  background: rgba(255,69,69,0.09) !important;
+}
+.trigger-btn.medical-btn:hover {
+  box-shadow: 0 0 20px rgba(0,232,135,0.2), 0 4px 12px rgba(0,0,0,0.25);
+  background: rgba(0,232,135,0.09) !important;
+}
+.trigger-btn.quake-btn:hover {
+  box-shadow: 0 0 20px rgba(255,194,0,0.2), 0 4px 12px rgba(0,0,0,0.25);
+  background: rgba(255,194,0,0.09) !important;
+}
+.trigger-btn.suspect-btn:hover {
+  box-shadow: 0 0 20px rgba(192,132,252,0.2), 0 4px 12px rgba(0,0,0,0.25);
+  background: rgba(192,132,252,0.09) !important;
+}
+.trigger-btn.active-emergency {
+  border-left-width: 4px !important;
+  box-shadow: 0 0 28px rgba(255,69,69,0.40) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   8. BUTTONS — primary + secondary
+   ═══════════════════════════════════════════════════════════ */
+.btn-primary {
+  background: linear-gradient(135deg, #ff6f61 0%, #e0587c 50%, #c084fc 100%) !important;
+  box-shadow: 0 4px 24px rgba(255,111,97,0.32), inset 0 1px 0 rgba(255,255,255,0.12);
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s ease, box-shadow 0.2s ease !important;
+}
+.btn-primary:hover {
+  filter: brightness(1.08) saturate(1.15);
+  box-shadow: 0 8px 36px rgba(255,111,97,0.45) !important;
+  transform: translateY(-2px) !important;
+}
+.btn-primary:active { transform: scale(0.97) !important; }
+
+.btn-secondary {
+  border-radius: 10px !important;
+  border-color: rgba(255,255,255,0.09) !important;
+  transition: background 0.18s, border-color 0.18s, box-shadow 0.18s !important;
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.16) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   9. STAT MINIS — richer number gradient
+   ═══════════════════════════════════════════════════════════ */
+.stat-mini {
+  border-radius: 14px !important;
+  background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 12px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.07) !important;
+}
+.stat-mini.c-green .stat-mini-val { color: #00e887; text-shadow: 0 0 16px rgba(0,232,135,0.4); }
+.stat-mini.c-red   .stat-mini-val { color: #ff4545; text-shadow: 0 0 16px rgba(255,69,69,0.4); }
+.stat-mini.c-blue  .stat-mini-val { color: #ff8070; text-shadow: 0 0 16px rgba(255,111,97,0.3); }
+.stat-mini.c-amber .stat-mini-val { color: #ffc200; text-shadow: 0 0 16px rgba(255,194,0,0.35); }
+
+/* ═══════════════════════════════════════════════════════════
+   10. NOTIFICATION / TIMELINE
+   ═══════════════════════════════════════════════════════════ */
+.notif-item {
+  border-radius: 8px;
+  margin: 4px 8px;
+  transition: background 0.15s;
+}
+.notif-item:hover { background: rgba(255,255,255,0.04); }
+.notif-item.fire      { border-left-color: var(--fire);    background: rgba(255,69,69,0.04); }
+.notif-item.medical   { border-left-color: var(--medical); background: rgba(0,232,135,0.04); }
+.notif-item.earthquake{ border-left-color: var(--quake);   background: rgba(255,194,0,0.04); }
+.notif-item.suspicious{ border-left-color: var(--purple);  background: rgba(192,132,252,0.04); }
+
+/* ═══════════════════════════════════════════════════════════
+   11. TOAST — richer pop
+   ═══════════════════════════════════════════════════════════ */
+.toast {
+  border-radius: 14px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06) !important;
+  backdrop-filter: blur(20px);
+}
+.toast.t-fire      { border-left-color: var(--fire);    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 24px rgba(255,69,69,0.18) !important; }
+.toast.t-medical   { border-left-color: var(--medical); box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 24px rgba(0,232,135,0.16) !important; }
+.toast.t-earthquake{ border-left-color: var(--quake);   box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 24px rgba(255,194,0,0.16) !important; }
+.toast.t-suspicious{ border-left-color: var(--purple);  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 24px rgba(192,132,252,0.16) !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   12. STAFF ALERT BANNER — premium animated gradient border
+   ═══════════════════════════════════════════════════════════ */
+#staff-alert-banner {
+  border-radius: 14px !important;
+  background: linear-gradient(135deg,
+    rgba(127,29,29,0.9) 0%,
+    rgba(153,27,27,0.85) 100%) !important;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(255,69,69,0.25), 0 0 0 1px rgba(255,69,69,0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   13. FORM INPUTS
+   ═══════════════════════════════════════════════════════════ */
+.form-input:focus,
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(255,111,97,0.18), 0 2px 16px rgba(0,0,0,0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   14. SCROLLBAR — slimmer, themed
+   ═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgba(255,111,97,0.4), rgba(192,132,252,0.3));
+  border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   15. GUEST INCIDENT POPUP — inherit theme tokens
+   ═══════════════════════════════════════════════════════════ */
+#guest-room-alert-popup > div {
+  border-radius: 24px !important;
+  background: linear-gradient(160deg, #0d1119 0%, #080b11 100%) !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE  (≤ 640px)  — COMPACT LAYOUT ENGINE
+   All purely additive — no deletions, no JS changes.
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* ── Global mobile body padding reset ────────────────── */
+  body { font-size: 14px; }
+
+  /* ── LANDING ─────────────────────────────────────────── */
+  #screen-landing.echo-screen {
+    padding: 20px 14px 28px;
+    justify-content: flex-start;
+    padding-top: 40px;
+  }
+
+  .echo-logo { margin-bottom: 28px; gap: 10px; }
+  .echo-logo-mark { width: 44px; height: 44px; font-size: 18px; }
+  .echo-logo-text { font-size: 22px; }
+
+  .landing-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 16px; }
+
+  .landing-title {
+    font-size: clamp(28px, 9vw, 38px) !important;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+  }
+  .landing-sub {
+    font-size: 14px !important;
+    margin-bottom: 24px !important;
+    line-height: 1.6;
+  }
+
+  /* Role cards — horizontal 2-col compact on mobile */
+  .role-cards {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 20px;
+    display: grid !important;
+    flex-wrap: unset !important;
+  }
+  .role-cards .role-card {
+    max-width: none !important;
+    padding: 16px 12px !important;
+    min-height: 0 !important;
+    flex: none !important;
+  }
+  .role-icon { font-size: 24px; margin-bottom: 8px; }
+  .role-name { font-size: 14px !important; margin-bottom: 3px; }
+  .role-desc { font-size: 11px; line-height: 1.4; }
+  .role-arrow { top: 14px; right: 12px; font-size: 14px; }
+
+  /* ── GUEST HEADER (mobile) ───────────────────────────── */
+  .guest-header,
+  .guest-dash-header {
+    padding: 10px 14px !important;
+  }
+  .header-logo { font-size: 15px; }
+
+  /* ── STEP FLOW (login) ───────────────────────────────── */
+  .guest-body {
+    padding: 14px 14px 20px !important;
+  }
+  .step-indicator { margin-bottom: 22px; }
+  .step-title { font-size: 20px !important; }
+  .step-sub   { font-size: 13px; margin-bottom: 18px; }
+
+  .hotel-card { padding: 12px 14px !important; gap: 12px; }
+  .hotel-type-badge { width: 38px; height: 38px; font-size: 18px; border-radius: 8px; }
+  .hotel-name { font-size: 14px; }
+  .hotel-loc, .hotel-meta { font-size: 11px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-input { padding: 12px 14px !important; font-size: 14px; }
+  .btn-primary { padding: 14px !important; font-size: 14px; border-radius: 12px !important; }
+
+  /* ── GUEST DASHBOARD (mobile) — compact tile layout ── */
+  .guest-dash-body {
+    padding: 10px 10px 80px !important; /* bottom pad for safe area */
+    gap: 10px !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Guest identity strip — compact */
+  .guest-info-card {
+    padding: 12px 14px !important;
+    gap: 12px;
+    margin-bottom: 10px !important;
+    border-radius: 14px !important;
+  }
+  .guest-avatar { width: 40px; height: 40px; font-size: 15px; border-radius: 10px; }
+  .guest-detail-name { font-size: 15px !important; }
+  .guest-detail-room { font-size: 12px; }
+
+  /* Status card — compact */
+  .status-card {
+    padding: 14px 14px !important;
+    margin-bottom: 10px !important;
+    border-radius: 14px !important;
+  }
+  .status-title   { font-size: 14px !important; }
+  .status-message { font-size: 12px !important; }
+
+  /* SOS GRID — 2×2, larger tap targets, vivid, thumb-reach */
+  .sos-grid {
+    gap: 10px !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .sos-btn {
+    padding: 16px 6px !important;
+    border-radius: 16px !important;
+    font-size: 12px !important;
+    min-height: 80px;
+    gap: 6px !important;
+  }
+  .sos-btn .icon { font-size: 26px !important; }
+
+  /* Map card — shorter on mobile */
+  .map-card {
+    margin-bottom: 10px !important;
+    border-radius: 14px !important;
+  }
+  .map-card svg,
+  .admin-map-svg { height: 160px !important; }
+
+  /* Instruction card */
+  .instruction-card {
+    padding: 14px !important;
+    margin-bottom: 10px !important;
+    border-radius: 14px !important;
+  }
+  .instruction-text { font-size: 14px !important; }
+  .instruction-label { font-size: 10px; }
+
+  /* Right panel  */
+  .right-panel { gap: 10px !important; }
+  .panel-card  { border-radius: 14px !important; }
+  .panel-header { padding: 11px 14px !important; }
+  .panel-title  { font-size: 11px; }
+
+  /* Notif feed shorter */
+  .notif-feed { max-height: 160px; }
+  .notif-item { padding: 10px 12px; font-size: 12px; }
+
+  /* Voice controls — wrap tightly */
+  .voice-controls { gap: 6px; }
+  .vbtn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Lang switcher */
+  .lang-btn { padding: 5px 8px; font-size: 11px; }
+
+  /* Staff nearby */
+  .staff-nearby-card {
+    padding: 10px !important;
+    border-radius: 12px !important;
+  }
+  .staff-nearby-avatar { width: 34px; height: 34px; font-size: 12px; }
+  .staff-nearby-name  { font-size: 12px; }
+  .staff-nearby-actions button { padding: 7px 6px; font-size: 10px; }
+
+  /* Collapsible info */
+  .collapsible-info-card { border-radius: 14px !important; margin-bottom: 10px !important; }
+  .info-header { padding: 12px 14px; font-size: 12px; }
+  .info-body   { padding: 12px 14px; }
+  .plan-item   { font-size: 11px; }
+  .contact-grid { grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .c-item { font-size: 9px; padding: 7px 2px; }
+
+  /* ── ADMIN DASHBOARD (mobile) ────────────────────────── */
+  .admin-header { padding: 10px 12px !important; }
+
+  .admin-body {
+    grid-template-columns: 1fr !important;
+    overflow: visible;
+  }
+
+  .admin-sidebar {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-section { padding: 12px 12px !important; }
+  .sidebar-label   { font-size: 10px; margin-bottom: 8px; }
+
+  /* Trigger buttons — 2 per row on mobile */
+  .trigger-btn {
+    padding: 10px 10px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 6px !important;
+  }
+  .trigger-icon { font-size: 16px; }
+  .trigger-sub  { font-size: 9px; }
+
+  /* Stats */
+  .stats-row { gap: 6px; }
+  .stat-mini { padding: 10px !important; border-radius: 10px !important; }
+  .stat-mini-val { font-size: 22px !important; }
+  .stat-mini-lbl { font-size: 10px; }
+
+  /* Admin main content */
+  .admin-main { padding: 12px !important; gap: 10px !important; }
+
+  .admin-map-card { border-radius: 14px !important; }
+  .admin-map-svg  { height: 200px !important; }
+
+  .scenarios-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+  }
+  .scenario-card  { padding: 10px !important; border-radius: 10px !important; }
+  .scenario-name  { font-size: 12px; }
+  .scenario-desc  { font-size: 10px; }
+  .scenario-sev   { font-size: 9px; padding: 2px 6px; }
+
+  /* Admin right */
+  .admin-right { border-left: 0 !important; border-top: 1px solid var(--border); }
+  .admin-right-section { padding: 12px !important; }
+
+  .staff-item { padding: 8px 10px !important; gap: 8px; border-radius: 8px !important; margin-bottom: 6px !important; }
+  .staff-avatar { width: 28px; height: 28px; font-size: 10px; border-radius: 7px; }
+  .staff-name-text { font-size: 12px; }
+  .staff-role-text,
+  .staff-zone-text { font-size: 10px; }
+  .staff-status { font-size: 9px; padding: 2px 6px; }
+
+  .ai-panel { padding: 12px !important; border-radius: 10px !important; }
+  .ai-text  { font-size: 12px !important; min-height: 36px; }
+
+  /* Timeline */
+  .timeline-item { padding-bottom: 8px; gap: 8px; }
+  .timeline-dot  { width: 6px; height: 6px; margin-top: 4px; }
+  .timeline-event{ font-size: 11px; }
+  .timeline-time { font-size: 10px; }
+
+  /* Clear btn */
+  .clear-all-btn { font-size: 11px; padding: 9px; margin: 0 12px 12px; }
+
+  /* Map legend */
+  .map-legend { padding: 8px 12px; gap: 8px; }
+  .legend-i   { font-size: 10px; }
+  .legend-sq  { width: 8px; height: 8px; }
+
+  /* Login cards */
+  .admin-login-card { padding: 24px 18px !important; border-radius: 18px !important; }
+  .admin-login-title { font-size: 22px; }
+  .admin-login-sub   { font-size: 13px; }
+
+  /* Staff dashboard grid — single col */
+  #screen-staff-dashboard > div[style*="display:grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  /* System status banner */
+  .system-status-banner {
+    margin: 0 10px !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Toast position on mobile */
+  .toast-wrap {
+    top: auto !important;
+    bottom: 16px !important;
+    right: 10px !important;
+    left: 10px !important;
+  }
+  .toast {
+    min-width: 0 !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+  }
+
+  /* Guest incident alert popup */
+  #guest-room-alert-popup > div {
+    padding: 24px 20px !important;
+    border-radius: 20px !important;
+    margin: 12px;
+    width: calc(100% - 24px) !important;
+  }
+
+} /* end @media ≤640px */
+
+/* ═══════════════════════════════════════════════════════════
+   16. TABLET  (641px – 900px) — mid-range tweaks
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 900px) {
+
+  .guest-dash-body {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+    gap: 14px !important;
+  }
+
+  .admin-body {
+    grid-template-columns: 220px 1fr !important;
+  }
+  .admin-right { display: none; }   /* Collapse right panel on tablet */
+
+  .scenarios-grid { grid-template-columns: 1fr 1fr; }
+
+  .sos-btn {
+    padding: 14px 6px !important;
+    min-height: 70px;
+    font-size: 12px !important;
+  }
+  .sos-btn .icon { font-size: 22px !important; }
+
+  .toast-wrap { right: 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   17. DESKTOP (>900px) — refined density
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 901px) {
+
+  .guest-dash-body {
+    padding: 24px 32px !important;
+    gap: 22px !important;
+    max-width: 1280px;
+  }
+
+  .admin-body {
+    grid-template-columns: 268px 1fr 308px;
+  }
+
+  .sos-btn {
+    padding: 14px 6px !important;
+    font-size: 12px !important;
+    min-height: 76px;
+  }
+  .sos-btn .icon { font-size: 22px !important; }
+
+  /* Sidebar hover lift */
+  .admin-sidebar .sidebar-section:hover { background: rgba(255,255,255,0.012); }
+
+}
