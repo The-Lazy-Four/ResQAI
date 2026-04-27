@@ -232,10 +232,7 @@ router.get('/logs/activity', optionalAuth, async (req, res) => {
 router.get('/:systemID/alerts', optionalAuth, async (req, res) => {
     try {
         const alerts = await getSystemAlerts(req.params.systemID);
-        if (!alerts || alerts.length === 0) {
-            return res.json({ success: true, alerts: getMockAlerts(req.params.systemID) });
-        }
-        res.json({ success: true, alerts });
+        res.json({ success: true, alerts: alerts || [] });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
@@ -243,10 +240,22 @@ router.get('/:systemID/alerts', optionalAuth, async (req, res) => {
 router.get('/:systemID/events', optionalAuth, async (req, res) => {
     try {
         const events = await getSystemEvents(req.params.systemID);
-        if (!events || events.length === 0) {
-            return res.json({ success: true, events: getMockEvents(req.params.systemID) });
-        }
-        res.json({ success: true, events });
+        res.json({ success: true, events: events || [] });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// DELETE EVENT
+router.delete('/events/:eventID', optionalAuth, async (req, res) => {
+    try {
+        const db = await getDatabase();
+        await new Promise((resolve, reject) => {
+            db.run(`DELETE FROM system_events WHERE id = ?`, [req.params.eventID], err => err ? reject(err) : resolve());
+        });
+        // Also delete from sos_events just in case
+        await new Promise((resolve) => {
+            db.run(`DELETE FROM sos_events WHERE id = ?`, [req.params.eventID], () => resolve());
+        });
+        res.json({ success: true, message: 'Event resolved' });
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
 

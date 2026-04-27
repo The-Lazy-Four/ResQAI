@@ -972,7 +972,19 @@
       } catch (err) { console.warn('SOS load error:', err.message); }
     }
 
-    function resolveEvent(id) { toast('✅ Event marked as resolved', 'success'); refreshSOSEvents(); }
+    async function resolveEvent(id) { 
+      try {
+        const resp = await fetch(`/api/custom-system/events/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+          toast('✅ Event marked as resolved', 'success'); 
+          refreshSOSEvents();
+        } else {
+          toast('Failed to resolve event', 'error');
+        }
+      } catch (err) {
+        console.error('Error resolving event:', err);
+      }
+    }
 
     // ===== EMERGENCY BUTTONS =====
     function renderEmergencyButtons() {

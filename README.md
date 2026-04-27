@@ -69,10 +69,8 @@ graph TD
 ```text
 public/
   js/                 # Client-side utilities
-    auth/             # Authentication (Supabase OAuth, session guard)
-    config.js         # Dynamic API base URL resolution
+    auth/             # Authentication (Local Account Management)
     resqSocket.js     # Socket.IO client wrapper
-    supabaseClient.js # Supabase auth client
     systemContext.js   # System state management
   modules/
     rescue-builder/
@@ -159,13 +157,17 @@ ResQAI is built for scalability and production reliability:
 
 ## 📸 Screenshots
 
-| ![Dashboard](docs/images/Rapid%20Crisis%20Protocol%20Dashboard.png) | ![Admin Panel](docs/images/Custom%20Rescue%20Builder.png) |
+| ![Crisis Portal](docs/images/Crisis.png) | ![Custom Builder](docs/images/Custom.png) |
 |:---:|:---:|
-| **Operational Dashboard**: Real-time monitoring and incident tracking. | **Rescue Builder Admin**: Configuration of organizational safety nodes. |
+| **Crisis Portal**: Real-time monitoring and incident tracking. | **Custom Builder**: Configuration of organizational safety nodes. |
 
-| ![Crisis Portal](docs/images/Hotel%20Resort%20Module.png) | ![Landing Page](docs/images/Landing%20page.png) |
+| ![Hotel Management Portal](docs/images/Hotel.png) | ![Landing Page](docs/images/Landing%20page.png) |
 |:---:|:---:|
-| **Crisis Portal**: Hospitality-focused emergency guidance and SOS. | **Platform Entry**: Fast onboarding for users in distress. |
+| **Hotel Management Portal**: Hospitality-focused emergency guidance and SOS. | **Landing Page**: Fast onboarding for users in distress. |
+
+| ![Builder Dashboard](docs/images/Custom_Builder_Dashboard.png) | ![Module Selection](docs/images/Module.png) |
+|:---:|:---:|
+| **Builder Dashboard**: Manage and access all custom-built rescue systems. | **Module Selection**: Choose between specialized emergency modules. |
 
 ---
 
@@ -175,7 +177,7 @@ ResQAI is built for scalability and production reliability:
 - **Backend**: Node.js, Express.js, Socket.IO.
 - **Database**: SQLite3 (Production-ready with multi-tenant isolation).
 - **AI Engine**: Google Gemini (Primary), OpenRouter, Groq LLM.
-- **Auth**: Supabase (Google OAuth), JWT tokens.
+- **Auth**: Local Storage Sessions.
 - **Real-Time**: Socket.IO with room-based event isolation.
 - **Location Services**: Leaflet.js & OpenStreetMap.
 
@@ -190,10 +192,6 @@ To run this project, you will need to add the following environment variables to
 GEMINI_API_KEY=your_gemini_key
 OPENROUTER_PRIMARY_API_KEY=your_openrouter_key
 GROQ_API_KEY=your_groq_key
-
-# Auth (optional — for Google OAuth)
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Server
 PORT=3000

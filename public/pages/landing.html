@@ -169,21 +169,7 @@
         </div>
     </section>
 
-    <!-- Auth callback: if Supabase redirected here after Google login, send the user back to where they started -->
-    <script>
-        (function () {
-            // Check if the URL hash contains an access_token (Supabase OAuth callback)
-            if (window.location.hash && window.location.hash.includes('access_token')) {
-                var redirectTo = localStorage.getItem('resqai_auth_redirect');
-                if (redirectTo) {
-                    localStorage.removeItem('resqai_auth_redirect');
-                    // Redirect immediately — carry the hash so Supabase can process the tokens
-                    window.location.replace(redirectTo + window.location.hash);
-                    return; // stop all further execution
-                }
-            }
-        })();
-    </script>
+
 
     <!-- Scroll Animation Engine -->
     <script src="/scripts/scroll-animation.js"></script>

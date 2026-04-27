@@ -2259,9 +2259,21 @@ async function displayActiveSOS() {
     }
 }
 
-function resolveSOSEvent(eventId) {
-    showToast('✅ SOS event marked as resolved', 'success');
-    setTimeout(() => displayActiveSOS(), 300);
+async function resolveSOSEvent(eventId) {
+    try {
+        const resp = await fetch(`${BASE_URL}/api/custom-system/events/${eventId}`, {
+            method: 'DELETE',
+            headers: getAPIHeaders()
+        });
+        if (resp.ok) {
+            showToast('✅ SOS event marked as resolved', 'success');
+            setTimeout(() => displayActiveSOS(), 300);
+        } else {
+            showToast('Failed to resolve event', 'error');
+        }
+    } catch (err) {
+        console.error('Error resolving event:', err);
+    }
 }
 
 function loadAdminSOSAlerts() { displayActiveSOS(); }
