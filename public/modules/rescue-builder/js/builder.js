@@ -9,7 +9,7 @@ if (BASE_URL.includes('file://') || BASE_URL.includes(':5500') || BASE_URL.inclu
 }
 const API_BASE_URL = `${BASE_URL}/api/custom-system`;
 const AUTH_TOKEN_KEY = 'auth-token';
-const DEBUG = true;  // Comprehensive debug logging
+const DEBUG = false;  // Set to false for production
 const STORAGE_KEY = 'resqai_custom_systems';  // Production storage key
 
 // ===== DATA STORAGE =====

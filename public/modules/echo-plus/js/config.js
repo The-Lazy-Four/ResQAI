@@ -93,7 +93,7 @@ window.ECHO_CONFIG = window.ECHO_CONFIG || {
     // ============================================================
     logging: {
         enabled: true,
-        level: 'info', // 'debug', 'info', 'warn', 'error'
+        level: 'warn', // 'debug', 'info', 'warn', 'error' - production: warn only
         logToConsole: true,
         logToServer: false,
         maxLogs: 500

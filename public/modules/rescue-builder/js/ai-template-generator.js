@@ -4,7 +4,7 @@
 // Falls back to RESCUE_TEMPLATES.other if AI fails
 // =====================================================
 
-const AI_TEMPLATE_DEBUG = true;
+const AI_TEMPLATE_DEBUG = false; // Set to false for production
 
 /**
  * Generate a custom template via AI for org type "other"
