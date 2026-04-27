@@ -471,22 +471,43 @@ function setGuestStatus(type, title, message) {
 // ============================================================
 // ADMIN LOGIN
 // ============================================================
-// ADMIN_PASS — declared here so login always works
-const ADMIN_PASS = (window.ECHO_CONFIG && window.ECHO_CONFIG.adminPassword)
-  ? window.ECHO_CONFIG.adminPassword
-  : 'echo2024';
-
-function adminLogin() {
+async function adminLogin() {
   const pass = $('admin-pass-input').value.trim();
   const err = $('admin-login-error');
   err.classList.remove('show');
-  if (pass !== ADMIN_PASS) {
-    err.textContent = 'Incorrect password. Try: echo2024';
+
+  if (!pass) {
+    err.textContent = 'Please enter your password.';
     err.classList.add('show');
     return;
   }
-  show('screen-admin-dashboard');
-  renderAdminNotifications();
+
+  try {
+    const response = await fetch('/api/echo-plus/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass })
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      err.textContent = data.error || 'Invalid password.';
+      err.classList.add('show');
+      return;
+    }
+
+    try {
+      localStorage.setItem('echo_admin_token', data.token);
+    } catch (_) {
+      // Storage may be unavailable in some browser privacy modes.
+    }
+
+    show('screen-admin-dashboard');
+    renderAdminNotifications();
+  } catch (error) {
+    err.textContent = 'Login failed. Please try again.';
+    err.classList.add('show');
+  }
 }
 
 // ============================================================
@@ -1082,7 +1103,7 @@ function updateStaffPanel(assignments) {
   list.innerHTML = staffData.map(s => {
     const c = roleColors[s.role] || { bg: '#1e2a40', col: '#94a3b8' };
     const status = s.statusOverride || s.status;
-    const task   = s.taskOverride || null;
+    const task = s.taskOverride || null;
     return `<div class="staff-item">
       <div class="staff-avatar" style="background:${c.bg};color:${c.col}">${s.avatar}</div>
       <div style="flex:1">
@@ -1978,11 +1999,11 @@ function renderStaffDashboard() {
 
   // Identity card
   const avatarEl = document.getElementById('staff-id-avatar');
-  if (avatarEl) avatarEl.textContent = s.avatar || s.name.slice(0,2).toUpperCase();
+  if (avatarEl) avatarEl.textContent = s.avatar || s.name.slice(0, 2).toUpperCase();
 
   setText('staff-id-name', s.name);
 
-  const roleColors = { security:'#f59e0b', medical:'#10b981', manager:'#3b82f6' };
+  const roleColors = { security: '#f59e0b', medical: '#10b981', manager: '#3b82f6' };
   const roleEl = document.getElementById('staff-id-role');
   if (roleEl) {
     roleEl.textContent = s.role.charAt(0).toUpperCase() + s.role.slice(1);
@@ -2017,8 +2038,8 @@ function renderStaffDashboard() {
     const zoneHtml = zones.map(z => {
       const isAssigned = z === s.assignedZone;
       return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-        <span style="width:8px;height:8px;border-radius:50%;background:${isAssigned?'#22c55e':'#374151'};flex-shrink:0;"></span>
-        <span style="font-size:12px;color:${isAssigned?'#86efac':'#6b7280'};font-weight:${isAssigned?'700':'400'};">${z}${isAssigned?' ← Your Zone':''}</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:${isAssigned ? '#22c55e' : '#374151'};flex-shrink:0;"></span>
+        <span style="font-size:12px;color:${isAssigned ? '#86efac' : '#6b7280'};font-weight:${isAssigned ? '700' : '400'};">${z}${isAssigned ? ' ← Your Zone' : ''}</span>
         <span style="margin-left:auto;font-size:10px;color:#22c55e;font-weight:600;">CLEAR</span>
       </div>`;
     }).join('');
@@ -2042,22 +2063,22 @@ function renderStaffDashboard() {
 function getStaffTasks(s) {
   const roleTaskMap = {
     security: [
-      { icon:'🔒', title:'Zone Patrol', desc:'Patrol assigned zone every 30 mins', status:'ACTIVE', color:'#f59e0b' },
-      { icon:'📹', title:'CCTV Monitoring', desc:'Monitor camera feeds for anomalies', status:'ONGOING', color:'#f59e0b' },
-      { icon:'🚪', title:'Access Control', desc:'Check guest ID at restricted zones', status:'STANDBY', color:'#6b7280' },
+      { icon: '🔒', title: 'Zone Patrol', desc: 'Patrol assigned zone every 30 mins', status: 'ACTIVE', color: '#f59e0b' },
+      { icon: '📹', title: 'CCTV Monitoring', desc: 'Monitor camera feeds for anomalies', status: 'ONGOING', color: '#f59e0b' },
+      { icon: '🚪', title: 'Access Control', desc: 'Check guest ID at restricted zones', status: 'STANDBY', color: '#6b7280' },
     ],
     medical: [
-      { icon:'🩺', title:'Medical Bay Ready', desc:'Ensure first aid kit is stocked', status:'ACTIVE', color:'#10b981' },
-      { icon:'💊', title:'Medication Check', desc:'Verify emergency medications', status:'DONE', color:'#22c55e' },
-      { icon:'📋', title:'Guest Health Log', desc:'Update any reported medical incidents', status:'PENDING', color:'#f59e0b' },
+      { icon: '🩺', title: 'Medical Bay Ready', desc: 'Ensure first aid kit is stocked', status: 'ACTIVE', color: '#10b981' },
+      { icon: '💊', title: 'Medication Check', desc: 'Verify emergency medications', status: 'DONE', color: '#22c55e' },
+      { icon: '📋', title: 'Guest Health Log', desc: 'Update any reported medical incidents', status: 'PENDING', color: '#f59e0b' },
     ],
     manager: [
-      { icon:'📊', title:'Shift Handover', desc:'Brief incoming shift on open issues', status:'PENDING', color:'#3b82f6' },
-      { icon:'🏨', title:'Floor Inspection', desc:'Check all guest floors for compliance', status:'ACTIVE', color:'#3b82f6' },
-      { icon:'📞', title:'Guest Requests', desc:'Resolve pending guest service calls', status:'ONGOING', color:'#6b7280' },
+      { icon: '📊', title: 'Shift Handover', desc: 'Brief incoming shift on open issues', status: 'PENDING', color: '#3b82f6' },
+      { icon: '🏨', title: 'Floor Inspection', desc: 'Check all guest floors for compliance', status: 'ACTIVE', color: '#3b82f6' },
+      { icon: '📞', title: 'Guest Requests', desc: 'Resolve pending guest service calls', status: 'ONGOING', color: '#6b7280' },
     ],
   };
-  return roleTaskMap[s.role] || [{ icon:'✅', title:'General Duty', desc:'Report to supervisor for assignments', status:'ACTIVE', color:'#6b7280' }];
+  return roleTaskMap[s.role] || [{ icon: '✅', title: 'General Duty', desc: 'Report to supervisor for assignments', status: 'ACTIVE', color: '#6b7280' }];
 }
 
 function updateStaffDutyTime() {
@@ -2075,10 +2096,10 @@ function saveStaffNotes() {
   const notes = document.getElementById('staff-shift-notes');
   if (notes && notes.value.trim()) {
     const key = 'echo_staff_notes_' + (currentStaff ? currentStaff.id : 'unknown');
-    try { localStorage.setItem(key, notes.value); } catch(e) {}
+    try { localStorage.setItem(key, notes.value); } catch (e) { }
     // Show brief success feedback
     const btn = notes.nextElementSibling;
-    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Saved!'; btn.style.background='#16a34a'; setTimeout(()=>{btn.textContent=orig;btn.style.background='#3b82f6';},1500); }
+    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Saved!'; btn.style.background = '#16a34a'; setTimeout(() => { btn.textContent = orig; btn.style.background = '#3b82f6'; }, 1500); }
   }
 }
 
@@ -2093,8 +2114,8 @@ function setText(id, val) {
 
 function exportIncidentPDF() {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  const timeStr = now.toLocaleTimeString('en-IN', { hour12:true, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const hotel = ECHO_DATA.hotels[0];
 
   // Build incident history (current + timeline)
@@ -2104,7 +2125,7 @@ function exportIncidentPDF() {
   if (state.currentEmergency) {
     const em = state.currentEmergency;
     incidents.push({
-      id: 'INC-' + now.getFullYear() + '-' + String(state.emergencyCount).padStart(4,'0'),
+      id: 'INC-' + now.getFullYear() + '-' + String(state.emergencyCount).padStart(4, '0'),
       type: (em.type || 'Unknown').toUpperCase(),
       severity: (em.severity || 'high').toUpperCase(),
       floor: em.floor || '—',
@@ -2120,7 +2141,7 @@ function exportIncidentPDF() {
   // Add timeline events
   (state.timeline || []).forEach((t, i) => {
     incidents.push({
-      id: 'EVT-' + String(i+1).padStart(3,'0'),
+      id: 'EVT-' + String(i + 1).padStart(3, '0'),
       type: (t.type || 'event').toUpperCase(),
       severity: 'INFO',
       floor: '—',
@@ -2142,7 +2163,7 @@ function exportIncidentPDF() {
       <tr>
         <td>${s.badge || s.id}</td>
         <td><strong>${s.name}</strong></td>
-        <td>${s.role.charAt(0).toUpperCase()+s.role.slice(1)}</td>
+        <td>${s.role.charAt(0).toUpperCase() + s.role.slice(1)}</td>
         <td>${s.assignedZone}</td>
         <td>${taskAssigned}</td>
         <td><span class="status-pill status-${s.status}">${s.status.toUpperCase()}</span></td>
@@ -2155,10 +2176,10 @@ function exportIncidentPDF() {
   const cctvRows = cctvIncidents.length
     ? cctvIncidents.map((inc, i) => `
       <tr>
-        <td><strong>${String(i+1).padStart(3,'0')}</strong></td>
-        <td><span class="type-badge type-${(inc.type||'').toLowerCase()}">${inc.type === 'Fire' ? '🔥 FIRE' : inc.type === 'Smoke' ? '💨 SMOKE' : '🚨 ' + (inc.type||'WEAPON').toUpperCase()}</span></td>
+        <td><strong>${String(i + 1).padStart(3, '0')}</strong></td>
+        <td><span class="type-badge type-${(inc.type || '').toLowerCase()}">${inc.type === 'Fire' ? '🔥 FIRE' : inc.type === 'Smoke' ? '💨 SMOKE' : '🚨 ' + (inc.type || 'WEAPON').toUpperCase()}</span></td>
         <td><strong>${inc.cam || inc.camera || '—'}</strong></td>
-        <td>${inc.conf ? (inc.conf * 100).toFixed(1) + '%' : (inc.confidence ? (inc.confidence*100).toFixed(1)+'%' : '—')}</td>
+        <td>${inc.conf ? (inc.conf * 100).toFixed(1) + '%' : (inc.confidence ? (inc.confidence * 100).toFixed(1) + '%' : '—')}</td>
         <td>${new Date(inc.time).toLocaleString('en-IN')}</td>
         <td><span class="status-pill status-logged">LOGGED</span></td>
       </tr>`).join('')
@@ -2291,7 +2312,7 @@ function exportIncidentPDF() {
   <div class="report-id-strip">
     <div class="report-id-item">
       <span class="report-id-label">Report ID</span>
-      <span class="report-id-val">RPT-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}</span>
+      <span class="report-id-val">RPT-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}</span>
     </div>
     <div class="report-id-item">
       <span class="report-id-label">Hotel ID</span>
@@ -2338,7 +2359,7 @@ function exportIncidentPDF() {
         <div class="summary-label">Staff On Duty</div>
       </div>
       <div class="summary-card" style="background:linear-gradient(135deg,#fdf2f8,#fce7f3);border-color:#fbcfe8;">
-        <div class="summary-val" style="color:#be185d;">${hotel.rooms ? hotel.rooms.filter(r=>r.status==='occupied').length : '—'}</div>
+        <div class="summary-val" style="color:#be185d;">${hotel.rooms ? hotel.rooms.filter(r => r.status === 'occupied').length : '—'}</div>
         <div class="summary-label">Occupied Rooms</div>
       </div>
     </div>
@@ -2391,7 +2412,7 @@ function exportIncidentPDF() {
     <div class="section-header">
       <div class="section-icon" style="background:#fee2e2;">🚨</div>
       <div class="section-title">Incident Log</div>
-      <span class="section-count">${incidents.length} record${incidents.length!==1?'s':''}</span>
+      <span class="section-count">${incidents.length} record${incidents.length !== 1 ? 's' : ''}</span>
     </div>
     <table>
       <thead>
@@ -2446,14 +2467,14 @@ function exportIncidentPDF() {
     </div>
     ${(state.timeline && state.timeline.length) ? `
     <div style="position:relative;padding-left:24px;border-left:2px solid #e5e7eb;">
-      ${state.timeline.map((t,i) => `
+      ${state.timeline.map((t, i) => `
         <div style="position:relative;margin-bottom:14px;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #f3f4f6;">
           <div style="position:absolute;left:-31px;top:12px;width:12px;height:12px;border-radius:50%;background:#3b82f6;border:2px solid #fff;box-shadow:0 0 0 2px #3b82f6;"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
             <strong style="font-size:12px;color:#1f2937;">${t.event}</strong>
             <span style="font-size:10px;color:#6b7280;">${t.time}</span>
           </div>
-          <span style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">${(t.type||'event').toUpperCase()}</span>
+          <span style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">${(t.type || 'event').toUpperCase()}</span>
         </div>
       `).join('')}
     </div>
@@ -2525,14 +2546,14 @@ function exportIncidentPDF() {
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type:'text/html' });
+  const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, '_blank');
   if (!win) {
     // Fallback: direct download
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ECHO_Incident_Report_' + now.toISOString().slice(0,10) + '.html';
+    a.download = 'ECHO_Incident_Report_' + now.toISOString().slice(0, 10) + '.html';
     a.click();
   }
   setTimeout(() => URL.revokeObjectURL(url), 60000);
