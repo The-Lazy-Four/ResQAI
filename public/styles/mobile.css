@@ -1,0 +1,109 @@
+/* Global responsive system for ResQAI modules (safe additive overrides) */
+
+* {
+    box-sizing: border-box;
+}
+
+img,
+video,
+svg,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 1024px) {
+    .grid.grid-cols-12 {
+        grid-template-columns: 1fr !important;
+    }
+
+    [class*='col-span-'] {
+        grid-column: 1 / -1 !important;
+    }
+
+    .ml-72,
+    .lg\:ml-64 {
+        margin-left: 0 !important;
+    }
+
+    .max-w-7xl,
+    .max-w-6xl,
+    .max-w-5xl {
+        max-width: 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+
+    html,
+    body {
+        overflow-x: hidden !important;
+    }
+
+    .ml-72,
+    .lg\:ml-64 {
+        margin-left: 0 !important;
+    }
+
+    .w-72,
+    .w-64,
+    aside.w-64,
+    aside.w-72 {
+        width: 100% !important;
+    }
+
+    aside.fixed.left-0.top-0.h-screen,
+    aside.fixed.left-0.top-0.h-full {
+        position: static !important;
+        height: auto !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: none !important;
+    }
+
+    main {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .p-8,
+    .px-8,
+    .py-8 {
+        padding: 1rem !important;
+    }
+
+    .gap-8 {
+        gap: 1rem !important;
+    }
+
+    .text-6xl,
+    .text-5xl {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .text-4xl {
+        font-size: 1.6rem !important;
+    }
+
+    button,
+    .btn-primary,
+    .btn-secondary,
+    .action-btn,
+    .tab-btn,
+    .nav-link {
+        min-height: 44px;
+    }
+
+    input,
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+
+    .resq-footer-container {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}

@@ -1270,15 +1270,19 @@ function runScenario(id) {
 function guestTriggerEmergency(type) {
   if (!state.guestObj) return;
 
+  const roomNumber = state.guestObj.roomNumber;
+  const floor = state.guestObj.floor;
+  const zone = state.guestObj.zone;
+
   const scenario = {
     id: 'guest_' + Date.now(),
     type: type,
-    floor: state.guestObj.floor,
-    roomNumber: state.guestObj.roomNumber,
-    zone: state.guestObj.zone,
+    floor: floor,
+    roomNumber: roomNumber,
+    zone: zone,
     severity: 'critical',
     name: `Guest Reported ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-    description: `A guest in room ${state.guestObj.roomNumber} reported a ${type} emergency.`
+    description: `A guest in room ${roomNumber} reported a ${type} emergency.`
   };
 
   state.currentEmergency = scenario;
@@ -1292,9 +1296,236 @@ function guestTriggerEmergency(type) {
   renderNotifications();
   showToast(type, 'EMERGENCY REPORTED', 'Your alert has been sent to hotel security.');
 
+  // ── NON-MEDICAL: trigger loud siren + room alert on all staff/admin panels ──
+  if (type !== 'medical') {
+    triggerGuestAlertOnAllPanels(type, roomNumber, floor, zone);
+  }
+
   // IMPORTANT: Use the new step-sequence engine instead of the static API call
   startGuestSimulation(scenario);
 }
+
+// ============================================================
+// GUEST NON-MEDICAL INCIDENT → ALL PANEL SIREN + ROOM DISPLAY
+// ============================================================
+function triggerGuestAlertOnAllPanels(type, roomNumber, floor, zone) {
+  const icons = { fire: '🔥', earthquake: '🌍', suspicious: '⚠️' };
+  const icon = icons[type] || '🚨';
+  const typeName = type.toUpperCase();
+  const alertMsg = `${icon} ROOM ${roomNumber} (Floor ${floor}, ${zone.toUpperCase()} Wing) — Guest Reported ${typeName}`;
+
+  // 1. Show + animate banner on STAFF dashboard
+  const staffBanner = document.getElementById('staff-alert-banner');
+  const staffTitle = document.getElementById('staff-alert-title');
+  const staffDesc = document.getElementById('staff-alert-desc');
+  if (staffBanner) {
+    staffBanner.style.display = 'flex';
+    staffBanner.style.animation = 'none';
+    staffBanner.style.background = type === 'fire'
+      ? 'linear-gradient(135deg,#7f1d1d,#991b1b)'
+      : type === 'earthquake'
+      ? 'linear-gradient(135deg,#78350f,#92400e)'
+      : 'linear-gradient(135deg,#312e81,#3730a3)';
+    // Flashing animation
+    staffBanner.style.animation = 'guestSirenFlash 0.6s ease-in-out infinite alternate';
+    if (staffTitle) staffTitle.textContent = `🚨 GUEST ALERT — ${typeName} IN ROOM ${roomNumber}`;
+    if (staffDesc) staffDesc.textContent = `Floor ${floor} · ${zone.toUpperCase()} Wing · Reported by guest. Respond immediately!`;
+  }
+
+  // 2. Show room alert popup on ADMIN dashboard
+  showGuestRoomAlertPopup(type, roomNumber, floor, zone);
+
+  // 3. Play LOUD multi-oscillator siren (louder than normal)
+  playGuestAlertSiren(type);
+
+  // 4. Update admin alert count
+  if (window.state && state.emergencyCount !== undefined) {
+    state.emergencyCount++;
+    const countEl = document.getElementById('admin-alert-count');
+    if (countEl) countEl.textContent = state.emergencyCount;
+  }
+
+  // 5. Add to timeline
+  if (window.addTimeline) addTimeline(type, `${icon} Guest in Room ${roomNumber} reported ${typeName}`);
+
+  console.log(`[EchoPlus] 🚨 Non-medical guest alert → Room ${roomNumber}, Type: ${type}`);
+}
+
+function showGuestRoomAlertPopup(type, roomNumber, floor, zone) {
+  // Remove existing popup if any
+  const existing = document.getElementById('guest-room-alert-popup');
+  if (existing) existing.remove();
+
+  const icons = { fire: '🔥', earthquake: '🌍', suspicious: '⚠️' };
+  const colors = { fire: '#ef4444', earthquake: '#f59e0b', suspicious: '#8b5cf6' };
+  const icon = icons[type] || '🚨';
+  const color = colors[type] || '#ef4444';
+
+  const popup = document.createElement('div');
+  popup.id = 'guest-room-alert-popup';
+  popup.style.cssText = `
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeInOverlay 0.3s ease;
+  `;
+
+  popup.innerHTML = `
+    <div style="
+      background: #0f172a;
+      border: 2px solid ${color};
+      border-radius: 20px;
+      padding: 32px 36px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 60px ${color}55;
+      animation: sirenPulse 0.8s ease-in-out infinite alternate;
+      position: relative;
+    ">
+      <div style="font-size: 56px; margin-bottom: 12px; animation: sirenBounce 0.5s ease-in-out infinite alternate;">${icon}</div>
+      <div style="font-size: 13px; color: ${color}; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">
+        🚨 GUEST INCIDENT REPORTED
+      </div>
+      <div style="font-size: 32px; font-weight: 900; color: #fff; margin: 12px 0;">
+        ROOM ${roomNumber}
+      </div>
+      <div style="display: inline-block; background: ${color}22; border: 1px solid ${color}66; border-radius: 10px; padding: 8px 20px; margin-bottom: 16px;">
+        <span style="color: ${color}; font-weight: 700; font-size: 14px;">Floor ${floor}</span>
+        <span style="color: #64748b; margin: 0 8px;">·</span>
+        <span style="color: #94a3b8; font-size: 14px;">${zone.toUpperCase()} WING</span>
+      </div>
+      <div style="font-size: 15px; color: #e2e8f0; margin-bottom: 8px; font-weight: 600;">
+        ${type.charAt(0).toUpperCase() + type.slice(1)} Emergency
+      </div>
+      <div style="font-size: 12px; color: #64748b; margin-bottom: 24px;">
+        Reported by guest · Immediate response required
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button onclick="
+          document.getElementById('guest-room-alert-popup').remove();
+          stopGuestAlertSiren();
+        " style="
+          background: ${color};
+          color: white;
+          border: none;
+          border-radius: 10px;
+          padding: 12px 28px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          flex: 1;
+        ">✅ Acknowledge</button>
+        <button onclick="document.getElementById('guest-room-alert-popup').remove();" style="
+          background: #1e293b;
+          color: #94a3b8;
+          border: 1px solid #334155;
+          border-radius: 10px;
+          padding: 12px 20px;
+          font-size: 13px;
+          cursor: pointer;
+        ">✖ Dismiss</button>
+      </div>
+    </div>
+  `;
+
+  // Inject keyframes if not already present
+  if (!document.getElementById('guest-alert-styles')) {
+    const style = document.createElement('style');
+    style.id = 'guest-alert-styles';
+    style.textContent = `
+      @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes sirenPulse { from { box-shadow: 0 0 30px rgba(239,68,68,0.3); } to { box-shadow: 0 0 80px rgba(239,68,68,0.7); } }
+      @keyframes sirenBounce { from { transform: scale(1); } to { transform: scale(1.15); } }
+      @keyframes guestSirenFlash { from { opacity: 0.7; } to { opacity: 1; } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(popup);
+}
+
+// Loud siren audio engine for guest non-medical alerts
+let _guestSirenCtx = null;
+let _guestSirenActive = false;
+let _guestSirenLoop = null;
+
+function playGuestAlertSiren(type) {
+  stopGuestAlertSiren(); // stop any previous
+  _guestSirenActive = true;
+
+  const freqMap = {
+    fire: [880, 660],
+    earthquake: [440, 330],
+    suspicious: [700, 500]
+  };
+  const [hiFreq, loFreq] = freqMap[type] || [800, 600];
+
+  function playOneCycle() {
+    if (!_guestSirenActive) return;
+    if (!_guestSirenCtx) {
+      _guestSirenCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const ctx = _guestSirenCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+    const duration = 0.5;
+
+    // Master gain — LOUDER than normal (1.4 vs 1.0)
+    const master = ctx.createDynamicsCompressor();
+    master.connect(ctx.destination);
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(1.4, now);
+    masterGain.connect(master);
+
+    // Oscillator 1 — hi-lo sweep
+    const o1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    o1.type = 'sawtooth';
+    o1.frequency.setValueAtTime(hiFreq, now);
+    o1.frequency.linearRampToValueAtTime(loFreq, now + duration);
+    g1.gain.setValueAtTime(0.8, now);
+    g1.gain.linearRampToValueAtTime(0, now + duration);
+    o1.connect(g1); g1.connect(masterGain);
+    o1.start(now); o1.stop(now + duration);
+
+    // Oscillator 2 — harmonic layer
+    const o2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    o2.type = 'square';
+    o2.frequency.setValueAtTime(hiFreq * 1.5, now);
+    o2.frequency.linearRampToValueAtTime(loFreq * 1.5, now + duration);
+    g2.gain.setValueAtTime(0.5, now);
+    g2.gain.linearRampToValueAtTime(0, now + duration);
+    o2.connect(g2); g2.connect(masterGain);
+    o2.start(now); o2.stop(now + duration);
+
+    // Oscillator 3 — sharp attack click
+    const o3 = ctx.createOscillator();
+    const g3 = ctx.createGain();
+    o3.type = 'triangle';
+    o3.frequency.setValueAtTime(1200, now);
+    g3.gain.setValueAtTime(0.7, now);
+    g3.gain.linearRampToValueAtTime(0, now + 0.08);
+    o3.connect(g3); g3.connect(masterGain);
+    o3.start(now); o3.stop(now + 0.1);
+
+    _guestSirenLoop = setTimeout(() => { if (_guestSirenActive) playOneCycle(); }, duration * 1000 + 80);
+  }
+
+  playOneCycle();
+}
+
+function stopGuestAlertSiren() {
+  _guestSirenActive = false;
+  if (_guestSirenLoop) { clearTimeout(_guestSirenLoop); _guestSirenLoop = null; }
+}
+window.stopGuestAlertSiren = stopGuestAlertSiren;
 
 // ============================================================
 // HACKATHON DEMO: REAL-TIME STEP SIMULATION LOGIC
