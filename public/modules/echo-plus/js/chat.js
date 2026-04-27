@@ -15,11 +15,11 @@ const chatState = {
 
 // ─── NOTIFICATION SOUND (base64 beep) ──────────────────────
 const ALERT_BEEP = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAA' +
-  'EAAAQAAIAAAQABAABAAAEAAQABBAAEAAQABIIAAQAAQAAQAAQAA' + 
+  'EAAAQAAIAAAQABAABAAAEAAQABBAAEAAQABIIAAQAAQAAQAAQAA' +
   'AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
 
 function playAlertBeep() {
-  try { 
+  try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -30,7 +30,7 @@ function playAlertBeep() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.4);
-  } catch(e) {}
+  } catch (e) { }
 }
 
 // ─── SEND MESSAGE ───────────────────────────────────────────
@@ -39,7 +39,7 @@ function chatSend(role, panelSuffix, isEmergency = false) {
   const text = input ? input.value.trim() : '';
   if (!text) return;
 
-  const room = role === 'guest' 
+  const room = role === 'guest'
     ? (window.state && state.guestObj ? state.guestObj.roomNumber : '203')
     : (role === 'admin' ? 'Admin' : 'Staff');
 
@@ -72,7 +72,7 @@ function renderChatPanel(panelRole) {
   const feed = document.getElementById(`chat-feed-${panelRole}`);
   if (!feed) return;
 
-  const currentRoom = panelRole === 'guest' 
+  const currentRoom = panelRole === 'guest'
     ? (window.state && state.guestObj ? state.guestObj.roomNumber : '203')
     : 'Admin';
 
@@ -93,7 +93,7 @@ function renderChatPanel(panelRole) {
 
 function buildMessageBubble(msg, currentRoom) {
   const isMine = (msg.role === 'guest' && msg.room === currentRoom) ||
-                 (msg.role === 'admin' && currentRoom === 'Admin');
+    (msg.role === 'admin' && currentRoom === 'Admin');
   const time = new Date(msg.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
   const roleColors = { guest: '#4f8ef7', admin: '#ef4444', staff: '#10b981' };
@@ -187,7 +187,7 @@ async function startVoiceRecording(panelSuffix) {
       const blob = new Blob(chatState.audioChunks, { type: 'audio/webm' });
       const url = URL.createObjectURL(blob);
       const role = panelSuffix === 'guest' ? 'guest' : 'admin';
-      const room = role === 'guest' 
+      const room = role === 'guest'
         ? (window.state && state.guestObj ? state.guestObj.roomNumber : '203')
         : 'Admin';
       addChatMessage({ role, room, type: 'voice', audioUrl: url, target: chatState.currentTarget, ts: Date.now() });
@@ -197,7 +197,12 @@ async function startVoiceRecording(panelSuffix) {
     };
     chatState.mediaRecorder.start();
   } catch (err) {
-    alert('Microphone permission denied. Please allow microphone access for voice messages.');
+    // Show toast instead of alert
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;z-index:9999;';
+    t.textContent = '❌ Microphone permission denied. Please allow microphone access for voice messages.';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
     chatState.isRecording = false;
   }
 }
@@ -215,7 +220,7 @@ function handleImageUpload(event, panelSuffix) {
   const reader = new FileReader();
   reader.onload = e => {
     const role = panelSuffix === 'guest' ? 'guest' : 'admin';
-    const room = role === 'guest' 
+    const room = role === 'guest'
       ? (window.state && state.guestObj ? state.guestObj.roomNumber : '203')
       : 'Admin';
     addChatMessage({ role, room, type: 'image', imageUrl: e.target.result, text: '', target: chatState.currentTarget, ts: Date.now() });
@@ -246,10 +251,10 @@ function chatInputKeydown(e, panelSuffix, role) {
 // ─── UTILS ──────────────────────────────────────────────────
 function escapeHtml(text) {
   return String(text)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function setChatTarget(target, panelSuffix) {

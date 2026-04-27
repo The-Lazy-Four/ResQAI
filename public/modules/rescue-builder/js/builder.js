@@ -883,7 +883,11 @@ async function getAIGuidance() {
         });
         if (resp.ok) {
             const data = await resp.json();
-            alert(`🧠 AI Emergency Guidance:\n\n${data.guidance}`);
+            // Show guidance in a modal-like box instead of alert
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:600px;max-height:70vh;background:rgba(16,20,26,0.95);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:24px;z-index:9999;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+            modal.innerHTML = `<div style="color:#dfe2eb;font-family:Inter,sans-serif;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;"><h3 style="margin:0;font-size:18px;font-weight:600;">🧠 AI Emergency Guidance</h3><button onclick="this.closest('[style*=position]').remove();" style="background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:24px;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">&times;</button></div><div style="white-space:pre-wrap;line-height:1.6;color:#cbd5e1;font-size:14px;">${data.guidance}</div></div>`;
+            document.body.appendChild(modal);
             showToast('✅ AI guidance generated', 'success');
         }
     } catch (err) { showToast('AI guidance temporarily unavailable', 'warning'); }

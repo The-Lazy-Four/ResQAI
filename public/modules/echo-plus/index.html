@@ -2410,7 +2410,13 @@
           updateStats();
           if (!modelReady && !modelLoading) loadModel();
         } catch (e) {
-          (window.showCamPermToast || function () { alert("Please allow camera permission in your browser to use this feature."); })();
+          (window.showCamPermToast || function () {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;z-index:9999;';
+            t.textContent = '❌ Please allow camera permission in your browser to use this feature.';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+          })();
         }
       };
 

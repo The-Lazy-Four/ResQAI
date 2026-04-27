@@ -307,7 +307,8 @@
                 <a href="/pages/privacy-policy.html" class="resq-footer-link">Privacy Policy</a>
                 <a href="/pages/faq.html" class="resq-footer-link">FAQs</a>
                 <a href="#" class="resq-footer-link"
-                    onclick="alert('System Status: Operational - All Systems Go'); return false;">System Status</a>
+                    onclick="(function() { const t = document.createElement('div'); t.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 18px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:8px;z-index:9999;'; t.textContent = '✅ System Status: Operational - All Systems Go'; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); })(); return false;">System
+                    Status</a>
                 <a href="/pages/module-guidance.html" class="resq-footer-link">Module Guidance</a>
             </div>
 
