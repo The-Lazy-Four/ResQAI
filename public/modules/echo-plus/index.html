@@ -2315,8 +2315,13 @@
       let stats = { fire: 0, smoke: 0, weapon: 0, total: 0 };
       let camCounter = 0;
       const KNIFE_CLASSES = ['knife', 'scissors'];   // COCO classes treated as weapons
-      const KNIFE_CONF_THRESH = 0.52;                // minimum confidence to flag
-      const KNIFE_DEBOUNCE_MS = 12000;               // cooldown between knife alerts per cam
+      const KNIFE_CONF_THRESH = 0.30;                // lowered for faster detection (was 0.52)
+      const KNIFE_DEBOUNCE_MS = 2000;                // cooldown between knife alerts per cam (fast re-trigger)
+      const KNIFE_INFER_SIZE = 300;                  // downscale to 300px for ~4× faster COCO-SSD inference
+
+      // ── Shared knife inference canvas (reused to avoid GC) ──
+      let knifeInferCanvas = null;
+      let knifeInferCtx = null;
 
       // ── AI status pill ───────────────────────────────────────────
       function setAIPill(state) {
@@ -2355,7 +2360,7 @@
           await tmModel.predict(warmupCanvas);
           // ── Load COCO-SSD for knife bounding-box detection ──────────────────
           await injectScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js');
-          cocoModel = await cocoSsd.load({ base: 'mobilenet_v2' });
+          cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
           const cocoWarm = document.createElement('canvas');
           cocoWarm.width = cocoWarm.height = 224;
           await cocoModel.detect(cocoWarm);
@@ -2386,6 +2391,7 @@
             name: 'Camera ' + camCounter,
             stream,
             lastKnifeAlert: 0,
+            knifeLoopActive: false,
             videoEl: null,
             loopActive: false,
             frameCount: 0,                    // warmup counter
@@ -2478,6 +2484,30 @@
           setTimeout(loop, SCAN_INTERVAL);
         }
         loop();
+        // Start independent knife detection loop
+        beginKnifeLoop(cam);
+      }
+
+      // ── Independent knife loop — runs separately from fire/smoke ──
+      function beginKnifeLoop(cam) {
+        if (cam.knifeLoopActive) return;
+        cam.knifeLoopActive = true;
+        let running = false; // prevent overlapping async calls
+        async function knifeLoop() {
+          if (!cam.stream?.active || !cocoModel) { cam.knifeLoopActive = false; return; }
+          if (!running) {
+            running = true;
+            try {
+              const v = cam.videoEl;
+              if (v && v.readyState >= 2 && v.videoWidth > 0) {
+                await runKnifeDetection(cam, v);
+              }
+            } catch(e) { /* silent */ }
+            running = false;
+          }
+          setTimeout(knifeLoop, 100);   // faster loop for quicker knife response (was 200)
+        }
+        knifeLoop();
       }
 
       // ── Core prediction with EMA + consecutive-frame confirmation ──
@@ -2567,14 +2597,33 @@
         setNormal(cam);
 
         // ── Knife detection (COCO-SSD bounding box) ──────────────────
-        if (cocoModel) runKnifeDetection(cam, v);
+        // knife detection runs on its own loop — see beginKnifeLoop()
       }
 
-      // ── Knife detection with COCO-SSD ─────────────────────────────
+      // ── Knife detection with COCO-SSD (downscaled for speed) ──────
       async function runKnifeDetection(cam, videoEl) {
         if (!cocoModel || !videoEl || videoEl.readyState < 2) return;
         try {
-          const preds = await cocoModel.detect(videoEl);
+          // ── Downscale video to small canvas for ~4× faster inference ──
+          if (!knifeInferCanvas) {
+            knifeInferCanvas = document.createElement('canvas');
+            knifeInferCanvas.width = knifeInferCanvas.height = KNIFE_INFER_SIZE;
+            knifeInferCtx = knifeInferCanvas.getContext('2d', { willReadFrequently: true });
+          }
+          knifeInferCtx.drawImage(videoEl, 0, 0, KNIFE_INFER_SIZE, KNIFE_INFER_SIZE);
+
+          const preds = await cocoModel.detect(knifeInferCanvas);
+
+          // ── Scale bounding boxes back to original video dimensions ──
+          const scaleX = videoEl.videoWidth / KNIFE_INFER_SIZE;
+          const scaleY = videoEl.videoHeight / KNIFE_INFER_SIZE;
+          preds.forEach(p => {
+            p.bbox[0] *= scaleX;  // x
+            p.bbox[1] *= scaleY;  // y
+            p.bbox[2] *= scaleX;  // width
+            p.bbox[3] *= scaleY;  // height
+          });
+
           const knives = preds.filter(p =>
             KNIFE_CLASSES.includes(p.class) && p.score >= KNIFE_CONF_THRESH
           );
