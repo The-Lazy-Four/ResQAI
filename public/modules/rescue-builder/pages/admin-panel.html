@@ -306,16 +306,28 @@
     textarea.broadcast-input:focus {
       border-color: rgba(255, 179, 174, 0.4);
     }
+
     /* Live feed animation */
-    @keyframes feed-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,83,82,0.3); } 100% { box-shadow: 0 0 0 12px rgba(255,83,82,0); } }
-    .feed-new { animation: feed-pulse 0.6s ease, fade-in 0.3s ease; }
+    @keyframes feed-pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 83, 82, 0.3);
+      }
+
+      100% {
+        box-shadow: 0 0 0 12px rgba(255, 83, 82, 0);
+      }
+    }
+
+    .feed-new {
+      animation: feed-pulse 0.6s ease, fade-in 0.3s ease;
+    }
   </style>
   <!-- Socket.IO client -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/resqSocket.js"></script>
 </head>
 
-<body class="bg-[#0a0e14] text-on-surface font-body min-h-screen">
+<body class="bg-[#0a0e14] text-on-surface font-body min-h-screen mobile-rescue-builder mobile-rescue-admin">
 
   <div id="toast"></div>
 
@@ -495,9 +507,11 @@
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-white font-bold font-headline flex items-center gap-2">
                 <span class="material-symbols-outlined text-amber-400 text-lg">rss_feed</span> Live Incident Feed
-                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-[9px] font-headline font-bold uppercase tracking-widest">Real-time</span>
+                <span
+                  class="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-[9px] font-headline font-bold uppercase tracking-widest">Real-time</span>
               </h3>
-              <button onclick="clearLiveFeed()" class="text-slate-700 hover:text-slate-400 text-xs font-headline uppercase tracking-wider">Clear</button>
+              <button onclick="clearLiveFeed()"
+                class="text-slate-700 hover:text-slate-400 text-xs font-headline uppercase tracking-wider">Clear</button>
             </div>
             <div id="live-feed-list" class="space-y-2 max-h-[320px] overflow-y-auto">
               <div class="text-center py-6 text-slate-700 text-sm">Waiting for live events...</div>
@@ -973,11 +987,11 @@
       } catch (err) { console.warn('SOS load error:', err.message); }
     }
 
-    async function resolveEvent(id) { 
+    async function resolveEvent(id) {
       try {
         const resp = await fetch(`/api/custom-system/events/${id}`, { method: 'DELETE' });
         if (resp.ok) {
-          toast('✅ Event marked as resolved', 'success'); 
+          toast('✅ Event marked as resolved', 'success');
           refreshSOSEvents();
         } else {
           toast('Failed to resolve event', 'error');

@@ -7,7 +7,9 @@
     <title>ResQAI - User Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/styles/mobile.css" />
     <style>
         :root {
@@ -84,6 +86,7 @@
         }
 
         @keyframes pulse-dot {
+
             0%,
             100% {
                 opacity: 1;
@@ -97,6 +100,7 @@
         }
 
         @keyframes glow-shift {
+
             0%,
             100% {
                 box-shadow: 0 0 0 rgba(255, 255, 255, 0);
@@ -786,7 +790,7 @@
     </style>
 </head>
 
-<body>
+<body class="mobile-rescue-builder mobile-rescue-home">
     <header class="topbar">
         <div class="topbar-left">
             <div class="brand">ResQAI</div>
@@ -796,7 +800,9 @@
         <div class="topbar-right">
             <button class="icon-button" type="button" title="Status">•</button>
             <button class="action-button refresh" type="button" onclick="loadSystems(true)">Refresh</button>
-            <button class="action-button exit" type="button" onclick="window.location.href='/modules/rescue-builder/pages/custom-rescue-entry.html'">&larr; Exit</button>
+            <button class="action-button exit" type="button"
+                onclick="window.location.href='/modules/rescue-builder/pages/custom-rescue-entry.html'">&larr;
+                Exit</button>
         </div>
     </header>
 
@@ -833,11 +839,15 @@
                     <div>
                         <div class="eyebrow">User Portal Command</div>
                         <h1>Your Rescue Systems</h1>
-                        <p>Browse the emergency systems shared with you, reopen the live user panel, and step straight into the same response experience without leaving the command surface.</p>
+                        <p>Browse the emergency systems shared with you, reopen the live user panel, and step straight
+                            into the same response experience without leaving the command surface.</p>
                     </div>
                     <div class="hero-actions">
-                        <button class="action-button refresh" type="button" onclick="loadSystems(true)">Pull latest systems</button>
-                        <button class="action-button exit" type="button" onclick="window.location.href='/modules/rescue-builder/pages/custom-rescue-entry.html'">Back to entry</button>
+                        <button class="action-button refresh" type="button" onclick="loadSystems(true)">Pull latest
+                            systems</button>
+                        <button class="action-button exit" type="button"
+                            onclick="window.location.href='/modules/rescue-builder/pages/custom-rescue-entry.html'">Back
+                            to entry</button>
                     </div>
                 </section>
 
@@ -859,7 +869,8 @@
                     </article>
                     <article class="summary-card" style="animation-delay:0.22s">
                         <div class="summary-label">Last Created</div>
-                        <div class="summary-value" id="summaryRecent" style="font-size:1.55rem; line-height:1.08">None yet</div>
+                        <div class="summary-value" id="summaryRecent" style="font-size:1.55rem; line-height:1.08">None
+                            yet</div>
                         <div class="summary-note" id="summaryRecentMeta">Waiting for the next system</div>
                     </article>
                 </section>
