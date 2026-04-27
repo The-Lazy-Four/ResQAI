@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI - Admin Register</title>
+    <style>
+        :root { --bg: #081018; --card: #f6f8fb; --text: #f5f7fb; --muted: #8fa1b5; --line: rgba(255,255,255,0.12); --accent: #e63946; --accent-dark: #ba2734; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top left, rgba(230,57,70,0.18), transparent 28%), linear-gradient(135deg, #081018 0%, #0d1520 42%, #121c28 100%);
+            color: var(--text);
+        }
+        .corner-back {
+            position: fixed; top: 18px; left: 18px; z-index: 20; display: inline-flex; align-items: center; gap: 10px;
+            padding: 11px 15px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(8,16,24,0.76);
+            color: #f5f7fb; text-decoration: none; font-size: 0.92rem; font-weight: 700; backdrop-filter: blur(12px);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.22); transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .corner-back:hover { transform: translateY(-1px); border-color: rgba(230,57,70,0.34); background: rgba(13,21,32,0.92); }
+        .corner-back span:first-child { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(230,57,70,0.14); }
+        .layout { min-height: 100vh; display: flex; }
+        .hero {
+            width: 40%; padding: 56px 48px; display: flex; flex-direction: column; justify-content: space-between;
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)), linear-gradient(145deg, #07111a 0%, #0e1621 50%, #161d29 100%);
+            border-right: 1px solid var(--line);
+        }
+        .logo { display: inline-flex; align-items: center; gap: 14px; font-size: 2rem; font-weight: 800; letter-spacing: 0.04em; }
+        .logo-mark { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(230,57,70,0.18), rgba(255,255,255,0.05)); border: 1px solid rgba(230,57,70,0.24); color: #fff; font-size: 1.25rem; }
+        .hero h1 { margin-top: 26px; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.04; }
+        .hero p { margin-top: 14px; max-width: 420px; line-height: 1.7; color: var(--muted); }
+        .hero-grid { display: grid; gap: 16px; }
+        .hero-card { padding: 16px 18px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+        .hero-card strong { display: block; margin-bottom: 6px; }
+        .panel { width: 60%; display: grid; place-items: center; padding: 40px 28px; }
+        .card-shell { width: min(620px, 100%); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 18px; box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
+        .auth-card { background: var(--card); color: #18222f; border-radius: 22px; padding: 34px; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(230,57,70,0.08); color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        h2 { margin-top: 18px; font-size: 2rem; line-height: 1.05; }
+        .lead { margin-top: 10px; color: #5e6d7f; line-height: 1.6; }
+        .status { display: none; margin-top: 18px; padding: 14px 16px; border-radius: 14px; font-size: 0.95rem; line-height: 1.45; }
+        .status.show { display: block; }
+        .status.error { background: rgba(230,57,70,0.1); color: #9d1d28; border: 1px solid rgba(230,57,70,0.22); }
+        .status.success { background: rgba(43,153,92,0.1); color: #1f6d43; border: 1px solid rgba(43,153,92,0.2); }
+        form { margin-top: 28px; display: grid; gap: 18px; }
+        .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .field { display: grid; gap: 8px; }
+        label { font-size: 0.86rem; font-weight: 700; color: #2a3542; }
+        input {
+            width: 100%; border-radius: 14px; border: 1px solid rgba(24,34,47,0.14); padding: 14px 16px; font-size: 1rem;
+            color: #18222f; background: #fff; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus { border-color: rgba(230,57,70,0.42); box-shadow: 0 0 0 4px rgba(230,57,70,0.12); }
+        .submit { border: none; border-radius: 16px; padding: 15px 18px; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 18px 32px rgba(230,57,70,0.26); }
+        .submit:disabled { opacity: 0.75; cursor: not-allowed; }
+        .footer-link { margin-top: 22px; color: #627082; font-size: 0.96rem; text-align: center; }
+        .footer-link a { color: var(--accent); font-weight: 700; text-decoration: none; }
+        .footer-link a:hover { text-decoration: underline; }
+        @media (max-width: 960px) {
+            .layout { flex-direction: column; }
+            .hero, .panel { width: 100%; }
+            .hero { padding: 40px 24px 28px; gap: 28px; }
+            .panel { padding: 24px 16px 32px; }
+            .auth-card { padding: 28px 22px; }
+            .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <a id="backButton" class="corner-back" href="/pages/admin-login.html">
+        <span>&lt;</span>
+        <span>Back</span>
+    </a>
+    <div class="layout">
+        <section class="hero">
+            <div>
+                <div class="logo"><div class="logo-mark">R</div><span>ResQAI</span></div>
+                <h1>Create your admin access</h1>
+                <p>Register once to manage rescue systems, publish public access panels, and coordinate emergency response from one place.</p>
+            </div>
+            <div class="hero-grid">
+                <div class="hero-card"><strong>Protected admin workspace</strong>Email login stays compatible with the existing builder workflow.</div>
+                <div class="hero-card"><strong>Google-ready access</strong>You can still switch to Google sign-in from the login page after setup.</div>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="card-shell">
+                <div class="auth-card">
+                    <div class="eyebrow">Admin Registration</div>
+                    <h2>Create Account</h2>
+                    <p class="lead">Set up your ResQAI administrator profile.</p>
+                    <div id="errorMsg" class="status error"></div>
+                    <div id="successMsg" class="status success"></div>
+                    <p class="lead" style="margin-top:18px;font-size:0.92rem;">If this email was first created with Google, submitting here will add an email password to that same account.</p>
+                    <form id="registerForm">
+                        <div class="row">
+                            <div class="field"><label for="regFirstName">First Name</label><input type="text" id="regFirstName" placeholder="John" required></div>
+                            <div class="field"><label for="regLastName">Last Name</label><input type="text" id="regLastName" placeholder="Doe" required></div>
+                        </div>
+                        <div class="field"><label for="regEmail">Email Address</label><input type="email" id="regEmail" placeholder="admin@example.com" required></div>
+                        <div class="field"><label for="regOrganization">Organization</label><input type="text" id="regOrganization" placeholder="Your organization name"></div>
+                        <div class="row">
+                            <div class="field"><label for="regPassword">Password</label><input type="password" id="regPassword" placeholder="Minimum 6 characters" minlength="6" required></div>
+                            <div class="field"><label for="regPasswordConfirm">Confirm Password</label><input type="password" id="regPasswordConfirm" placeholder="Repeat password" minlength="6" required></div>
+                        </div>
+                        <button type="submit" class="submit">Create Account</button>
+                    </form>
+                    <p class="footer-link">Already have an account? <a id="loginLink" href="/pages/admin-login.html">Login</a></p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        const API_BASE = '/api/auth';
+        const params = new URLSearchParams(window.location.search);
+        const nextUrl = params.get('next') || '/modules/rescue-builder/pages/custom-builder-dashboard.html';
+        const loginLink = document.getElementById('loginLink');
+        const backButton = document.getElementById('backButton');
+        loginLink.href = `/pages/admin-login.html?next=${encodeURIComponent(nextUrl)}`;
+
+        function getSafeInternalReferrer() {
+            if (!document.referrer) return '';
+            try {
+                const referrerUrl = new URL(document.referrer);
+                if (referrerUrl.origin !== window.location.origin) return '';
+                return `${referrerUrl.pathname}${referrerUrl.search}${referrerUrl.hash}`;
+            } catch (error) {
+                return '';
+            }
+        }
+
+        function configureBackButton() {
+            const fallbackHref = `/pages/admin-login.html?next=${encodeURIComponent(nextUrl)}`;
+            const referrerPath = getSafeInternalReferrer();
+            backButton.href = referrerPath || fallbackHref;
+            backButton.addEventListener('click', (event) => {
+                if (referrerPath && window.history.length > 1) {
+                    event.preventDefault();
+                    window.history.back();
+                }
+            });
+        }
+
+        function clearMessages() {
+            document.getElementById('errorMsg').classList.remove('show');
+            document.getElementById('successMsg').classList.remove('show');
+        }
+        function showError(message) {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMsg');
+            successEl.textContent = message;
+            successEl.classList.add('show');
+        }
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+            const firstName = document.getElementById('regFirstName').value.trim();
+            const lastName = document.getElementById('regLastName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const organization = document.getElementById('regOrganization').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            if (password !== passwordConfirm) { showError('Passwords do not match'); return; }
+            const btn = e.target.querySelector('.submit');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, firstName, lastName, organization })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Registration failed');
+                localStorage.setItem('auth-token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('resqai_token', data.token);
+                localStorage.setItem('resqai_admin_name', [data.user.firstName, data.user.lastName].filter(Boolean).join(' ') || data.user.email || 'Admin');
+                showSuccess('Account created! Redirecting...');
+                setTimeout(() => { window.location.href = nextUrl; }, 1500);
+            } catch (error) {
+                showError(error.message);
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+        if (localStorage.getItem('auth-token')) window.location.href = nextUrl;
+        configureBackButton();
+    </script>
+</body>
+
+</html>

@@ -338,7 +338,7 @@
       <span id="hdr-time" class="text-slate-600 text-xs font-mono hidden md:block"></span>
       <button onclick="goBack()"
         class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-bold text-[10px] tracking-widest uppercase hover:scale-105 active:scale-95 transition-all">
-        <span class="material-symbols-outlined text-sm">arrow_back</span> Exit
+        <span class="material-symbols-outlined text-sm">arrow_back</span> All Systems
       </button>
     </div>
   </header>
@@ -664,35 +664,56 @@
       ];
     }
 
+    function updateClock() {
+      document.getElementById('hdr-time').textContent = new Date().toLocaleTimeString();
+    }
+
+    function showError(message) {
+      toast(message, 'error');
+      document.getElementById('home-org-name').textContent = message;
+    }
+
     // ===== INIT =====
     window.addEventListener('DOMContentLoaded', async () => {
-      systemID = localStorage.getItem('active_system_id') || new URLSearchParams(location.search).get('systemID');
-      if (!systemID) { toast('No system selected. Please open a system first.', 'error'); return; }
+      const params = new URLSearchParams(window.location.search);
+      systemID = params.get('systemID');
 
-      // Clock
-      setInterval(() => {
-        document.getElementById('hdr-time').textContent = new Date().toLocaleTimeString();
-      }, 1000);
+      if (!systemID) {
+        window.location = '/modules/rescue-builder/pages/user-home.html';
+        return;
+      }
 
-      await loadSystem();
-      await loadAlerts();
+      updateClock();
+      setInterval(updateClock, 1000);
 
-      // --- SOCKET.IO: Replace polling with real-time ---
-      ResQSocket.connectToSystem(systemID);
+      fetch(`/api/custom-system/public/${systemID}`)
+        .then((r) => r.json())
+        .then(async (data) => {
+          if (!data.success) {
+            showError('System not found');
+            return;
+          }
 
-      // Listen for live alerts from admin broadcasts
-      ResQSocket.onEvent('new_alert', (data) => {
-        console.log('[LIVE] New alert:', data);
-        // Add alert to the list in real-time
-        prependLiveAlert(data);
-        toast('\u26a0\ufe0f Alert: ' + (data.message || 'New broadcast'), 'warning');
-      });
+          loadUserPanel(data.system);
+          await loadAlerts();
 
-      // Listen for SOS events (from other users in same system)
-      ResQSocket.onEvent('new_sos', (data) => {
-        console.log('[LIVE] SOS event:', data);
-        toast('\ud83d\udea8 SOS: ' + (data.emergency_type || 'Emergency reported'), 'error');
-      });
+          ResQSocket.connectToSystem(systemID);
+
+          ResQSocket.onEvent('new_alert', (data) => {
+            console.log('[LIVE] New alert:', data);
+            prependLiveAlert(data);
+            toast('Alert: ' + (data.message || 'New broadcast'), 'warning');
+          });
+
+          ResQSocket.onEvent('new_sos', (data) => {
+            console.log('[LIVE] SOS event:', data);
+            toast('SOS: ' + (data.emergency_type || 'Emergency reported'), 'error');
+          });
+        })
+        .catch((error) => {
+          console.error('System load failed:', error);
+          showError('Unable to load this system');
+        });
     });
 
     // Clean up socket on page unload
@@ -700,7 +721,7 @@
 
     // Prepend a live alert to the alerts list without refreshing
     function prependLiveAlert(data) {
-      const list = document.getElementById('alerts-list');
+      const list = document.getElementById('all-alerts-list');
       if (!list) return;
       const severityColors = { critical: 'rose', warning: 'amber', info: 'sky' };
       const c = severityColors[data.severity] || 'sky';
@@ -742,6 +763,54 @@
     }
 
     // ===== LOAD SYSTEM =====
+    function loadUserPanel(sys) {
+      systemData = {
+        ...sys,
+        organization_name: sys.organization_name || sys.name || 'Your Organization',
+        organization_type: sys.organization_type || sys.org_type || sys.type || 'Custom System'
+      };
+
+      const name = systemData.organization_name || systemData.organizationName || systemData.name || 'Your Organization';
+      const type = systemData.organization_type || systemData.organizationType || systemData.type || 'Custom System';
+      const loc = systemData.location || '';
+      const staff = Array.isArray(systemData.staff) ? systemData.staff : [];
+
+      document.getElementById('hdr-org').textContent = name;
+      document.getElementById('home-org-name').textContent = name;
+      document.getElementById('home-org-type').textContent = type;
+      document.getElementById('home-location').innerHTML = `<span class="material-symbols-outlined text-xs">location_on</span>${loc}`;
+      document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+      document.getElementById('qstat-staff').textContent = staff.length;
+
+      const tips = systemData.template?.safetyTips || ['Know your nearest exit route', 'Keep emergency contacts accessible', 'Do not use elevators during emergencies', 'Follow warden instructions at all times', 'Stay calm and assist others where safe'];
+      document.getElementById('safety-tips-list').innerHTML = tips.map(t => `
+      <div class="flex items-center gap-3 p-2.5 rounded-lg bg-white/2 border border-white/4">
+        <span class="material-symbols-outlined text-emerald-400 text-sm flex-shrink-0">check_circle</span>
+        <span class="text-slate-400 text-sm">${t}</span>
+      </div>`).join('');
+
+      const risks = systemData.riskTypes || systemData.risk_types_json || [];
+      const rColors = ['rose', 'amber', 'sky', 'emerald', 'violet', 'orange'];
+      document.getElementById('risk-tags').innerHTML = (Array.isArray(risks) ? risks : []).map((r, i) => {
+        const c = rColors[i % rColors.length];
+        return `<span class="px-3 py-1 rounded-full bg-${c}-500/10 border border-${c}-400/20 text-${c}-400 text-xs font-headline uppercase tracking-wider">${r}</span>`;
+      }).join('') || '<span class="text-slate-600 text-sm">No risks configured</span>';
+
+      const types = systemData.template?.emergencyTypes || [
+        { id: 'fire', icon: 'Fire', label: 'Fire', color: '#ef4444' },
+        { id: 'medical', icon: 'Med', label: 'Medical', color: '#22c55e' },
+        { id: 'flood', icon: 'Flood', label: 'Flood', color: '#3b82f6' },
+        { id: 'intruder', icon: 'SOS', label: 'Intruder', color: '#f97316' },
+        { id: 'chemical', icon: 'Chem', label: 'Chemical', color: '#a855f7' },
+        { id: 'earthquake', icon: 'Quake', label: 'Quake', color: '#eab308' },
+      ];
+      document.getElementById('sos-type-grid').innerHTML = types.map(t => `
+      <button onclick="selectSOSType('${t.id}','${t.label}')" class="sos-type-btn p-3 rounded-xl text-center transition-all" style="background:${t.color}12;border:1px solid ${t.color}30;color:${t.color};" id="sos-type-${t.id}">
+        <div style="font-size:22px;">${t.icon}</div>
+        <div style="font-size:10px;font-weight:700;font-family:'Space Grotesk';text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">${t.label}</div>
+      </button>`).join('');
+    }
+
     async function loadSystem() {
       try {
         const cached = JSON.parse(localStorage.getItem('resqai_custom_systems') || '[]');
@@ -1076,8 +1145,7 @@ Give a clear, calm, and practical emergency response. Be specific to this organi
     // ===== NAV =====
     function goToAdmin() { window.location.href = `/modules/rescue-builder/pages/admin-panel.html?systemID=${systemID}`; }
     function goBack() {
-      if (document.referrer.includes('rescue-builder') || document.referrer.includes('admin-panel')) history.back();
-      else window.location.href = '/modules/rescue-builder/pages/custom-builder-dashboard.html';
+      window.location.href = '/modules/rescue-builder/pages/user-home.html';
     }
 
     function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }

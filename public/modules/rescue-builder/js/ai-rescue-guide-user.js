@@ -5,7 +5,9 @@
 (function () {
   'use strict';
   const RG_USER_ID = 'ai-rescue-guide-user-root';
-  const API_BASE = window.location.origin + '/api/custom-system';
+  let _origin = window.location.origin;
+  if (_origin.includes('file://') || _origin.includes(':5500') || _origin.includes(':5501') || _origin === 'null') _origin = 'http://localhost:3000';
+  const API_BASE = _origin + '/api/custom-system';
 
   function escHtml(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function safeArray(obj, key) { return obj && Array.isArray(obj[key]) ? obj[key] : []; }
@@ -194,7 +196,7 @@
     if (!b64) {
         try {
             const sid = getSystemID() || new URLSearchParams(location.search).get('systemID');
-            const resp = await fetch(window.location.origin + '/api/custom-system/' + sid);
+            const resp = await fetch(API_BASE + '/' + sid);
             if (resp.ok) {
                 const data = await resp.json();
                 b64 = data.system?.layout_image || data.system?.structure?.layoutAsset?.base64;

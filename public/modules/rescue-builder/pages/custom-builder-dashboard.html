@@ -263,7 +263,10 @@
 
         async function getApiSystems() {
             try {
-                const response = await fetch(`${API_BASE}/user/list`);
+                const token = localStorage.getItem('auth-token') || localStorage.getItem('resqai_token') || '';
+                const response = await fetch(`${API_BASE}/user/list`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
                 if (!response.ok) return [];
                 const data = await response.json();
                 return Array.isArray(data.systems) ? data.systems : [];

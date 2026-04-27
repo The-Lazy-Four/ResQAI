@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResQAI - Custom Rescue Access</title>
+    <style>
+        :root { --bg: #0a0a0f; --panel: #11131a; --line: rgba(255,255,255,0.1); --text: #f8fbff; --muted: #95a0b2; --accent: #e63946; --user: #2f80ed; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; color: var(--text);
+            background: radial-gradient(circle at top, rgba(230,57,70,0.16), transparent 32%), radial-gradient(circle at bottom right, rgba(47,128,237,0.14), transparent 24%), var(--bg);
+        }
+        .shell { min-height: 100vh; padding: 26px 18px 42px; display: grid; grid-template-rows: auto 1fr; gap: 28px; }
+        .header { max-width: 1200px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .brand { display: flex; align-items: center; gap: 14px; font-size: 1.4rem; font-weight: 800; letter-spacing: 0.04em; }
+        .brand-mark { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: rgba(230,57,70,0.12); border: 1px solid rgba(230,57,70,0.3); }
+        .back { border: 1px solid var(--line); background: rgba(255,255,255,0.04); color: var(--text); border-radius: 12px; padding: 12px 16px; font-weight: 600; cursor: pointer; }
+        .main { display: grid; place-items: center; }
+        .frame {
+            width: min(1160px, 100%); border: 1px solid var(--line); border-radius: 26px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+            padding: 34px; box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+        }
+        .intro { text-align: center; margin-bottom: 30px; }
+        .intro h1 { font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.05; }
+        .intro p { margin-top: 12px; color: var(--muted); font-size: 1rem; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+        .card { border-radius: 22px; padding: 28px; background: var(--panel); border: 1px solid rgba(255,255,255,0.08); transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 18px 40px rgba(0,0,0,0.32); }
+        .admin-card:hover { border-color: rgba(230,57,70,0.34); box-shadow: 0 0 24px rgba(230,57,70,0.12); }
+        .user-card:hover { border-color: rgba(47,128,237,0.34); box-shadow: 0 0 24px rgba(47,128,237,0.12); }
+        .card-icon { width: 62px; height: 62px; border-radius: 18px; display: grid; place-items: center; font-size: 1.8rem; margin-bottom: 18px; }
+        .admin-card .card-icon { background: rgba(230,57,70,0.12); border: 1px solid rgba(230,57,70,0.28); }
+        .user-card .card-icon { background: rgba(47,128,237,0.12); border: 1px solid rgba(47,128,237,0.28); }
+        .card h2 { font-size: 1.8rem; margin-bottom: 10px; }
+        .card-sub { color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
+        .list { list-style: none; display: grid; gap: 12px; margin-bottom: 22px; }
+        .list li { color: #d7e0ec; padding-left: 18px; position: relative; line-height: 1.5; }
+        .list li::before { content: ""; width: 7px; height: 7px; border-radius: 999px; position: absolute; left: 0; top: 10px; }
+        .admin-card .list li::before { background: var(--accent); }
+        .user-card .list li::before { background: var(--user); }
+        .access-note { display: inline-flex; padding: 8px 12px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; margin-bottom: 18px; }
+        .admin-card .access-note { color: #ffb7be; background: rgba(230,57,70,0.12); }
+        .user-card .access-note { color: #bdd8ff; background: rgba(47,128,237,0.12); }
+        .button { width: 100%; border: none; border-radius: 16px; padding: 15px 18px; color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        .admin-button { background: linear-gradient(135deg, var(--accent), #c92836); }
+        .user-button { background: linear-gradient(135deg, var(--user), #215fbb); }
+        @media (max-width: 900px) {
+            .frame { padding: 24px 18px; }
+            .grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="shell">
+        <header class="header">
+            <div class="brand"><div class="brand-mark">R</div><span>ResQAI</span></div>
+            <button class="back" type="button" onclick="window.location.href='/pages/module-selection.html'">← Main Menu</button>
+        </header>
+        <main class="main">
+            <section class="frame">
+                <div class="intro">
+                    <h1>Custom Rescue System</h1>
+                    <p>AI-powered organization emergency management with dedicated admin and public user access.</p>
+                </div>
+                <div class="grid">
+                    <article class="card admin-card">
+                        <div class="card-icon">👤</div>
+                        <h2>Admin Panel</h2>
+                        <p class="card-sub">Create rescue systems, manage staff, and coordinate real-time emergency actions.</p>
+                        <ul class="list">
+                            <li>Create rescue systems</li>
+                            <li>Manage staff</li>
+                            <li>Send alerts</li>
+                            <li>AI analysis</li>
+                        </ul>
+                        <div class="access-note">Requires login</div>
+                        <button class="button admin-button" type="button" onclick="window.location.href='/pages/admin-login.html'">Admin Panel →</button>
+                    </article>
+                    <article class="card user-card">
+                        <div class="card-icon">👥</div>
+                        <h2>User Panel</h2>
+                        <p class="card-sub">Browse active rescue systems, open the public safety panel, and trigger SOS support without login.</p>
+                        <ul class="list">
+                            <li>View active rescue systems</li>
+                            <li>Access guides</li>
+                            <li>Trigger SOS</li>
+                            <li>Get help</li>
+                        </ul>
+                        <div class="access-note">No login needed</div>
+                        <button class="button user-button" type="button" onclick="window.location.href='/modules/rescue-builder/pages/user-home.html'">User Panel →</button>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>

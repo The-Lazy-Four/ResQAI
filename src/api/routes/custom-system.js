@@ -51,6 +51,27 @@ function normalizeSystemRecord(system) {
     return n;
 }
 
+function countParsedStaff(staffJSON) {
+    const parsed = safeParseJSON(staffJSON, []);
+    return Array.isArray(parsed) ? parsed.length : 0;
+}
+
+async function getSQLiteAlertCountMap(db) {
+    const rows = await new Promise((resolve, reject) => {
+        db.all(
+            `SELECT system_id, COUNT(*) as alert_count
+             FROM system_alerts
+             GROUP BY system_id`,
+            (err, result) => err ? reject(err) : resolve(result || [])
+        );
+    });
+
+    return rows.reduce((map, row) => {
+        map[row.system_id] = row.alert_count || 0;
+        return map;
+    }, {});
+}
+
 function getMockAlerts(systemID = 'mock-system') {
     return [
         {
@@ -105,6 +126,117 @@ function getMockEvents(systemID = 'mock-system') {
 }
 
 // CREATE — generates system_code, access_code, admin_id, QR
+// Public endpoint - no auth needed
+// Must be placed BEFORE any /:id routes to avoid conflicts
+router.get('/public/all', async (req, res) => {
+    try {
+        if (isMySQLAvailable()) {
+            const systems = await query(
+                `SELECT id, organization_name, organization_type, location, staff_json, created_at
+                 FROM systems
+                 ORDER BY created_at DESC`,
+                []
+            );
+
+            return res.json({
+                success: true,
+                systems: (systems || []).map((system) => ({
+                    id: system.id,
+                    name: system.organization_name,
+                    org_type: system.organization_type,
+                    location: system.location,
+                    created_at: system.created_at,
+                    staff_count: countParsedStaff(system.staff_json),
+                    alert_count: 0
+                }))
+            });
+        }
+
+        const db = await getDatabase();
+        const [systems, alertCounts] = await Promise.all([
+            new Promise((resolve, reject) => {
+                db.all(
+                    `SELECT id, organization_name, organization_type, location, staff_json, created_at
+                     FROM custom_rescue_systems
+                     ORDER BY created_at DESC`,
+                    (err, rows) => err ? reject(err) : resolve(rows || [])
+                );
+            }),
+            getSQLiteAlertCountMap(db)
+        ]);
+
+        return res.json({
+            success: true,
+            systems: systems.map((system) => ({
+                id: system.id,
+                name: system.organization_name,
+                org_type: system.organization_type,
+                location: system.location,
+                created_at: system.created_at,
+                staff_count: countParsedStaff(system.staff_json),
+                alert_count: alertCounts[system.id] || 0
+            }))
+        });
+    } catch (error) {
+        console.warn('[PUBLIC] Failed to list systems:', error.message);
+        res.json({ success: true, systems: [] });
+    }
+});
+
+router.get('/public/:id', async (req, res) => {
+    try {
+        let system;
+
+        if (isMySQLAvailable()) {
+            const records = await query('SELECT * FROM systems WHERE id = ?', [req.params.id]);
+            system = records[0];
+        } else {
+            const db = await getDatabase();
+            system = await new Promise((resolve, reject) => {
+                db.get(
+                    'SELECT * FROM custom_rescue_systems WHERE id = ?',
+                    [req.params.id],
+                    (err, row) => err ? reject(err) : resolve(row)
+                );
+            });
+        }
+
+        if (!system) {
+            return res.status(404).json({
+                success: false,
+                message: 'System not found'
+            });
+        }
+
+        const normalized = normalizeSystemRecord(system);
+        const publicSystem = {
+            ...normalized,
+            id: normalized.id,
+            name: normalized.organization_name || normalized.organizationName || normalized.name || '',
+            org_type: normalized.organization_type || normalized.organizationType || normalized.type || 'custom',
+            location: normalized.location || '',
+            layout_analysis: normalized.layoutAnalysis || normalized.layout_analysis || null,
+            layout_analysis_visible: normalized.layout_analysis_visible != null ? normalized.layout_analysis_visible : 1,
+            siren_active: normalized.siren_active || 0,
+            siren_type: normalized.siren_type || null,
+            created_at: normalized.created_at
+        };
+
+        if (publicSystem.layout_analysis && typeof publicSystem.layout_analysis === 'string') {
+            try {
+                publicSystem.layout_analysis = JSON.parse(publicSystem.layout_analysis);
+            } catch (error) {
+                // Keep raw text if it is not valid JSON.
+            }
+        }
+
+        res.json({ success: true, system: publicSystem });
+    } catch (error) {
+        console.error('[PUBLIC] Failed to load system:', error);
+        res.status(500).json({ success: false });
+    }
+});
+
 router.post('/create', optionalAuth, async (req, res) => {
     try {
         const { organizationName, organizationType, location, contactEmail, structure, staff, riskTypes, layoutAnalysis, adminId } = req.body;

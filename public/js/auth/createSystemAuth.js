@@ -1,64 +1,82 @@
-/**
- * createSystemAuth.js
- * 
- * Auth guard for "Create System" actions on the Custom Builder Dashboard.
- * 
- * Behavior:
- *   - On page load: checks if user is already logged in via Supabase
- *   - If logged in: shows user info in the sidebar, enables direct system creation
- *   - If NOT logged in: "Create New System" triggers Google OAuth login
- *   - After Google redirect returns here, the user is now authenticated
- *     and can proceed with system creation
- */
-
-import { loginWithGoogle, getCurrentUser, logout } from './authService.js';
+import { getCurrentUser, logout } from './authService.js';
 
 let currentUser = null;
 
-// ---- Check session on load ----
+function getLocalAuthUser() {
+    const token = localStorage.getItem('auth-token') || localStorage.getItem('resqai_token');
+    if (!token) return null;
+
+    let storedUser = null;
+    try {
+        storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    } catch (error) {
+        storedUser = null;
+    }
+
+    const name = [
+        storedUser?.firstName,
+        storedUser?.lastName
+    ].filter(Boolean).join(' ') || storedUser?.name || localStorage.getItem('resqai_admin_name') || storedUser?.email || 'Admin';
+
+    return {
+        id: storedUser?.userID || storedUser?.id || 'local-admin',
+        email: storedUser?.email || '',
+        user_metadata: {
+            full_name: name,
+            avatar_url: storedUser?.avatarUrl || ''
+        }
+    };
+}
+
+async function resolveCurrentUser() {
+    const supabaseUser = await getCurrentUser();
+    if (supabaseUser) return supabaseUser;
+    return getLocalAuthUser();
+}
+
+function clearLocalAuth() {
+    localStorage.removeItem('auth-token');
+    localStorage.removeItem('resqai_token');
+    localStorage.removeItem('resqai_admin_name');
+    localStorage.removeItem('user');
+}
+
 async function init() {
-    currentUser = await getCurrentUser();
+    currentUser = await resolveCurrentUser();
 
     if (currentUser) {
-        console.log('[AUTH] User authenticated:', currentUser.email);
+        console.log('[AUTH] User authenticated:', currentUser.email || currentUser.id);
         updateSidebarProfile(currentUser);
     } else {
-        console.log('[AUTH] No active session — create actions will require Google login');
+        console.log('[AUTH] No active session - create actions will redirect to admin login');
     }
 }
 
-// ---- Gate: require login before creating a system ----
-// Call this before navigating to org-select. Returns true if user is logged in.
 export async function requireAuthForCreate() {
-    // Re-check in case session changed
-    currentUser = await getCurrentUser();
+    currentUser = await resolveCurrentUser();
 
     if (currentUser) {
-        return true; // user is authenticated, proceed
+        return true;
     }
 
-    // Not logged in — trigger Google OAuth (will redirect back here after login)
-    await loginWithGoogle(window.location.href);
-    return false; // navigation will not continue (page redirects to Google)
+    const next = encodeURIComponent(window.location.href);
+    window.location.href = `/pages/admin-login.html?next=${next}`;
+    return false;
 }
 
-// ---- Get the authenticated admin ID (for attaching to created systems) ----
 export function getAdminId() {
     return currentUser ? currentUser.id : null;
 }
 
-// ---- Get current user info ----
 export function getUser() {
     return currentUser;
 }
 
-// ---- Update sidebar profile with real user data ----
 function updateSidebarProfile(user) {
     const avatarUrl = user.user_metadata?.avatar_url
-        || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.id;
-    const displayName = user.user_metadata?.full_name || user.email;
+        || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.id || user.email || 'resqai')}`;
+    const displayName = user.user_metadata?.full_name || user.email || 'ADMIN';
 
-    // Update the sidebar profile section (if it exists on this page)
     const profileImg = document.querySelector('aside img[alt="User Operational Profile"]');
     if (profileImg) {
         profileImg.src = avatarUrl;
@@ -75,7 +93,6 @@ function updateSidebarProfile(user) {
         levelEl.textContent = 'ADMIN ACCESS';
     }
 
-    // Add a logout option below the profile
     const profileContainer = document.querySelector('aside .px-6.mb-10');
     if (profileContainer && !document.getElementById('resqai-logout-btn')) {
         const logoutBtn = document.createElement('button');
@@ -105,14 +122,23 @@ function updateSidebarProfile(user) {
             logoutBtn.style.color = 'rgba(255, 83, 82, 0.8)';
         });
         logoutBtn.addEventListener('click', async () => {
+            try {
+                await fetch('/api/google-auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.warn('Google logout failed:', error);
+            }
+
             await logout();
+            clearLocalAuth();
             window.location.reload();
         });
         profileContainer.appendChild(logoutBtn);
     }
 }
 
-// ---- Auto-init when DOM is ready ----
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

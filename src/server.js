@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 // Import database initialization
 import { initMySQL } from './db/mysql.js';
 import { initDatabase } from './db/db.js';
+import ensureGoogleAuthSchema from './db/init.js';
 
 // Import API routes
 import emergencyRoutes from './api/routes/emergency.js';
@@ -24,6 +25,7 @@ import nearbyRoutes from './api/routes/nearby.js';
 import aiRoutes from './api/routes/ai.js';
 import portalRoutes from './api/routes/portal.js';
 import authRoutes from './api/routes/auth.js';
+import googleAuthRouter from './api/routes/google-auth.js';
 import customSystemRoutes from './api/routes/custom-system.js';
 import echoPlusRoutes from './api/routes/echo-plus.js';
 import weaponDetectRoutes from './api/routes/weapon-detect.js';
@@ -61,6 +63,7 @@ if (envConfig.parsed) {
 validateEnvironment();
 
 const app = express();
+app.set('trust proxy', true);
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -83,6 +86,10 @@ await initDatabase().catch(err => console.warn('SQLite init error:', err.message
 // Initialize MySQL (with SQLite fallback)
 await initMySQL().catch(err => {
     console.warn('⚠️  MySQL initialization failed, SQLite will be used:', err.message);
+});
+
+await ensureGoogleAuthSchema().catch(err => {
+    console.warn('Auth schema init error:', err.message);
 });
 
 // ==================== ENVIRONMENT VALIDATION ====================
@@ -143,6 +150,7 @@ app.get('/api/health', (req, res) => {
 
 // Mount API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/google-auth', googleAuthRouter);
 app.use('/api/emergencies', emergencyRoutes);
 app.use('/api/classification', classificationRoutes);
 app.use('/api/chat', chatRoutes);

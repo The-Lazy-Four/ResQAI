@@ -3,7 +3,10 @@
 // =====================================================
 
 // ===== GLOBAL CONFIG =====
-const BASE_URL = window.location.origin;
+let BASE_URL = window.location.origin;
+if (BASE_URL.includes('file://') || BASE_URL.includes(':5500') || BASE_URL.includes(':5501') || BASE_URL === 'null') {
+    BASE_URL = 'http://localhost:3000';
+}
 const API_BASE_URL = `${BASE_URL}/api/custom-system`;
 const AUTH_TOKEN_KEY = 'auth-token';
 const DEBUG = true;  // Comprehensive debug logging
