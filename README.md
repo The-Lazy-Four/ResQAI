@@ -139,7 +139,7 @@ src/
 - **High Availability**: Redundant AI providers ensure the system works even during API outages.
 - **Per-Alert Risk Reasoning**: `src/utils/aiRouter.js` enriches NASA/USGS/OpenWeather alerts with plain-language risk context and safety steps.
 
-### ðŸŒ Live Location & Safe Zones (NEW)
+### Live Location & Safe Zones (NEW)
 - **Browser Geolocation**: Live location is requested through the browser and works in production over HTTPS.
 - **Leaflet Maps**: Crisis and deployment maps use interactive Leaflet layers with multiple tile fallbacks for reliability.
 - **Safe-Zone Discovery**: Backend safe-zone lookup searches hospitals, clinics, police/fire stations, shelters, schools, colleges, universities, community centres, parks, playgrounds, stadiums, and open grounds.
