@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -146,6 +147,19 @@
             cursor: pointer; padding: 8px 10px; border-radius: 10px;
         }
         .toggle-password:hover { background: #f1f4f8; }
+        .demo-hint {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(230, 57, 70, 0.08);
+            border: 1px solid rgba(230, 57, 70, 0.18);
+            color: #7b2430;
+            font-size: 0.92rem;
+            line-height: 1.45;
+        }
+        .demo-hint strong {
+            color: var(--accent-dark);
+        }
         .submit {
             margin-top: 2px; border: none; border-radius: 16px; padding: 15px 18px; background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -225,6 +239,7 @@
                                 <input type="password" id="loginPassword" placeholder="Enter your password" required>
                                 <button type="button" class="toggle-password" id="togglePassword">Show</button>
                             </div>
+                            <div class="demo-hint">Demo password: <strong>echo24</strong></div>
                         </div>
                         <button type="submit" class="submit">Login</button>
                     </form>

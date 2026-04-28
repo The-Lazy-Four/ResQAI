@@ -4,13 +4,26 @@ import jwt from 'jsonwebtoken';
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'resqai-secret-key-change-in-production';
-const ECHO_ADMIN_PASSWORD = process.env.ECHO_ADMIN_PASSWORD || 'echo2024';
+const DEMO_ECHO_ADMIN_PASSWORD = 'echo24';
+const CONFIGURED_ECHO_ADMIN_PASSWORD = process.env.ECHO_ADMIN_PASSWORD || DEMO_ECHO_ADMIN_PASSWORD;
+
+function isValidEchoAdminPassword(password) {
+  const normalizedPassword = String(password || '').trim();
+  if (!normalizedPassword) return false;
+
+  const allowedPasswords = new Set([
+    DEMO_ECHO_ADMIN_PASSWORD,
+    CONFIGURED_ECHO_ADMIN_PASSWORD
+  ]);
+
+  return allowedPasswords.has(normalizedPassword);
+}
 
 router.post('/admin-login', (req, res) => {
   try {
     const { password } = req.body || {};
 
-    if (!password || password !== ECHO_ADMIN_PASSWORD) {
+    if (!isValidEchoAdminPassword(password)) {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
