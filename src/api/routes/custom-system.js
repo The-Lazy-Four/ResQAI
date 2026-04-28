@@ -185,17 +185,18 @@ router.get('/public/all', async (req, res) => {
 
 router.get('/public/:id', async (req, res) => {
     try {
+        const lookupId = (req.params.id || '').trim();
         let system;
 
         if (isMySQLAvailable()) {
-            const records = await query('SELECT * FROM systems WHERE id = ?', [req.params.id]);
+            const records = await query('SELECT * FROM systems WHERE id = ? OR system_code = ? OR access_code = ? LIMIT 1', [lookupId, lookupId, lookupId]);
             system = records[0];
         } else {
             const db = await getDatabase();
             system = await new Promise((resolve, reject) => {
                 db.get(
-                    'SELECT * FROM custom_rescue_systems WHERE id = ?',
-                    [req.params.id],
+                    'SELECT * FROM custom_rescue_systems WHERE id = ? OR system_code = ? OR access_code = ? LIMIT 1',
+                    [lookupId, lookupId, lookupId],
                     (err, row) => err ? reject(err) : resolve(row)
                 );
             });

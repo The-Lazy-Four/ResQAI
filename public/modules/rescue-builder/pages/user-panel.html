@@ -675,49 +675,75 @@
     function showError(message) {
       toast(message, 'error');
       document.getElementById('home-org-name').textContent = message;
+      document.getElementById('home-org-type').textContent = 'Please return to Systems and open a valid system.';
+    }
+
+    function redirectToHomeWithNotice(message) {
+      showError(message);
+      setTimeout(() => {
+        window.location.href = '/modules/rescue-builder/pages/user-home.html';
+      }, 1400);
     }
 
     // ===== INIT =====
     window.addEventListener('DOMContentLoaded', async () => {
       const params = new URLSearchParams(window.location.search);
-      systemID = params.get('systemID');
+      systemID =
+        params.get('systemID') ||
+        params.get('systemId') ||
+        params.get('id') ||
+        params.get('code');
 
       if (!systemID) {
-        window.location = '/modules/rescue-builder/pages/user-home.html';
+        redirectToHomeWithNotice('Missing system identifier');
         return;
       }
 
       updateClock();
       setInterval(updateClock, 1000);
 
-      fetch(`/api/custom-system/public/${systemID}`)
-        .then((r) => r.json())
-        .then(async (data) => {
-          if (!data.success) {
-            showError('System not found');
-            return;
+      try {
+        const encoded = encodeURIComponent(systemID);
+        let data = null;
+
+        const primaryResp = await fetch(`/api/custom-system/public/${encoded}`);
+        if (primaryResp.ok) {
+          data = await primaryResp.json();
+        }
+
+        // Fallback: if user entered a code route, resolve directly by code.
+        if (!data || !data.success || !data.system) {
+          const codeResp = await fetch(`/api/custom-system/code/${encoded}`);
+          if (codeResp.ok) {
+            data = await codeResp.json();
           }
+        }
 
-          loadUserPanel(data.system);
-          await loadAlerts();
+        if (!data || !data.success || !data.system) {
+          redirectToHomeWithNotice('System not found');
+          return;
+        }
 
-          ResQSocket.connectToSystem(systemID);
+        systemID = data.system.id || systemID;
+        loadUserPanel(data.system);
+        await loadAlerts();
 
-          ResQSocket.onEvent('new_alert', (data) => {
-            console.log('[LIVE] New alert:', data);
-            prependLiveAlert(data);
-            toast('Alert: ' + (data.message || 'New broadcast'), 'warning');
-          });
+        ResQSocket.connectToSystem(systemID);
 
-          ResQSocket.onEvent('new_sos', (data) => {
-            console.log('[LIVE] SOS event:', data);
-            toast('SOS: ' + (data.emergency_type || 'Emergency reported'), 'error');
-          });
-        })
-        .catch((error) => {
-          console.error('System load failed:', error);
-          showError('Unable to load this system');
+        ResQSocket.onEvent('new_alert', (data) => {
+          console.log('[LIVE] New alert:', data);
+          prependLiveAlert(data);
+          toast('Alert: ' + (data.message || 'New broadcast'), 'warning');
         });
+
+        ResQSocket.onEvent('new_sos', (data) => {
+          console.log('[LIVE] SOS event:', data);
+          toast('SOS: ' + (data.emergency_type || 'Emergency reported'), 'error');
+        });
+      } catch (error) {
+        console.error('System load failed:', error);
+        redirectToHomeWithNotice('Unable to load this system');
+      }
     });
 
     // Clean up socket on page unload
