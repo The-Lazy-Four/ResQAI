@@ -1,4 +1,4 @@
-# 🚨 ResQAI – AI Crisis Intelligence System
+# 🚨 ResQAI -- AI Crisis Intelligence System
 
 **Empowering Rapid Emergency Response with AI-Driven Intelligence**
 
