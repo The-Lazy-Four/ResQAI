@@ -1,4 +1,4 @@
-# 🏗️ System Architecture
+# 🏗️ System Architecture | Full WorkFLow
 
 ## System Architecture Diagram
 
